@@ -38,7 +38,7 @@ export default defineConfig([
           // Non-text attributes (title, aria-label, placeholder, label, alt stay checked).
           'jsx-attributes': {
             exclude: [
-              'className', 'style', 'type', 'key', 'id', 'width', 'height', 'role', 'href', 'target',
+              'className', 'illustrationClassName', 'style', 'type', 'key', 'id', 'width', 'height', 'role', 'href', 'target',
               'rel', 'htmlFor', 'name', 'value', 'autoComplete', 'enterKeyHint', 'inputMode',
               'aria-hidden', 'aria-live', 'aria-current', 'aria-haspopup', 'aria-controls',
               'position', 'color', 'nodeColor', 'nodeStrokeColor',

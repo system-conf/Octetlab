@@ -13,6 +13,8 @@ export const DENSITIES = ['comfortable', 'compact'] as const
 export const FONT_SCALES = [0.875, 1, 1.125, 1.25, 1.5] as const
 export const DEVICE_LABEL_MODES = ['name', 'model', 'both', 'none'] as const
 export const PORT_LABEL_MODES = ['always', 'hover', 'never'] as const
+/** Look of the devices (docs/DEVICE_STYLES.md): today's framed line icons, or illustrated pictures. */
+export const DEVICE_STYLES = ['simple', 'classic', 'realistic'] as const
 export const SIMULATION_MODES = ['realtime', 'simulation'] as const
 /** Event-list protocols in chip order (same list as FILTER_PROTOCOLS in features/simulation). */
 export const EVENT_FILTER_PROTOCOLS = [
@@ -47,6 +49,7 @@ export const PREFERENCE_FIELDS = {
     grid: z.boolean(),
     snap: z.boolean(),
     minimap: z.boolean(),
+    deviceStyle: z.enum(DEVICE_STYLES),
   },
   simulation: {
     animation: z.boolean(),
@@ -82,6 +85,7 @@ export type PreferenceSection = keyof Preferences
 export type AppearancePreferences = Preferences['appearance']
 export type Theme = AppearancePreferences['theme']
 export type Density = AppearancePreferences['density']
+export type DeviceStyle = Preferences['map']['deviceStyle']
 
 /** 'section.field', e.g. 'map.snap'. */
 export type PreferencePath = {
@@ -103,7 +107,7 @@ export type PreferencesPatch = { readonly [S in PreferenceSection]?: Partial<Pre
 /** Today's behaviour (see the "wired" list in docs/PREFERENCES.md before changing a default). */
 export const DEFAULT_PREFERENCES: Preferences = {
   appearance: { theme: 'light', fontScale: 1, density: 'comfortable', highContrast: false },
-  map: { deviceLabels: 'name', portLabels: 'always', linkLights: true, grid: true, snap: false, minimap: true },
+  map: { deviceLabels: 'name', portLabels: 'always', linkLights: true, grid: true, snap: false, minimap: true, deviceStyle: 'simple' },
   simulation: { animation: true, speed: 1, defaultMode: 'realtime', defaultEventFilters: EVENT_FILTER_PROTOCOLS },
   terminal: { cliDefaultForNetworkDevices: false, fontSize: 13, historyLength: 10 },
   cables: { autoCable: true },

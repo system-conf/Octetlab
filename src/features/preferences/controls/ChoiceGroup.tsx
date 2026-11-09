@@ -1,9 +1,11 @@
-import { useId } from 'react'
+import { useId, type ReactNode } from 'react'
 import FieldHint from './FieldHint'
 
 export interface Choice<Value> {
   value: Value
   label: string
+  /** Small decorative picture above the label (ChoiceGroup only; SelectField ignores it). */
+  preview?: ReactNode
 }
 
 interface ChoiceGroupProps<Value> {
@@ -33,7 +35,7 @@ function ChoiceGroup<Value extends string | number>({ label, hint, choices, valu
             return (
               <label
                 key={choice.value}
-                className={`relative flex min-h-9 cursor-pointer items-center rounded-lg border px-3 py-1.5 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 ${
+                className={`relative flex min-h-9 cursor-pointer ${choice.preview === undefined ? 'items-center' : 'flex-col items-center gap-1'} rounded-lg border px-3 py-1.5 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 ${
                   checked ? 'border-accent bg-accent-muted font-medium text-accent-text' : 'border-border-strong bg-surface text-fg-muted hover:bg-surface-muted'
                 }`}
               >
@@ -45,6 +47,7 @@ function ChoiceGroup<Value extends string | number>({ label, hint, choices, valu
                   onChange={() => onChange(choice.value)}
                   className="sr-only"
                 />
+                {choice.preview !== undefined && <span aria-hidden="true">{choice.preview}</span>}
                 {choice.label}
               </label>
             )

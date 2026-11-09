@@ -41,6 +41,15 @@ describe('PreferencesCodec', () => {
     expect(PreferencesCodec.overrides(DEFAULT_PREFERENCES)).toEqual({})
   })
 
+  it('stores, reads back and leniently drops the device style', () => {
+    const changed = PreferencesCodec.apply(DEFAULT_PREFERENCES, { map: { deviceStyle: 'classic' } })
+    expect(JSON.parse(PreferencesCodec.toStored(changed))).toEqual({ version: PREFERENCES_VERSION, map: { deviceStyle: 'classic' } })
+    expect(PreferencesCodec.parseStored(PreferencesCodec.toStored(changed)).preferences.map.deviceStyle).toBe('classic')
+    const { preferences, ignored } = PreferencesCodec.parse({ version: PREFERENCES_VERSION, map: { deviceStyle: 'pixel', grid: false } })
+    expect(preferences.map).toEqual({ ...DEFAULT_PREFERENCES.map, grid: false })
+    expect(ignored).toEqual(['map.deviceStyle'])
+  })
+
   it('round-trips through the stored text', () => {
     const changed = PreferencesCodec.apply(DEFAULT_PREFERENCES, { appearance: { theme: 'system', highContrast: true } })
     expect(PreferencesCodec.parseStored(PreferencesCodec.toStored(changed)).preferences).toEqual(changed)

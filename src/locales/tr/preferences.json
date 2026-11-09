@@ -38,6 +38,13 @@
     }
   },
   "map": {
+    "deviceStyle": {
+      "label": "Cihaz görünümü",
+      "hint": "Haritada, cihaz listesinde ve cihaz bilgisinde cihazların nasıl çizileceği.",
+      "simple": "Sade",
+      "classic": "Klasik şema",
+      "realistic": "Gerçekçi"
+    },
     "deviceLabels": {
       "label": "Cihaz etiketleri",
       "name": "Ad",

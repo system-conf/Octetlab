@@ -24,6 +24,7 @@ nothing. Do not change a default without changing the behaviour it describes (an
 | `map.grid` | boolean | `true` | **Wired**: `WorkspaceCanvas` renders the dot `Background` only when on. |
 | `map.snap` | boolean | `false` | **Wired**: `useSnapPreference` (canvas toolbar "snap") and the Map tab. |
 | `map.minimap` | boolean | `true` | **Wired**: `WorkspaceCanvas` (still hidden below `md`, while cabling and while dragging). |
+| `map.deviceStyle` | `'simple' \| 'classic' \| 'realistic'` (`DEVICE_STYLES`) | `'simple'` | **Wired**: `DeviceVisual` (catalog) in `WorkspaceDeviceNode`, the palette (`ModelTileGrid`, `ModelDetailCard`) and the `DeviceInfoPanel` header; `IllustratedIconDefs` is mounted once in `main.tsx`. `HandoverTopology` (print) stays simple. See docs/DEVICE_STYLES.md. |
 | `simulation.animation` | boolean | `true` | **Wired**: `SimulationMapLayer`; off works like reduced motion (packets at the step's end, no realtime replay). |
 | `simulation.speed` | `PLAY_SPEEDS` (`0.25 … 4`) | `1` | **Wired**: `usePlayback` uses the preference as its speed, so the panel's slider and the tab share and remember it. |
 | `simulation.defaultMode` | `'realtime' | 'simulation'` | `'realtime'` | **Wired**: `useSimulation` reads it once at mount (labs, exercises, samples, designs); Simulation builds the engine at once even for on-demand labs. |

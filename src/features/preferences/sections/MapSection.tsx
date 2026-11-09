@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next'
-import { DEVICE_LABEL_MODES, PORT_LABEL_MODES, usePreference } from '../../../preferences'
+import { DEVICE_LABEL_MODES, DEVICE_STYLES, PORT_LABEL_MODES, usePreference } from '../../../preferences'
 import ChoiceGroup from '../controls/ChoiceGroup'
+import DeviceStylePreview from '../controls/DeviceStylePreview'
 import { FIELD_LIST } from '../controls/fieldList'
 import SwitchField from '../controls/SwitchField'
 
-/** Map: device and port labels, link lights, grid, snap, minimap (read by the workspace canvas). */
+/** Map: device style, device and port labels, link lights, grid, snap, minimap (read by the workspace canvas). */
 function MapSection() {
   const { t } = useTranslation('preferences')
+  const [deviceStyle, setDeviceStyle] = usePreference('map.deviceStyle')
   const [deviceLabels, setDeviceLabels] = usePreference('map.deviceLabels')
   const [portLabels, setPortLabels] = usePreference('map.portLabels')
   const [linkLights, setLinkLights] = usePreference('map.linkLights')
@@ -16,6 +18,17 @@ function MapSection() {
 
   return (
     <div className={FIELD_LIST}>
+      <ChoiceGroup
+        label={t('map.deviceStyle.label')}
+        hint={t('map.deviceStyle.hint')}
+        choices={DEVICE_STYLES.map((value) => ({
+          value,
+          label: t(`map.deviceStyle.${value}`),
+          preview: <DeviceStylePreview deviceStyle={value} />,
+        }))}
+        value={deviceStyle}
+        onChange={setDeviceStyle}
+      />
       <ChoiceGroup
         label={t('map.deviceLabels.label')}
         choices={DEVICE_LABEL_MODES.map((value) => ({ value, label: t(`map.deviceLabels.${value}`) }))}

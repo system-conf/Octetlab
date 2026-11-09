@@ -38,6 +38,13 @@
     }
   },
   "map": {
+    "deviceStyle": {
+      "label": "Device style",
+      "hint": "How devices are drawn on the map, in the device list and in the device details.",
+      "simple": "Simple",
+      "classic": "Classic diagram",
+      "realistic": "Realistic"
+    },
     "deviceLabels": {
       "label": "Device labels",
       "name": "Name",

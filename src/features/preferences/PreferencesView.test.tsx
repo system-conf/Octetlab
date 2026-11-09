@@ -34,6 +34,17 @@ describe('PreferencesView', () => {
     expect(html.match(/role="switch" aria-checked="false"/g)).toHaveLength(2)
   })
 
+  it('offers the device styles with a router, switch and PC preview each', () => {
+    const store = new PreferencesStore(memoryStorage())
+    store.update({ map: { deviceStyle: 'realistic' } })
+    const html = render(store, <MapSection />)
+    expect(html).toMatch(/checked="" value="realistic"/)
+    expect(html).not.toMatch(/checked="" value="simple"/)
+    for (const style of ['simple', 'classic', 'realistic']) expect(html).toContain(`data-device-style-preview="${style}"`)
+    expect(html.match(/data-device-style="classic"/g)).toHaveLength(3)
+    expect(html.match(/data-device-style="realistic"/g)).toHaveLength(3)
+  })
+
   it('shows the start mode and the starting event filters', () => {
     const store = new PreferencesStore(memoryStorage())
     store.update({ simulation: { defaultMode: 'simulation', defaultEventFilters: ['icmp', 'arp'] } })

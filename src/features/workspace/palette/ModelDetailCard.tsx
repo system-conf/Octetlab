@@ -2,7 +2,7 @@ import { Star } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { DeviceModel } from '../../../domain'
 import { focusRing } from '../../shared/focusRing'
-import { DeviceKindIcon } from '../labServices'
+import { DeviceVisual } from '../labServices'
 import type { PaletteModelText } from './usePaletteTexts'
 
 interface ModelDetailCardProps {
@@ -32,7 +32,7 @@ function ModelDetailCard({ model, text, favourite, onToggleFavourite, price }: M
       ) : (
         <div className="space-y-1">
           <div className="flex items-start gap-2">
-            <DeviceKindIcon kind={model.kind} modelId={model.id} className="h-6 w-6 shrink-0" aria-hidden="true" />
+            <DeviceVisual kind={model.kind} modelId={model.id} className="h-6 w-6 shrink-0" illustrationClassName="-my-1 h-8 w-8 shrink-0" aria-hidden="true" />
             <h3 className="min-w-0 flex-1 text-sm font-semibold leading-tight text-fg-strong">{text.name}</h3>
             <button
               type="button"

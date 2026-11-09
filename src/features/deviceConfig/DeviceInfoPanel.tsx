@@ -1,6 +1,6 @@
 import { Cloud, EthernetPort, Globe, Layers, Route, Server, Wifi } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { DeviceKindIcon, findDeviceModel } from '../../catalog'
+import { DeviceVisual, findDeviceModel } from '../../catalog'
 import type { Device, NetworkState } from '../../domain'
 import { useMessageTranslator } from '../../i18n'
 import { ExerciseLockPolicy } from '../../session/ExerciseLockPolicy'
@@ -75,7 +75,7 @@ function DeviceInfoPanel({ device, state, policy = ExerciseLockPolicy.none }: De
     <div className="@container flex min-w-0 flex-col gap-3">
       <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-3 shadow-sm">
         <div className="flex items-center gap-2">
-          <DeviceKindIcon kind={device.kind} modelId={device.modelId} className="h-7 w-7 shrink-0" aria-hidden="true" />
+          <DeviceVisual kind={device.kind} modelId={device.modelId} className="h-7 w-7 shrink-0" illustrationClassName="-my-1.5 h-10 w-10 shrink-0" aria-hidden="true" />
           <h3 className="min-w-0 truncate font-semibold text-fg-strong">{device.name}</h3>
         </div>
         <FactList facts={general} />

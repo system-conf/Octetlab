@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { IllustratedIconDefs } from './catalog'
 import { initI18n } from './i18n'
 import { PreferencesProvider } from './preferences'
 
@@ -15,6 +16,7 @@ function renderApp(): void {
   root.render(
     <StrictMode>
       <PreferencesProvider>
+        <IllustratedIconDefs />
         <App />
       </PreferencesProvider>
     </StrictMode>,

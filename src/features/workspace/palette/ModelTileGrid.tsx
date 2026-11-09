@@ -3,7 +3,7 @@ import { useId, useRef, useState, type DragEvent, type KeyboardEvent } from 'rea
 import { useTranslation } from 'react-i18next'
 import type { DeviceModel } from '../../../domain'
 import { focusRing } from '../../shared/focusRing'
-import { DeviceKindIcon } from '../labServices'
+import { DeviceKindIcon, DeviceVisual, useDeviceStyle } from '../labServices'
 import { MODEL_DRAG_TYPE } from '../workspaceConstants'
 import { GridNavigation, isGridKey } from './GridNavigation'
 import { useLongPress } from './useLongPress'
@@ -41,6 +41,7 @@ function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlig
   const describedByPrefix = useId()
   const current = Math.min(focusIndex, Math.max(0, models.length - 1))
   const longPress = useLongPress(onHighlight)
+  const deviceStyle = useDeviceStyle()
 
   function handleKeyDown(event: KeyboardEvent<HTMLUListElement>) {
     if (!isGridKey(event.key)) return
@@ -90,9 +91,13 @@ function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlig
               aria-describedby={describedBy}
               className={`flex h-full w-full cursor-grab flex-col items-center gap-1 rounded-lg border border-transparent p-2 text-center text-xs leading-tight text-fg select-none [-webkit-touch-callout:none] hover:border-sky-200 dark:hover:border-sky-800 hover:bg-accent-muted active:cursor-grabbing ${focusRing}`}
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface shadow-sm">
-                <DeviceKindIcon kind={model.kind} modelId={model.id} className="h-8 w-8" aria-hidden="true" />
-              </span>
+              {deviceStyle === 'simple' ? (
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface shadow-sm">
+                  <DeviceKindIcon kind={model.kind} modelId={model.id} className="h-8 w-8" aria-hidden="true" />
+                </span>
+              ) : (
+                <DeviceVisual kind={model.kind} modelId={model.id} deviceStyle={deviceStyle} illustrationClassName="h-11 w-11" aria-hidden="true" />
+              )}
               <span className="line-clamp-2">{name}</span>
               {/* Design (D2): price of the model in a brief with a budget */}
               {price !== undefined && (
