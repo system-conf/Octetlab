@@ -5,6 +5,15 @@ import App from './App.tsx'
 import { IllustratedIconDefs } from './catalog'
 import { initI18n } from './i18n'
 import { PreferencesProvider } from './preferences'
+import { StaleChunkRecovery } from './routing/StaleChunkRecovery'
+
+// A tab opened before a deploy may ask for chunks that no longer exist: reload once to get the new build.
+// Storage is read lazily: even touching window.sessionStorage can throw when site data is blocked.
+const recoveryStorage = {
+  getItem: (key: string) => window.sessionStorage.getItem(key),
+  setItem: (key: string, value: string) => window.sessionStorage.setItem(key, value),
+}
+new StaleChunkRecovery(recoveryStorage, () => window.location.reload()).listen(window)
 
 const rootElement = document.getElementById('root')
 if (rootElement === null) {
