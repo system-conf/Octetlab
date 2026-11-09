@@ -16,5 +16,12 @@
   },
   "opensInNewTab": "(opens in a new tab)",
   "loading": "Loading…",
-  "home": "Home"
+  "home": "Home",
+  "appUpdate": {
+    "ready": "New version available",
+    "reload": "Reload",
+    "reloading": "Reloading…",
+    "dismiss": "Dismiss: use the new version next time",
+    "failed": "The new version could not start. Close every Octetlab tab and open it again."
+  }
 }

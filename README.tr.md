@@ -12,6 +12,7 @@
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white">
   <img alt="Tests" src="https://img.shields.io/badge/tests-2000%2B-0f766e">
+  <a href="#chatgpt-veya-claude-ile-kullan-mcp"><img alt="ChatGPT ve Claude için MCP sunucusu" src="https://img.shields.io/badge/MCP-ChatGPT%20%7C%20Claude-0369a1"></a>
 </p>
 
 <p align="center">
@@ -78,6 +79,33 @@ paketin nereye gittiğini adım adım izlersin. Kurulum ve üyelik gerekmez; bil
 Octetlab bir oyun değil, öğrenme laboratuvarı: puan yok, can yok; gerçek ağlar gibi davranan ağlar
 var. Yol haritası (dinamik routing, STP, ACL / NAT, IPv6, kablosuz güvenlik, WAN, sunucular ve
 fazlası) [docs/PLAN_V2.md](docs/PLAN_V2.md) ve [docs/PARITY.md](docs/PARITY.md) dosyalarında.
+
+## ChatGPT veya Claude ile kullan (MCP)
+
+Octetlab bir MCP sunucusu olarak da çalışıyor; yani bir sohbet asistanı lab işlerini senin yerine
+yapabilir, bilgisayardan da telefondan da. Ne istediğini düz cümlelerle yazarsın: asistan sıfırdan
+ya da bir örnekten lab kurar, cihaz ekleyip kablolar, bilgisayarların, router'ların ve switch'lerin
+ayarlarını yapar, `ping`, `tracert` ve `show` komutlarını çalıştırır, sonunda da labı Octetlab'de
+açan bir bağlantı verir.
+
+**Sunucu adresi:** `https://octetlabmcp.slovveis.workers.dev/mcp` (giriş yapmak gerekmez)
+
+Nasıl eklenir (menü adları sürüme ve pakete göre biraz farklı olabilir):
+
+- **ChatGPT:** Ayarlar → Uygulamalar / Bağlayıcılar → özel MCP sunucusu ekle (önce geliştirici
+  modunu açman gerekebilir). Yukarıdaki adresi yapıştır, kimlik doğrulama olarak **yok**'u seç.
+- **Claude:** Ayarlar → Bağlayıcılar → özel bağlayıcı ekle ve yukarıdaki adresi yapıştır.
+
+Şunları sorabilirsin:
+
+- "Bir router, bir switch ve üç PC'li bir lab kur, 192.168.10.0/24 kullan, sonra PC1'den PC3'e ping at."
+- "VLAN'lar arası routing örneğini aç ve router'da `show ip route` çıktısını göster."
+- "Router'da VLAN 20 için DHCP kur, dizüstünün adres alıp almadığına bak."
+- "Paylaşım bağlantım bu: PC2 neden sunucuya ulaşamıyor?"
+
+Sınırlar: lablar 7 gün saklanır; sunucu kişisel veri tutmaz, yalnızca labların kendisini saklar;
+IP adresi başına dakikada 60 istek yapılabilir; araçların çıktısı İngilizcedir (asistan yine de
+sana kendi dilinde cevap verir). Araç listesi ve tasarım: [docs/MCP_SERVER.md](docs/MCP_SERVER.md).
 
 ## Yerelde çalıştır
 

@@ -10,11 +10,13 @@
       content="A free, open-source network lab in your browser. Build and cable networks, configure them from a GUI or an IOS-style CLI, watch every packet in simulation mode, and learn with sample labs, troubleshooting exercises and design tasks."
     />
     <meta name="theme-color" content="#0369a1" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230369a1'/%3E%3Cpath d='M16 9v6M16 15l-7 7M16 15l7 7' stroke='%23e0f2fe' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='8' r='3.2' fill='%23fff'/%3E%3Ccircle cx='9' cy='23' r='3.2' fill='%23fff'/%3E%3Ccircle cx='23' cy='23' r='3.2' fill='%23fff'/%3E%3C/svg%3E"
-    />
+    <!-- Icons: public/favicon.svg is the source; `npm run pwa:icons` generates the PNGs and favicon.ico (docs/PWA.md).
+         <link rel="manifest"> is added by vite-plugin-pwa at build time (vite.config.ts). -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <meta name="apple-mobile-web-app-title" content="Octetlab" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
@@ -26,8 +28,21 @@
       content="Build, configure and simulate networks packet by packet. In your browser, free and open source. English and Turkish."
     />
     <meta property="og:url" content="https://octetlab.slovveis.workers.dev/" />
-    <!-- TODO: add og:image (1200x630 PNG) and twitter:image once a share image exists. -->
-    <meta name="twitter:card" content="summary" />
+    <!-- Share image: source docs/images/ogImage.svg, rendered to public/ogImage.png by `npm run og:image`. -->
+    <meta property="og:image" content="https://octetlab.slovveis.workers.dev/ogImage.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Octetlab — a network lab in your browser. A router, a switch and three PCs cabled together with green link lights."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://octetlab.slovveis.workers.dev/ogImage.png" />
+    <meta
+      name="twitter:image:alt"
+      content="Octetlab — a network lab in your browser. A router, a switch and three PCs cabled together with green link lights."
+    />
     <meta name="twitter:title" content="Octetlab" />
     <meta
       name="twitter:description"

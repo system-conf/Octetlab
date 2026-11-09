@@ -6,6 +6,9 @@ import { IllustratedIconDefs } from './catalog'
 import { initI18n } from './i18n'
 import { PreferencesProvider } from './preferences'
 import { StaleChunkRecovery } from './routing/StaleChunkRecovery'
+import AppUpdateToast from './features/app/AppUpdateToast'
+import { AppUpdateModel } from './pwa/AppUpdateModel'
+import { ServiceWorkerRegistrar } from './pwa/ServiceWorkerRegistrar'
 
 // A tab opened before a deploy may ask for chunks that no longer exist: reload once to get the new build.
 // Storage is read lazily: even touching window.sessionStorage can throw when site data is blocked.
@@ -14,6 +17,10 @@ const recoveryStorage = {
   setItem: (key: string, value: string) => window.sessionStorage.setItem(key, value),
 }
 new StaleChunkRecovery(recoveryStorage, () => window.location.reload()).listen(window)
+
+// Offline support and the "new version available" toast (docs/PWA.md).
+const appUpdate = new AppUpdateModel({ reload: () => window.location.reload() })
+new ServiceWorkerRegistrar(appUpdate).register()
 
 const rootElement = document.getElementById('root')
 if (rootElement === null) {
@@ -27,6 +34,7 @@ function renderApp(): void {
       <PreferencesProvider>
         <IllustratedIconDefs />
         <App />
+        <AppUpdateToast model={appUpdate} />
       </PreferencesProvider>
     </StrictMode>,
   )

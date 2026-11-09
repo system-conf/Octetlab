@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="title desc">
+  <!-- Source of public/ogImage.png (link preview on LinkedIn, X, …). Render: npm run og:image -->
+  <title id="title">Octetlab</title>
+  <desc id="desc">Octetlab — a network lab in your browser. A router, a switch and three PCs cabled together with green link lights.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#075985"/>
+      <stop offset="0.55" stop-color="#0c4a6e"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#e0f2fe" fill-opacity="0.10"/>
+    </pattern>
+    <pattern id="canvasGrid" x="652" y="68" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1.2" cy="1.2" r="1.2" fill="#cbd5e1"/>
+    </pattern>
+    <!-- Classic device gradients (src/catalog/icons/illustrated/classic/ClassicIconDefs.tsx) -->
+    <linearGradient id="blueTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6cb4f0"/>
+      <stop offset="1" stop-color="#3b8ad6"/>
+    </linearGradient>
+    <linearGradient id="blueSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1a5f9e"/>
+      <stop offset=".45" stop-color="#2b7cc4"/>
+      <stop offset="1" stop-color="#174f85"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5ba3e8"/>
+      <stop offset="1" stop-color="#1e4f91"/>
+    </linearGradient>
+    <linearGradient id="beige" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ece8dc"/>
+      <stop offset="1" stop-color="#cfc8b6"/>
+    </linearGradient>
+    <!-- Router mark: two arrows in, two out (classicShapes.tsx) -->
+    <g id="routerArrows" fill="#fff">
+      <g transform="rotate(-45) translate(6 0)"><path d="M0 -2.4 H9 V-6 L16 0 L9 6 V2.4 H0 Z"/></g>
+      <g transform="rotate(135) translate(6 0)"><path d="M0 -2.4 H9 V-6 L16 0 L9 6 V2.4 H0 Z"/></g>
+      <g transform="rotate(45) translate(22 0) rotate(180)"><path d="M0 -2.4 H9 V-6 L16 0 L9 6 V2.4 H0 Z"/></g>
+      <g transform="rotate(-135) translate(22 0) rotate(180)"><path d="M0 -2.4 H9 V-6 L16 0 L9 6 V2.4 H0 Z"/></g>
+    </g>
+    <!-- Classic PC, 64×64 (classicComputerArt.tsx) -->
+    <g id="pc">
+      <rect x="47" y="14" width="13" height="36" rx="1.5" fill="url(#beige)" stroke="#8a8371"/>
+      <line x1="49.5" y1="20" x2="57.5" y2="20" stroke="#8a8371"/><line x1="49.5" y1="24" x2="57.5" y2="24" stroke="#8a8371"/>
+      <circle cx="53.5" cy="44" r="1.6" fill="#22c55e"/>
+      <rect x="6" y="8" width="38" height="29" rx="2" fill="url(#beige)" stroke="#8a8371"/>
+      <rect x="9.5" y="11.5" width="31" height="21.5" fill="url(#screen)"/>
+      <polygon points="21,37 29,37 31,43 19,43" fill="#cfc8b6" stroke="#8a8371"/>
+      <rect x="15" y="43" width="20" height="3" rx="1" fill="#cfc8b6" stroke="#8a8371"/>
+      <polygon points="6,50 42,50 46,57 2,57" fill="#ddd7c8" stroke="#8a8371"/>
+    </g>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- Left: logo mark (same shape as the app icon), name, tagline -->
+  <g transform="translate(72 78) scale(0.75)">
+    <rect width="128" height="128" rx="28" fill="#0369a1" stroke="#7dd3fc" stroke-opacity="0.45" stroke-width="2.5"/>
+    <path d="M64 36v24M64 60l-28 28M64 60l28 28" stroke="#e0f2fe" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <circle cx="64" cy="32" r="13" fill="#fff"/>
+    <circle cx="36" cy="92" r="13" fill="#fff"/>
+    <circle cx="92" cy="92" r="13" fill="#fff"/>
+  </g>
+
+  <g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif">
+    <text x="66" y="290" font-size="100" font-weight="700" fill="#ffffff" letter-spacing="-2">Octetlab</text>
+    <text x="72" y="350" font-size="36" fill="#bae6fd">A network lab in your browser</text>
+    <g font-size="21" font-weight="600" fill="#e0f2fe">
+      <rect x="72" y="388" width="82" height="40" rx="20" fill="#ffffff" fill-opacity="0.10" stroke="#7dd3fc" stroke-opacity="0.45"/>
+      <text x="113" y="415" text-anchor="middle">Build</text>
+      <rect x="166" y="388" width="124" height="40" rx="20" fill="#ffffff" fill-opacity="0.10" stroke="#7dd3fc" stroke-opacity="0.45"/>
+      <text x="228" y="415" text-anchor="middle">Configure</text>
+      <rect x="302" y="388" width="116" height="40" rx="20" fill="#ffffff" fill-opacity="0.10" stroke="#7dd3fc" stroke-opacity="0.45"/>
+      <text x="360" y="415" text-anchor="middle">Simulate</text>
+      <rect x="430" y="388" width="88" height="40" rx="20" fill="#ffffff" fill-opacity="0.10" stroke="#7dd3fc" stroke-opacity="0.45"/>
+      <text x="474" y="415" text-anchor="middle">Learn</text>
+    </g>
+    <text x="72" y="512" font-size="22" fill="#7dd3fc">Free and open source · no install · English &amp; Türkçe</text>
+    <text x="72" y="552" font-size="22" font-weight="600" fill="#e0f2fe">octetlab.slovveis.workers.dev</text>
+  </g>
+
+  <!-- Right: a lab canvas card with a small cabled network -->
+  <rect x="646" y="66" width="502" height="514" rx="24" fill="#020617" fill-opacity="0.35"/>
+  <rect x="640" y="56" width="502" height="514" rx="24" fill="#f8fafc" stroke="#7dd3fc" stroke-opacity="0.5" stroke-width="2"/>
+  <rect x="640" y="56" width="502" height="514" rx="24" fill="url(#canvasGrid)"/>
+
+  <!-- cables (drawn first, the devices cover their ends) -->
+  <g stroke="#64748b" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M891 178 L891 296"/>
+    <path d="M866 318 L725 428"/>
+    <path d="M888 320 L885 428"/>
+    <path d="M910 318 L1045 428"/>
+  </g>
+  <!-- link lights at both ends of every cable -->
+  <g fill="#22c55e" stroke="#ffffff" stroke-width="2.5">
+    <circle cx="891" cy="200" r="7"/>
+    <circle cx="891" cy="262" r="7"/>
+    <circle cx="844" cy="341" r="7"/>
+    <circle cx="751" cy="408" r="7"/>
+    <circle cx="887" cy="344" r="7"/>
+    <circle cx="885" cy="406" r="7"/>
+    <circle cx="932" cy="341" r="7"/>
+    <circle cx="1019" cy="408" r="7"/>
+  </g>
+  <!-- packets in flight (ICMP violet, ARP amber) -->
+  <g stroke="#ffffff" stroke-width="3">
+    <circle cx="891" cy="231" r="10" fill="#7c3aed"/>
+    <circle cx="797" cy="373" r="10" fill="#d97706"/>
+  </g>
+
+  <!-- router (classic blue cylinder), 64×64 art scaled 1.75 -->
+  <g transform="translate(835 92) scale(1.75)">
+    <path d="M6 26 V40 A26 9 0 0 0 58 40 V26 Z" fill="url(#blueSide)" stroke="#0d3d66" stroke-width="1"/>
+    <ellipse cx="32" cy="26" rx="26" ry="9" fill="url(#blueTop)" stroke="#0d3d66" stroke-width="1"/>
+    <use href="#routerArrows" transform="translate(32 26) scale(1 .36)"/>
+  </g>
+
+  <!-- switch (classic blue box), 64×64 art scaled 1.75 -->
+  <g transform="translate(835 246) scale(1.75)">
+    <polygon points="14,18 58,18 50,30 6,30" fill="url(#blueTop)" stroke="#0d3d66"/>
+    <rect x="6" y="30" width="44" height="12" fill="#2272b8" stroke="#0d3d66"/>
+    <polygon points="50,30 58,18 58,30 50,42" fill="#155a94" stroke="#0d3d66"/>
+    <g transform="matrix(1 0 -0.667 1 0 0)" fill="#fff">
+      <path d="M30 20 H40 V18.4 L44 21 L40 23.6 V22 H30 Z"/>
+      <path d="M48 20 H58 V18.4 L62 21 L58 23.6 V22 H48 Z"/>
+      <path d="M46 26 H36 V24.4 L32 27 L36 29.6 V28 H46 Z"/>
+      <path d="M64 26 H54 V24.4 L50 27 L54 29.6 V28 H64 Z"/>
+    </g>
+    <g fill="#bfe0fb">
+      <circle cx="12" cy="36" r="1.3"/><circle cx="17" cy="36" r="1.3"/><circle cx="22" cy="36" r="1.3"/>
+      <circle cx="27" cy="36" r="1.3"/><circle cx="32" cy="36" r="1.3"/><circle cx="37" cy="36" r="1.3"/>
+    </g>
+  </g>
+
+  <!-- PCs, 64×64 art scaled 1.75 -->
+  <use href="#pc" transform="translate(681 410) scale(1.75)"/>
+  <use href="#pc" transform="translate(841 410) scale(1.75)"/>
+  <use href="#pc" transform="translate(1001 410) scale(1.75)"/>
+
+  <!-- device labels, as on the map -->
+  <g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#0f172a">
+    <text x="960" y="146" font-size="24" font-weight="700">R1</text>
+    <text x="960" y="172" font-size="17" fill="#475569" font-family="Menlo, Consolas, monospace">192.168.10.1</text>
+    <text x="960" y="306" font-size="24" font-weight="700">SW1</text>
+    <g font-size="22" font-weight="700" text-anchor="middle">
+      <text x="735" y="540">PC1</text>
+      <text x="895" y="540">PC2</text>
+      <text x="1055" y="540">PC3</text>
+    </g>
+  </g>
+</svg>

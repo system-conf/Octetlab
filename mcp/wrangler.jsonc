@@ -7,6 +7,9 @@
   "compatibility_date": "2026-11-01",
   // agents/mcp/server uses AsyncLocalStorage (node:async_hooks).
   "compatibility_flags": ["nodejs_compat"],
+  // Served at octetlabmcp.<subdomain>.workers.dev; per-version preview URLs are not used.
+  "workers_dev": true,
+  "preview_urls": false,
   "observability": { "enabled": true },
   "vars": {
     // Page of the web app that opens share links (`<APP_LAB_URL>#lab=…`).

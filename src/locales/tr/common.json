@@ -16,5 +16,12 @@
   },
   "opensInNewTab": "(yeni sekmede açılır)",
   "loading": "Yükleniyor…",
-  "home": "Ana sayfa"
+  "home": "Ana sayfa",
+  "appUpdate": {
+    "ready": "Yeni sürüm hazır",
+    "reload": "Yenile",
+    "reloading": "Yenileniyor…",
+    "dismiss": "Kapat: yeni sürüm bir sonraki açılışta kullanılır",
+    "failed": "Yeni sürüm başlatılamadı. Tüm Octetlab sekmelerini kapatıp yeniden aç."
+  }
 }

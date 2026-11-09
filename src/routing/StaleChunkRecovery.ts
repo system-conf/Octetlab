@@ -1,6 +1,9 @@
 // After a new deploy the old hashed chunks are gone. A tab opened before the deploy then fails to
 // lazy-load a screen (Vite fires 'vite:preloadError'). Reloading once fetches the new index.html and
 // its new chunks. A time guard in sessionStorage stops a reload loop when a chunk is really missing.
+// With the service worker (docs/PWA.md) an open tab keeps its chunks in the precache until the user
+// reloads into the new version, so this is the fallback: no service worker (first visit, blocked,
+// unsupported) or the new version was activated from another tab.
 
 const STORAGE_KEY = 'agArizaLab.staleChunkReloadAt'
 /** Do not reload again within this many ms of the last recovery reload. */
