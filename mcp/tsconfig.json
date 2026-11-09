@@ -1,0 +1,33 @@
+{
+  // Type-check of the MCP Worker (docs/MCP_SERVER.md). It deep-imports Octetlab's pure modules from
+  // ../src, which are written against the DOM lib like the web app; the Worker bindings it uses are
+  // declared in src/platform/WorkerBindings.ts. Bundling is done by wrangler, not tsc.
+  "compilerOptions": {
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.mcp.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    // vite/client: CSS imports of the web app's .tsx files that tsc reads (see "jsx" below).
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    // Type-only imports of the samples contract reach React components in tsc's file graph (never in
+    // the bundle: wrangler drops type imports), so tsc must be able to read .tsx files.
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "erasableSyntaxOnly": true
+  },
+  "include": ["src"]
+}

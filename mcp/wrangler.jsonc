@@ -1,0 +1,31 @@
+// Octetlab MCP server (docs/MCP_SERVER.md): a separate Worker next to the web app's static assets.
+// Name must be lowercase: Cloudflare requirement. Paths are relative to this file.
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "octetlabmcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  // agents/mcp/server uses AsyncLocalStorage (node:async_hooks).
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": {
+    // Page of the web app that opens share links (`<APP_LAB_URL>#lab=…`).
+    "APP_LAB_URL": "https://octetlab.slovveis.workers.dev/lab"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "LABS",
+      // Namespace "octetlabmcp_labs" (an identifier, not a secret). `wrangler dev` uses a local
+      // simulated namespace instead.
+      "id": "c61b693ecc5146a8b87a2b3388435640"
+    }
+  ],
+  "ratelimits": [
+    {
+      // Requests to /mcp per client IP. namespace_id: any positive integer unique in the account.
+      "name": "MCP_RATE_LIMITER",
+      "namespace_id": "4501",
+      "simple": { "limit": 60, "period": 60 }
+    }
+  ]
+}

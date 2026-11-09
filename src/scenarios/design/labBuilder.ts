@@ -13,7 +13,11 @@ import type {
   NetworkState,
   PlainCableType,
 } from '../../domain'
-import { findDeviceModel, PortFactory, SeededBaseMacSource } from '../../catalog'
+// Deep imports, not the '../../catalog' barrel: samples use this builder and the MCP Worker (mcp/)
+// bundles samples, so it must not pull the barrel's React icon components.
+import { SeededBaseMacSource } from '../../catalog/BaseMacSource'
+import { findDeviceModel } from '../../catalog/DeviceCatalog'
+import { PortFactory } from '../../catalog/PortFactory'
 import type { DeviceChange } from './deviceSetup'
 
 /** One end of a cable: [device id, port id]. */
