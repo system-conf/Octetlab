@@ -13,19 +13,24 @@ interface ModelDetailCardProps {
   onToggleFavourite: (modelId: string) => void
   /** Design (D2): price text (design brief with a budget). */
   price?: string
+  /** A scrolling column at the end of the bottom bar, instead of sticking to the bottom of a scrolling palette. */
+  beside?: boolean
 }
+
+const STICKY = 'sticky bottom-0 -mx-3 -mb-3 border-t bg-surface/95 backdrop-blur'
+const BESIDE = 'h-full overflow-y-auto border-s bg-surface'
 
 /**
  * Details of the model under the pointer or keyboard focus: port summary, short description,
  * "when to use it" and the favourite star. Sticks to the bottom of the palette while it scrolls.
  */
-function ModelDetailCard({ model, text, favourite, onToggleFavourite, price }: ModelDetailCardProps) {
+function ModelDetailCard({ model, text, favourite, onToggleFavourite, price, beside = false }: ModelDetailCardProps) {
   const { t } = useTranslation('workspace')
   return (
     <section
       aria-label={t('palette.details')}
       // The pointer hint means nothing on touch screens (a tap adds the device): wide screens only.
-      className={`sticky bottom-0 -mx-3 -mb-3 ${model === null ? 'hidden md:block' : ''} border-t border-border bg-surface/95 px-3 py-2 text-xs text-fg-muted backdrop-blur`}
+      className={`${beside ? BESIDE : STICKY} ${model === null ? 'hidden md:block' : ''} border-border px-3 py-2 text-xs text-fg-muted`}
     >
       {model === null || text === undefined ? (
         <p>{t('palette.detailsHint')}</p>

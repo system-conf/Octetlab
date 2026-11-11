@@ -35,6 +35,12 @@
     "highContrast": {
       "label": "High contrast",
       "hint": "Stronger text and border colours."
+    },
+    "paletteLayout": {
+      "label": "Device list",
+      "hint": "Where the device list sits in the workspace. Applies on screens 768 px and wider; on phones the list always opens from the bottom.",
+      "sidebar": "On the left",
+      "bottomBar": "At the bottom (like Packet Tracer)"
     }
   },
   "map": {

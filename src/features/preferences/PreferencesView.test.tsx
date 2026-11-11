@@ -2,6 +2,7 @@ import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { PreferencesProvider, PreferencesStore } from '../../preferences'
 import { memoryStorage } from '../../preferences/testStorage'
+import AppearanceSection from './sections/AppearanceSection'
 import MapSection from './sections/MapSection'
 import SimulationSection from './sections/SimulationSection'
 import TerminalSection from './sections/TerminalSection'
@@ -43,6 +44,16 @@ describe('PreferencesView', () => {
     for (const style of ['simple', 'classic', 'realistic']) expect(html).toContain(`data-device-style-preview="${style}"`)
     expect(html.match(/data-device-style="classic"/g)).toHaveLength(3)
     expect(html.match(/data-device-style="realistic"/g)).toHaveLength(3)
+  })
+
+  it('offers the device list layouts with a schematic preview each', () => {
+    const store = new PreferencesStore(memoryStorage())
+    expect(render(store, <AppearanceSection />)).toMatch(/checked="" value="sidebar"/)
+    store.update({ appearance: { paletteLayout: 'bottomBar' } })
+    const html = render(store, <AppearanceSection />)
+    expect(html).toMatch(/checked="" value="bottomBar"/)
+    expect(html).not.toMatch(/checked="" value="sidebar"/)
+    for (const layout of ['sidebar', 'bottomBar']) expect(html).toContain(`data-palette-layout-preview="${layout}"`)
   })
 
   it('shows the start mode and the starting event filters', () => {

@@ -21,6 +21,8 @@ interface ModelTileGridProps {
   onHighlight: (modelId: string) => void
   /** Design (D2): price text under the name (design brief with a budget). */
   priceLabelOf?: (modelId: string) => string | undefined
+  /** One horizontal row (bottom bar; tiles carry a tooltip) instead of the grid (sidebar, drawer). */
+  row?: boolean
 }
 
 /** Number of columns the grid is laid out in right now (from the computed CSS grid). */
@@ -34,7 +36,7 @@ function columnsOf(list: HTMLElement | null): number {
  * keys move between tiles, Home / End jump, Enter / Space add the focused model. On touch screens a
  * tap adds the model and a long-press shows its details card instead.
  */
-function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlight, priceLabelOf }: ModelTileGridProps) {
+function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlight, priceLabelOf, row = false }: ModelTileGridProps) {
   const { t } = useTranslation('workspace')
   const listRef = useRef<HTMLUListElement>(null)
   const [focusIndex, setFocusIndex] = useState(0)
@@ -47,7 +49,9 @@ function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlig
     if (!isGridKey(event.key)) return
     event.preventDefault()
     const rtl = listRef.current !== null && getComputedStyle(listRef.current).direction === 'rtl'
-    const next = GridNavigation.next(current, event.key, models.length, columnsOf(listRef.current), rtl)
+    // A row is one line of tiles: every tile is a column (Up / Down stay put).
+    const columns = row ? models.length : columnsOf(listRef.current)
+    const next = GridNavigation.next(current, event.key, models.length, columns, rtl)
     setFocusIndex(next)
     listRef.current?.querySelectorAll<HTMLButtonElement>('[data-palette-tile]')[next]?.focus()
   }
@@ -62,7 +66,7 @@ function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlig
   }
 
   return (
-    <ul ref={listRef} onKeyDown={handleKeyDown} className="grid grid-cols-3 gap-1 md:grid-cols-2">
+    <ul ref={listRef} onKeyDown={handleKeyDown} className={row ? 'flex gap-1' : 'grid grid-cols-3 gap-1 md:grid-cols-2'}>
       {models.map((model, index) => {
         const text = textOf(model.id)
         const name = text?.name ?? model.id
@@ -70,7 +74,7 @@ function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlig
         const describedBy = `${describedByPrefix}-${model.id}`
         const price = priceLabelOf?.(model.id)
         return (
-          <li key={model.id} className="relative">
+          <li key={model.id} className={row ? 'relative w-20 shrink-0' : 'relative'}>
             <button
               type="button"
               data-palette-tile
@@ -89,7 +93,8 @@ function ModelTileGrid({ models, textOf, favourites, onAdd, onDropped, onHighlig
               onMouseEnter={() => onHighlight(model.id)}
               aria-label={t('palette.add', { name })}
               aria-describedby={describedBy}
-              className={`flex h-full w-full cursor-grab flex-col items-center gap-1 rounded-lg border border-transparent p-2 text-center text-xs leading-tight text-fg select-none [-webkit-touch-callout:none] hover:border-sky-200 dark:hover:border-sky-800 hover:bg-accent-muted active:cursor-grabbing ${focusRing}`}
+              title={row && text !== undefined ? `${name}\n${text.ports}` : undefined}
+              className={`flex h-full w-full cursor-grab flex-col items-center gap-1 rounded-lg border border-transparent ${row ? 'p-1.5' : 'p-2'} text-center text-xs leading-tight text-fg select-none [-webkit-touch-callout:none] hover:border-sky-200 dark:hover:border-sky-800 hover:bg-accent-muted active:cursor-grabbing ${focusRing}`}
             >
               {deviceStyle === 'simple' ? (
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface shadow-sm">

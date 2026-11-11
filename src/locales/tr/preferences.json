@@ -35,6 +35,12 @@
     "highContrast": {
       "label": "Yüksek karşıtlık",
       "hint": "Yazı ve kenarlık renklerini belirginleştirir."
+    },
+    "paletteLayout": {
+      "label": "Cihaz listesi",
+      "hint": "Çalışma alanında cihaz listesinin yeri. 768 px ve daha geniş ekranlarda geçerli; telefonda liste her zaman alttan açılır.",
+      "sidebar": "Solda",
+      "bottomBar": "Altta (Packet Tracer gibi)"
     }
   },
   "map": {

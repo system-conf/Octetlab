@@ -22,6 +22,8 @@ import type { WorkspaceCommand } from './keyboard/ShortcutResolver'
 import { useWorkspaceKeyboard } from './keyboard/useWorkspaceKeyboard'
 import { deviceCatalog, hasTerminal, labEditor, type ExerciseLockPolicy, type LabDocumentState } from './labServices'
 import DevicePalette from './palette/DevicePalette'
+import type { PaletteProps } from './palette/paletteProps'
+import WorkspacePaletteSlot from './palette/WorkspacePaletteSlot'
 import DeviceTabs from './panels/DeviceTabs'
 import PropertiesPanel from './panels/PropertiesPanel'
 // PU (Preferences): CLI as the default device tab.
@@ -185,6 +187,8 @@ function WorkspaceView(props: WorkspaceViewProps) {
     snapToGrid,
   )
 
+  // Device palette: sidebar or bottom bar on wide screens (Preferences), drawer on phones.
+  const paletteProps: PaletteProps = { models: paletteModels, priceLabelOf, onAdd: addModel, onChooseCable: chooseCableFromPalette, activeCable: cable.state.tool }
   const menu = cable.state.portMenu
   const menuDevice = menu ? doc.state.devices.find((device) => device.id === menu.deviceId) : undefined
   const step = cable.state.step
@@ -249,14 +253,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
       />
       {banner}
       <div className="relative flex min-h-0 flex-1">
-        {editable && (
-          <aside aria-labelledby="palette-heading" className="hidden w-56 shrink-0 overflow-y-auto border-e border-border bg-surface p-3 md:block">
-            <h2 id="palette-heading" className="mb-2 text-sm font-semibold text-fg-strong">
-              {t('palette.title')}
-            </h2>
-            <DevicePalette models={paletteModels} priceLabelOf={priceLabelOf} onAdd={addModel} onChooseCable={chooseCableFromPalette} activeCable={cable.state.tool} />
-          </aside>
-        )}
+        {editable && <WorkspacePaletteSlot atBottom={false} {...paletteProps} />}
         <main className="flex min-w-0 flex-1 flex-col">
           {/* Simulation (U3): the mode switch sits at the end of the canvas toolbar. */}
           <div className="flex min-w-0">
@@ -344,6 +341,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
               <SimulationPanel simulation={simulation} nameOf={nameOf} />
             </Suspense>
           )}
+          {editable && <WorkspacePaletteSlot atBottom {...paletteProps} />}
         </main>
         {/* Design (D2): the brief panel */}
         {props.sidePanel}
@@ -381,7 +379,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
-            <DevicePalette models={paletteModels} priceLabelOf={priceLabelOf} onAdd={addModel} onChooseCable={chooseCableFromPalette} activeCable={cable.state.tool} />
+            <DevicePalette {...paletteProps} />
           </div>
         )}
         {shortcutsOpen && <ShortcutsHelp onClose={() => setShortcutsOpen(false)} />}

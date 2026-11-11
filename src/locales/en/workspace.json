@@ -21,6 +21,15 @@
       "favourites": "Favourites",
       "recent": "Recent"
     },
+    "shortSections": {
+      "network": "Network",
+      "endDevices": "End",
+      "iot": "IoT",
+      "misc": "Other",
+      "cables": "Cables",
+      "favourites": "Starred",
+      "recent": "Recent"
+    },
     "subcategoriesLabel": "Sub-categories",
     "all": "All",
     "search": "Search devices",

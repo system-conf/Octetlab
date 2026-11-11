@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { HISTORY_SIZE } from '../cli/core/CliHistory'
 import { FILTER_PROTOCOLS } from '../features/simulation/model/EventFilters'
-import { DEFAULT_PREFERENCES, DEVICE_STYLES, EVENT_FILTER_PROTOCOLS, preferencesSchema } from './preferencesModel'
+import { DEFAULT_PREFERENCES, DEVICE_STYLES, EVENT_FILTER_PROTOCOLS, PALETTE_LAYOUTS, preferencesSchema } from './preferencesModel'
 
 describe('preferences model', () => {
   it('has defaults the strict schema accepts', () => {
@@ -33,6 +33,16 @@ describe('preferences model', () => {
       expect(preferencesSchema.safeParse(record).success).toBe(true)
     }
     const bad = { ...DEFAULT_PREFERENCES, map: { ...DEFAULT_PREFERENCES.map, deviceStyle: 'cartoon' } }
+    expect(preferencesSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('keeps the device palette in the sidebar by default and accepts only the two layouts', () => {
+    expect(DEFAULT_PREFERENCES.appearance.paletteLayout).toBe('sidebar')
+    for (const paletteLayout of PALETTE_LAYOUTS) {
+      const record = { ...DEFAULT_PREFERENCES, appearance: { ...DEFAULT_PREFERENCES.appearance, paletteLayout } }
+      expect(preferencesSchema.safeParse(record).success).toBe(true)
+    }
+    const bad = { ...DEFAULT_PREFERENCES, appearance: { ...DEFAULT_PREFERENCES.appearance, paletteLayout: 'top' } }
     expect(preferencesSchema.safeParse(bad).success).toBe(false)
   })
 })

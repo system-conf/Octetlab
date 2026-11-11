@@ -50,6 +50,15 @@ describe('PreferencesCodec', () => {
     expect(ignored).toEqual(['map.deviceStyle'])
   })
 
+  it('stores, reads back and leniently drops the palette layout', () => {
+    const changed = PreferencesCodec.apply(DEFAULT_PREFERENCES, { appearance: { paletteLayout: 'bottomBar' } })
+    expect(JSON.parse(PreferencesCodec.toStored(changed))).toEqual({ version: PREFERENCES_VERSION, appearance: { paletteLayout: 'bottomBar' } })
+    expect(PreferencesCodec.parseStored(PreferencesCodec.toStored(changed)).preferences.appearance.paletteLayout).toBe('bottomBar')
+    const { preferences, ignored } = PreferencesCodec.parse({ version: PREFERENCES_VERSION, appearance: { paletteLayout: 'floating', theme: 'dark' } })
+    expect(preferences.appearance).toEqual({ ...DEFAULT_PREFERENCES.appearance, theme: 'dark' })
+    expect(ignored).toEqual(['appearance.paletteLayout'])
+  })
+
   it('round-trips through the stored text', () => {
     const changed = PreferencesCodec.apply(DEFAULT_PREFERENCES, { appearance: { theme: 'system', highContrast: true } })
     expect(PreferencesCodec.parseStored(PreferencesCodec.toStored(changed)).preferences).toEqual(changed)

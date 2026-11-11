@@ -21,6 +21,15 @@
       "favourites": "Favoriler",
       "recent": "Son kullanılanlar"
     },
+    "shortSections": {
+      "network": "Ağ",
+      "endDevices": "Uç cihaz",
+      "iot": "IoT",
+      "misc": "Diğer",
+      "cables": "Kablo",
+      "favourites": "Favori",
+      "recent": "Geçmiş"
+    },
     "subcategoriesLabel": "Alt kategoriler",
     "all": "Tümü",
     "search": "Cihaz ara",

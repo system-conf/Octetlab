@@ -11,6 +11,8 @@ export const THEMES = ['light', 'dark', 'system'] as const
 export const DENSITIES = ['comfortable', 'compact'] as const
 /** Root font size multipliers offered by the Preferences screen (1 = the browser's size). */
 export const FONT_SCALES = [0.875, 1, 1.125, 1.25, 1.5] as const
+/** Where the workspace's device palette sits on wide screens: left sidebar, or a bar under the canvas (Packet Tracer style). */
+export const PALETTE_LAYOUTS = ['sidebar', 'bottomBar'] as const
 export const DEVICE_LABEL_MODES = ['name', 'model', 'both', 'none'] as const
 export const PORT_LABEL_MODES = ['always', 'hover', 'never'] as const
 /** Look of the devices (docs/DEVICE_STYLES.md): today's framed line icons, or illustrated pictures. */
@@ -41,6 +43,7 @@ export const PREFERENCE_FIELDS = {
     fontScale: oneOf(FONT_SCALES),
     density: z.enum(DENSITIES),
     highContrast: z.boolean(),
+    paletteLayout: z.enum(PALETTE_LAYOUTS),
   },
   map: {
     deviceLabels: z.enum(DEVICE_LABEL_MODES),
@@ -85,6 +88,7 @@ export type PreferenceSection = keyof Preferences
 export type AppearancePreferences = Preferences['appearance']
 export type Theme = AppearancePreferences['theme']
 export type Density = AppearancePreferences['density']
+export type PaletteLayout = AppearancePreferences['paletteLayout']
 export type DeviceStyle = Preferences['map']['deviceStyle']
 
 /** 'section.field', e.g. 'map.snap'. */
@@ -106,7 +110,7 @@ export type PreferencesPatch = { readonly [S in PreferenceSection]?: Partial<Pre
 
 /** Today's behaviour (see the "wired" list in docs/PREFERENCES.md before changing a default). */
 export const DEFAULT_PREFERENCES: Preferences = {
-  appearance: { theme: 'light', fontScale: 1, density: 'comfortable', highContrast: false },
+  appearance: { theme: 'light', fontScale: 1, density: 'comfortable', highContrast: false, paletteLayout: 'sidebar' },
   map: { deviceLabels: 'name', portLabels: 'always', linkLights: true, grid: true, snap: false, minimap: true, deviceStyle: 'simple' },
   simulation: { animation: true, speed: 1, defaultMode: 'realtime', defaultEventFilters: EVENT_FILTER_PROTOCOLS },
   terminal: { cliDefaultForNetworkDevices: false, fontSize: 13, historyLength: 10 },
