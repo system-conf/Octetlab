@@ -28,5 +28,59 @@
     "invalidHostAddress": "The IP address cannot be used on this subnet",
     "ttlExpired": "TTL expired in transit (routing loop)"
   },
-  "saved": "Saved"
+  "saved": "Saved",
+  "physical": {
+    "panelLabel": "Front panel of {{device}}",
+    "summary": {
+      "ports_one": "{{count}} port",
+      "ports_other": "{{count}} ports",
+      "attached_one": "{{count}} connected",
+      "attached_other": "{{count}} connected"
+    },
+    "off": "The device is off",
+    "offHint": "The device is off: press the power button to turn it on",
+    "print": {
+      "power": "PWR",
+      "powerButton": "POWER",
+      "console": "CONSOLE"
+    },
+    "powerButton": {
+      "turnOn": "Power button: turn the device on",
+      "turnOff": "Power button: turn the device off",
+      "locked": "The power button is locked in this exercise"
+    },
+    "condition": {
+      "deviceOff": "Device off",
+      "adminDown": "Shut down",
+      "up": "Up",
+      "noLink": "No link",
+      "unplugged": "Cable unplugged",
+      "empty": "Empty"
+    },
+    "detail": {
+      "vlan": "VLAN {{vlan}}",
+      "trunk": "Trunk",
+      "hidden": "Settings hidden"
+    },
+    "peer": "{{device}} {{port}}",
+    "morePeers_one": "+{{count}} device",
+    "morePeers_other": "+{{count}} devices",
+    "legend": {
+      "up": "Link up (green light)",
+      "dark": "No link / empty",
+      "console": "Console port",
+      "plug": "Plug: {{cable}}"
+    },
+    "table": {
+      "port": "Port",
+      "status": "Status",
+      "detail": "IP / VLAN",
+      "peer": "Connected device",
+      "none": "—",
+      "showAll_one": "Also show the empty port ({{count}})",
+      "showAll_other": "Also show the empty ports ({{count}})",
+      "showUsed": "Show only the ports in use",
+      "noneInUse": "No cable is plugged into any port yet."
+    }
+  }
 }

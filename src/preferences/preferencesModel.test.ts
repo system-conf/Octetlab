@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { HISTORY_SIZE } from '../cli/core/CliHistory'
 import { FILTER_PROTOCOLS } from '../features/simulation/model/EventFilters'
-import { DEFAULT_PREFERENCES, DEVICE_STYLES, EVENT_FILTER_PROTOCOLS, PALETTE_LAYOUTS, preferencesSchema } from './preferencesModel'
+import { DEFAULT_PREFERENCES, DEVICE_DETAILS_MODES, DEVICE_STYLES, EVENT_FILTER_PROTOCOLS, PALETTE_LAYOUTS, preferencesSchema } from './preferencesModel'
 
 describe('preferences model', () => {
   it('has defaults the strict schema accepts', () => {
@@ -43,6 +43,16 @@ describe('preferences model', () => {
       expect(preferencesSchema.safeParse(record).success).toBe(true)
     }
     const bad = { ...DEFAULT_PREFERENCES, appearance: { ...DEFAULT_PREFERENCES.appearance, paletteLayout: 'top' } }
+    expect(preferencesSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('opens device details in the right panel by default and accepts only panel or window', () => {
+    expect(DEFAULT_PREFERENCES.appearance.deviceDetails).toBe('panel')
+    for (const deviceDetails of DEVICE_DETAILS_MODES) {
+      const record = { ...DEFAULT_PREFERENCES, appearance: { ...DEFAULT_PREFERENCES.appearance, deviceDetails } }
+      expect(preferencesSchema.safeParse(record).success).toBe(true)
+    }
+    const bad = { ...DEFAULT_PREFERENCES, appearance: { ...DEFAULT_PREFERENCES.appearance, deviceDetails: 'tab' } }
     expect(preferencesSchema.safeParse(bad).success).toBe(false)
   })
 })

@@ -13,6 +13,8 @@ export const DENSITIES = ['comfortable', 'compact'] as const
 export const FONT_SCALES = [0.875, 1, 1.125, 1.25, 1.5] as const
 /** Where the workspace's device palette sits on wide screens: left sidebar, or a bar under the canvas (Packet Tracer style). */
 export const PALETTE_LAYOUTS = ['sidebar', 'bottomBar'] as const
+/** Where a device's tabs open on wide screens: the right properties panel, or floating windows (Packet Tracer style). */
+export const DEVICE_DETAILS_MODES = ['panel', 'window'] as const
 export const DEVICE_LABEL_MODES = ['name', 'model', 'both', 'none'] as const
 export const PORT_LABEL_MODES = ['always', 'hover', 'never'] as const
 /** Look of the devices (docs/DEVICE_STYLES.md): today's framed line icons, or illustrated pictures. */
@@ -44,6 +46,7 @@ export const PREFERENCE_FIELDS = {
     density: z.enum(DENSITIES),
     highContrast: z.boolean(),
     paletteLayout: z.enum(PALETTE_LAYOUTS),
+    deviceDetails: z.enum(DEVICE_DETAILS_MODES),
   },
   map: {
     deviceLabels: z.enum(DEVICE_LABEL_MODES),
@@ -89,6 +92,7 @@ export type AppearancePreferences = Preferences['appearance']
 export type Theme = AppearancePreferences['theme']
 export type Density = AppearancePreferences['density']
 export type PaletteLayout = AppearancePreferences['paletteLayout']
+export type DeviceDetailsMode = AppearancePreferences['deviceDetails']
 export type DeviceStyle = Preferences['map']['deviceStyle']
 
 /** 'section.field', e.g. 'map.snap'. */
@@ -110,7 +114,7 @@ export type PreferencesPatch = { readonly [S in PreferenceSection]?: Partial<Pre
 
 /** Today's behaviour (see the "wired" list in docs/PREFERENCES.md before changing a default). */
 export const DEFAULT_PREFERENCES: Preferences = {
-  appearance: { theme: 'light', fontScale: 1, density: 'comfortable', highContrast: false, paletteLayout: 'sidebar' },
+  appearance: { theme: 'light', fontScale: 1, density: 'comfortable', highContrast: false, paletteLayout: 'sidebar', deviceDetails: 'panel' },
   map: { deviceLabels: 'name', portLabels: 'always', linkLights: true, grid: true, snap: false, minimap: true, deviceStyle: 'simple' },
   simulation: { animation: true, speed: 1, defaultMode: 'realtime', defaultEventFilters: EVENT_FILTER_PROTOCOLS },
   terminal: { cliDefaultForNetworkDevices: false, fontSize: 13, historyLength: 10 },

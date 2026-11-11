@@ -7,6 +7,7 @@ import { CliDevicePanel } from '../../cli'
 import AppLinkStatusList from '../../device/AppLinkStatusList'
 import TerminalTab from '../../device/TerminalTab'
 import { DeviceConfigPanel, DeviceInfoPanel } from '../../deviceConfig'
+import { PhysicalTab } from '../../devicePanel'
 import { focusRing } from '../../shared/focusRing'
 import { appLinkStatusOf, type ExerciseLockPolicy } from '../labServices'
 import { availableDeviceTabs, type DeviceTab } from './deviceTabModel'
@@ -33,7 +34,7 @@ interface DeviceTabsProps {
   terminal: DeviceTerminalProps | null
 }
 
-/** Info / Settings / Terminal of the selected device (accessible tab pattern, arrow keys move). */
+/** Physical / Info / Settings / Terminal of the selected device (accessible tab pattern, arrow keys move). */
 function DeviceTabs(props: DeviceTabsProps) {
   const { device, state, policy, tab, onTab, terminal } = props
   const { t } = useTranslation(['workspace', 'device', 'cli'])
@@ -58,7 +59,10 @@ function DeviceTabs(props: DeviceTabsProps) {
   }
 
   let panel
-  if (active === 'settings') {
+  if (active === 'physical') {
+    // Front panel; its power switch goes through onUpdate like the Settings tab's power button.
+    panel = <PhysicalTab key={device.id} device={device} state={state} policy={policy} onUpdate={props.onUpdate} />
+  } else if (active === 'settings') {
     panel = (
       <DeviceConfigPanel
         device={device}

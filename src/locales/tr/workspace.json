@@ -197,6 +197,7 @@
     "shape": "Şekil",
     "tabsLabel": "Cihaz görünümleri",
     "tabs": {
+      "physical": "Fiziksel",
       "info": "Bilgi",
       "settings": "Ayarlar",
       "terminal": "Terminal"
@@ -250,6 +251,17 @@
       "del": "Del",
       "esc": "Esc"
     }
+  },
+  "windows": {
+    "minimise": "{{name}} penceresini küçült",
+    "minimiseShort": "Küçült",
+    "close": "{{name}} penceresini kapat",
+    "closeShort": "Kapat",
+    "restore": "{{name}} penceresini geri aç",
+    "dock": "Küçültülmüş pencereler",
+    "openDevice": "{{name}} penceresini aç",
+    "openHint": "Çift tıkla ya da Enter'a bas",
+    "notes": "Laboratuvar notları"
   },
   "recentDialog": {
     "close": "Kapat",

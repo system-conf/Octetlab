@@ -36,6 +36,8 @@ interface WorkspaceCanvasProps {
   /** A palette model was dropped at `point` (flow coordinates). */
   onDropModel: (modelId: string, point: CanvasPoint) => void
   onDeviceClick: (deviceId: string) => void
+  /** A device was double-clicked (window mode opens its window); absent: nothing happens. */
+  onDeviceOpen?: (deviceId: string) => void
   cableActive: boolean
   cableHighlight: (deviceId: string) => CableHighlight
   /** Finished drags land on the grid (the drag itself stays free); arrow keys move by grid steps. */
@@ -68,6 +70,7 @@ function WorkspaceCanvas({
   onCommitMoves,
   onDropModel,
   onDeviceClick,
+  onDeviceOpen,
   cableActive,
   cableHighlight,
   snapToGrid,
@@ -88,9 +91,9 @@ function WorkspaceCanvas({
   const [showMinimap] = usePreference('map.minimap')
   // The handlers below stay the same functions for the whole life of the canvas (a new handler would
   // re-render every node wrapper of React Flow); they read the latest props from here.
-  const latest = useRef({ doc, snapToGrid, onCommitMoves, onSelectionChange, onDeviceClick })
+  const latest = useRef({ doc, snapToGrid, onCommitMoves, onSelectionChange, onDeviceClick, onDeviceOpen })
   useLayoutEffect(() => {
-    latest.current = { doc, snapToGrid, onCommitMoves, onSelectionChange, onDeviceClick }
+    latest.current = { doc, snapToGrid, onCommitMoves, onSelectionChange, onDeviceClick, onDeviceOpen }
   })
   /** Nodes being dragged (a position change without `dragging` after them ends a drag). */
   const draggingIds = useRef(new Set<string>())
@@ -164,6 +167,10 @@ function WorkspaceCanvas({
     if (node.type === 'device') latest.current.onDeviceClick(node.id)
   }, [])
 
+  const handleNodeDoubleClick = useCallback<NodeMouseHandler<WorkspaceNode>>((_event, node) => {
+    if (node.type === 'device') latest.current.onDeviceOpen?.(node.id)
+  }, [])
+
   function handleDragOver(event: DragEvent<HTMLDivElement>) {
     if (!event.dataTransfer.types.includes(MODEL_DRAG_TYPE)) return
     event.preventDefault()
@@ -196,6 +203,7 @@ function WorkspaceCanvas({
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
         onNodeClick={handleNodeClick}
+        onNodeDoubleClick={handleNodeDoubleClick}
         onMoveStart={motion.onMoveStart}
         onMoveEnd={motion.onMoveEnd}
         onlyRenderVisibleElements={nodes.length >= VISIBLE_ONLY_FROM}

@@ -38,9 +38,15 @@
     },
     "paletteLayout": {
       "label": "Cihaz listesi",
-      "hint": "Çalışma alanında cihaz listesinin yeri. 768 px ve daha geniş ekranlarda geçerli; telefonda liste her zaman alttan açılır.",
+      "hint": "Çalışma alanında cihaz listesinin yeri. Geniş ekranlarda geçerli; telefonda liste her zaman alttan açılır.",
       "sidebar": "Solda",
       "bottomBar": "Altta (Packet Tracer gibi)"
+    },
+    "deviceDetails": {
+      "label": "Cihaz ayrıntıları",
+      "hint": "Ayrı pencerede: haritada bir cihaza çift tıkla ya da Enter'a bas; pencereler taşınır, büyütülür, küçültülür, aynı anda birkaçı açık kalabilir. Geniş ekranlarda geçerli; telefonda ayrıntılar her zaman alttan açılır.",
+      "panel": "Sağ panelde",
+      "window": "Ayrı pencerede (Packet Tracer gibi)"
     }
   },
   "map": {

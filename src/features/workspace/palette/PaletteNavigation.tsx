@@ -22,7 +22,7 @@ interface PaletteSectionBarProps {
   /** null while a search shows results from every section. */
   current: PaletteView | null
   onSelect: (view: PaletteView) => void
-  /** Bottom bar: a grid of icons with a short name under each (default: a row of icons only). */
+  /** Bottom bar: one row of equal cells, an icon with a short name under each (default: a row of icons only). */
   labelled?: boolean
 }
 
@@ -34,7 +34,7 @@ export function PaletteSectionBar({ views, current, onSelect, labelled = false }
     <div
       role="group"
       aria-label={t('palette.sectionsLabel')}
-      className={labelled ? 'grid grid-cols-4 gap-0.5' : 'flex flex-wrap justify-between gap-0.5'}
+      className={labelled ? 'grid auto-cols-fr grid-flow-col gap-0.5' : 'flex flex-wrap justify-between gap-0.5'}
     >
       {views.map((view) => {
         const Icon = VIEW_ICONS[view]

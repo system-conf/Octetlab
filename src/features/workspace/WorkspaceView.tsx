@@ -3,6 +3,7 @@ import { LayoutGrid, X } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CableTool, Device, DeviceModel } from '../../domain'
+import { usePreference } from '../../preferences'
 import { focusRing } from '../shared/focusRing'
 import { useMediaQuery } from '../shared/useMediaQuery'
 import { SimplePduHint, SimulationToolbar, useSimulation } from '../simulation'
@@ -27,7 +28,7 @@ import WorkspacePaletteSlot from './palette/WorkspacePaletteSlot'
 import DeviceTabs from './panels/DeviceTabs'
 import PropertiesPanel from './panels/PropertiesPanel'
 // PU (Preferences): CLI as the default device tab.
-import { showsConsole } from './panels/deviceTabModel'
+import { showsConsole, type DeviceTab } from './panels/deviceTabModel'
 import { useDeviceTabState } from './panels/useDeviceTabState'
 import ShortcutsHelp from './panels/ShortcutsHelp'
 import { useDeviceTerminals } from './terminal/useDeviceTerminals'
@@ -35,6 +36,9 @@ import ToastRegion from './ToastRegion'
 import { useDeviceEditing } from './useDeviceEditing'
 import type { ToastControls } from './useToasts'
 import { useWorkspaceActions } from './useWorkspaceActions'
+import DeviceWindowLayer from './windows/DeviceWindowLayer'
+import { useDeviceWindows } from './windows/useDeviceWindows'
+import WindowModeProperties, { type WindowModeSelection } from './windows/WindowModeProperties'
 import WorkspaceHeader from './WorkspaceHeader'
 
 // Simulation (U3): the panel and the packets on the map load when first needed.
@@ -91,10 +95,15 @@ function WorkspaceView(props: WorkspaceViewProps) {
   const editing = useDeviceEditing(lab, labEditor, policy)
   const selectedCount = SelectionModel.count(selection)
   const deletableCount = SelectionModel.count(policy.allowedDeletion(selection))
+  const selectedDevice = selectedCount === 1 && selection.deviceIds.length === 1 ? doc.state.devices.find((device) => device.id === selection.deviceIds[0]) : undefined
   // One device with its CLI or terminal open: a wider panel, so 80-column console output does not wrap.
-  const consoleDevice = selectedCount === 1 && selection.deviceIds.length === 1 ? doc.state.devices.find((device) => device.id === selection.deviceIds[0]) : undefined
   // Not next to a lesson or design brief panel: the map would be squeezed too much.
-  const consoleOpen = props.sidePanel === undefined && consoleDevice !== undefined && showsConsole(consoleDevice, policy, hasTerminal(consoleDevice) && policy.canUseTerminal(consoleDevice.id), deviceTab)
+  const consoleOpen = props.sidePanel === undefined && selectedDevice !== undefined && showsConsole(selectedDevice, policy, hasTerminal(selectedDevice) && policy.canUseTerminal(selectedDevice.id), deviceTab)
+  // Preferences → Appearance: device tabs in floating windows instead of the right panel (wide screens only).
+  const [deviceDetails] = usePreference('appearance.deviceDetails')
+  const windowMode = wide && deviceDetails === 'window'
+  const deviceIds = useMemo(() => doc.state.devices.map((device) => device.id), [doc.state.devices])
+  const windows = useDeviceWindows(lab.labId, deviceIds)
   const nameOf = useCallback(
     (deviceId: string) => doc.state.devices.find((device) => device.id === deviceId)?.name ?? deviceId,
     [doc],
@@ -143,6 +152,12 @@ function WorkspaceView(props: WorkspaceViewProps) {
     setPaletteOpen(false)
   }
 
+  /** Window mode: double-click or Enter on a device opens its window (not while a cable or PDU tool picks devices). */
+  function openWindow(deviceId: string) {
+    if (!windowMode || cable.state.active || simulation.pduTool.active) return
+    windows.open(deviceId, deviceTab)
+  }
+
   /** Simulation (U3): a cable tool and the Simple PDU tool never run together. */
   function chooseCable(tool: CableTool) {
     simulation.pduTool.cancel()
@@ -182,6 +197,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
         if (annotationId !== null) setEditingId(annotationId)
         else if (cable.state.active) cable.clickDevice(nodeId)
         else if (simulation.pduTool.active) simulation.pduTool.click(nodeId)
+        else openWindow(nodeId)
       },
     },
     snapToGrid,
@@ -193,34 +209,47 @@ function WorkspaceView(props: WorkspaceViewProps) {
   const menuDevice = menu ? doc.state.devices.find((device) => device.id === menu.deviceId) : undefined
   const step = cable.state.step
 
-  const renderDevice = (device: Device) => {
+  /** The device's tabs on `tab`: in the properties panel (one shared tab) or in its window (its own tab). */
+  const renderTabs = (device: Device, tab: DeviceTab, onTab: (tab: DeviceTab) => void) => {
     const terminalOpen = hasTerminal(device) && policy.canUseTerminal(device.id)
     return (
-      <div key={device.id} className="space-y-3">
-        <h3 className="break-words text-base font-semibold text-fg-strong">{device.name}</h3>
-        <DeviceTabs
-          // CI (CLI integration): the CLI keeps one console per device of the open lab.
-          labId={lab.labId}
-          device={device}
-          state={doc.state}
-          policy={policy}
-          tab={deviceTab}
-          onTab={setDeviceTab}
-          problems={editing.problemsOf(device.id)}
-          onUpdate={editing.update}
-          terminal={
-            terminalOpen
-              ? {
-                  lines: terminals.linesOf(device.id),
-                  hiddenCount: terminals.hiddenCountOf(device.id),
-                  onRun: (line) => terminals.run(device.id, line),
-                  onClear: () => terminals.clear(device.id),
-                }
-              : null
-          }
-        />
-      </div>
+      <DeviceTabs
+        // CI (CLI integration): the CLI keeps one console per device of the open lab.
+        labId={lab.labId}
+        device={device}
+        state={doc.state}
+        policy={policy}
+        tab={tab}
+        onTab={onTab}
+        problems={editing.problemsOf(device.id)}
+        onUpdate={editing.update}
+        terminal={
+          terminalOpen
+            ? {
+                lines: terminals.linesOf(device.id),
+                hiddenCount: terminals.hiddenCountOf(device.id),
+                onRun: (line) => terminals.run(device.id, line),
+                onClear: () => terminals.clear(device.id),
+              }
+            : null
+        }
+      />
     )
+  }
+
+  const renderDevice = (device: Device) => (
+    <div key={device.id} className="space-y-3">
+      <h3 className="break-words text-base font-semibold text-fg-strong">{device.name}</h3>
+      {renderTabs(device, deviceTab, setDeviceTab)}
+    </div>
+  )
+
+  // Window mode: a single selected device has its window; other selections get a properties card.
+  let windowSelection: WindowModeSelection = { kind: 'other' }
+  if (selectedCount === 0) windowSelection = { kind: 'none' }
+  else if (selectedDevice !== undefined) {
+    const shown = windows.windows.some((entry) => entry.deviceId === selectedDevice.id && !entry.minimised)
+    windowSelection = { kind: 'device', device: selectedDevice, shown }
   }
 
   const properties = (onClose?: () => void) => (
@@ -290,6 +319,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
                   if (cable.state.active) cable.clickDevice(deviceId)
                   else if (simulation.pduTool.active) simulation.pduTool.click(deviceId)
                 }}
+                onDeviceOpen={openWindow}
                 // Simulation (U3): picking Simple PDU ends works like cabling (no selection, crosshair).
                 cableActive={cable.state.active || simulation.pduTool.active}
                 cableHighlight={cable.highlightOf}
@@ -323,6 +353,18 @@ function WorkspaceView(props: WorkspaceViewProps) {
                 )}
               </WorkspaceCanvas>
             </AnnotationActionsContext.Provider>
+            {windowMode && (
+              <>
+                <WindowModeProperties
+                  selection={windowSelection}
+                  notesAvailable={!exerciseMode}
+                  renderProperties={properties}
+                  onClearSelection={() => setSelection(EMPTY_SELECTION)}
+                  onOpenDevice={openWindow}
+                />
+                <DeviceWindowLayer controls={windows} devices={doc.state.devices} renderTabs={renderTabs} />
+              </>
+            )}
             {editable && (
               <button
                 type="button"
@@ -345,7 +387,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
         </main>
         {/* Design (D2): the brief panel */}
         {props.sidePanel}
-        {wide && (
+        {wide && !windowMode && (
           <aside className={`shrink-0 border-s border-border bg-surface ${consoleOpen ? 'w-[32rem] xl:w-[40rem]' : 'w-80 xl:w-96'}`}>{properties()}</aside>
         )}
         {!wide && selectedCount > 0 && !paletteOpen && (

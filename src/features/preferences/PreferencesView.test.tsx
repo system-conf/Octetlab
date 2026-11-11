@@ -56,6 +56,16 @@ describe('PreferencesView', () => {
     for (const layout of ['sidebar', 'bottomBar']) expect(html).toContain(`data-palette-layout-preview="${layout}"`)
   })
 
+  it('offers the right panel or floating windows for device details, with a preview each', () => {
+    const store = new PreferencesStore(memoryStorage())
+    expect(render(store, <AppearanceSection />)).toMatch(/checked="" value="panel"/)
+    store.update({ appearance: { deviceDetails: 'window' } })
+    const html = render(store, <AppearanceSection />)
+    expect(html).toMatch(/checked="" value="window"/)
+    expect(html).not.toMatch(/checked="" value="panel"/)
+    for (const mode of ['panel', 'window']) expect(html).toContain(`data-device-details-preview="${mode}"`)
+  })
+
   it('shows the start mode and the starting event filters', () => {
     const store = new PreferencesStore(memoryStorage())
     store.update({ simulation: { defaultMode: 'simulation', defaultEventFilters: ['icmp', 'arp'] } })

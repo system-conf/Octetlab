@@ -197,6 +197,7 @@
     "shape": "Shape",
     "tabsLabel": "Device views",
     "tabs": {
+      "physical": "Physical",
       "info": "Info",
       "settings": "Settings",
       "terminal": "Terminal"
@@ -250,6 +251,17 @@
       "del": "Del",
       "esc": "Esc"
     }
+  },
+  "windows": {
+    "minimise": "Minimise the {{name}} window",
+    "minimiseShort": "Minimise",
+    "close": "Close the {{name}} window",
+    "closeShort": "Close",
+    "restore": "Restore the {{name}} window",
+    "dock": "Minimised windows",
+    "openDevice": "Open the {{name}} window",
+    "openHint": "Double-click or press Enter",
+    "notes": "Lab notes"
   },
   "recentDialog": {
     "close": "Close",

@@ -59,6 +59,15 @@ describe('PreferencesCodec', () => {
     expect(ignored).toEqual(['appearance.paletteLayout'])
   })
 
+  it('stores, reads back and leniently drops the device details mode', () => {
+    const changed = PreferencesCodec.apply(DEFAULT_PREFERENCES, { appearance: { deviceDetails: 'window' } })
+    expect(JSON.parse(PreferencesCodec.toStored(changed))).toEqual({ version: PREFERENCES_VERSION, appearance: { deviceDetails: 'window' } })
+    expect(PreferencesCodec.parseStored(PreferencesCodec.toStored(changed)).preferences.appearance.deviceDetails).toBe('window')
+    const { preferences, ignored } = PreferencesCodec.parse({ version: PREFERENCES_VERSION, appearance: { deviceDetails: 'popup', theme: 'dark' } })
+    expect(preferences.appearance).toEqual({ ...DEFAULT_PREFERENCES.appearance, theme: 'dark' })
+    expect(ignored).toEqual(['appearance.deviceDetails'])
+  })
+
   it('round-trips through the stored text', () => {
     const changed = PreferencesCodec.apply(DEFAULT_PREFERENCES, { appearance: { theme: 'system', highContrast: true } })
     expect(PreferencesCodec.parseStored(PreferencesCodec.toStored(changed)).preferences).toEqual(changed)

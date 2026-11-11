@@ -3,11 +3,14 @@ import type { Device } from '../../../domain'
 import { CliAccess, type CliDeviceTab } from '../../cli'
 import type { ExerciseLockPolicy } from '../labServices'
 
-export type DeviceTab = 'info' | 'settings' | 'terminal' | CliDeviceTab
+export type DeviceTab = 'physical' | 'info' | 'settings' | 'terminal' | CliDeviceTab
 
-/** Tabs available for a device: settings unless the exercise hides them, CLI / Config on IOS devices, terminal where there is one. */
+/**
+ * Tabs available for a device: the front panel (first, like Packet Tracer) and Info on every device,
+ * settings unless the exercise hides them, CLI / Config on IOS devices, terminal where there is one.
+ */
 export function availableDeviceTabs(device: Device, policy: ExerciseLockPolicy, hasTerminal: boolean): DeviceTab[] {
-  const tabs: DeviceTab[] = ['info']
+  const tabs: DeviceTab[] = ['physical', 'info']
   if (policy.deviceAccess(device.id) !== 'hidden') tabs.push('settings')
   tabs.push(...CliAccess.tabs(device, policy))
   if (hasTerminal) tabs.push('terminal')

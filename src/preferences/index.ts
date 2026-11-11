@@ -2,6 +2,7 @@
 export {
   DEFAULT_PREFERENCES,
   DENSITIES,
+  DEVICE_DETAILS_MODES,
   DEVICE_LABEL_MODES,
   DEVICE_STYLES,
   EVENT_FILTER_PROTOCOLS,
@@ -16,6 +17,7 @@ export {
   THEMES,
   type AppearancePreferences,
   type Density,
+  type DeviceDetailsMode,
   type DeviceStyle,
   type PaletteLayout,
   type PreferencePath,

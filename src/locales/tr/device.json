@@ -28,5 +28,59 @@
     "invalidHostAddress": "Bu IP adresi bu alt ağda kullanılamaz",
     "ttlExpired": "TTL yolda tükendi (yönlendirme döngüsü)"
   },
-  "saved": "Kaydedildi"
+  "saved": "Kaydedildi",
+  "physical": {
+    "panelLabel": "{{device}} ön paneli",
+    "summary": {
+      "ports_one": "{{count}} port",
+      "ports_other": "{{count}} port",
+      "attached_one": "{{count}} bağlı",
+      "attached_other": "{{count}} bağlı"
+    },
+    "off": "Cihaz kapalı",
+    "offHint": "Cihaz kapalı: açmak için güç düğmesine bas",
+    "print": {
+      "power": "PWR",
+      "powerButton": "POWER",
+      "console": "CONSOLE"
+    },
+    "powerButton": {
+      "turnOn": "Güç düğmesi: cihazı aç",
+      "turnOff": "Güç düğmesi: cihazı kapat",
+      "locked": "Güç düğmesi bu alıştırmada kilitli"
+    },
+    "condition": {
+      "deviceOff": "Cihaz kapalı",
+      "adminDown": "Kapatılmış",
+      "up": "Çalışıyor",
+      "noLink": "Bağlantı yok",
+      "unplugged": "Kablo çıkarılmış",
+      "empty": "Boş"
+    },
+    "detail": {
+      "vlan": "VLAN {{vlan}}",
+      "trunk": "Trunk",
+      "hidden": "Ayarlar gizli"
+    },
+    "peer": "{{device}} {{port}}",
+    "morePeers_one": "+{{count}} cihaz",
+    "morePeers_other": "+{{count}} cihaz",
+    "legend": {
+      "up": "Bağlantı var (yeşil ışık)",
+      "dark": "Bağlantı yok / boş",
+      "console": "Konsol portu",
+      "plug": "Fiş: {{cable}}"
+    },
+    "table": {
+      "port": "Port",
+      "status": "Durum",
+      "detail": "IP / VLAN",
+      "peer": "Bağlı cihaz",
+      "none": "—",
+      "showAll_one": "Boş portu da göster ({{count}})",
+      "showAll_other": "Boş portları da göster ({{count}})",
+      "showUsed": "Yalnızca kullanılan portları göster",
+      "noneInUse": "Henüz hiçbir porta kablo takılı değil."
+    }
+  }
 }

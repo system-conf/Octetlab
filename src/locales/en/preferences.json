@@ -38,9 +38,15 @@
     },
     "paletteLayout": {
       "label": "Device list",
-      "hint": "Where the device list sits in the workspace. Applies on screens 768 px and wider; on phones the list always opens from the bottom.",
+      "hint": "Where the device list sits in the workspace. Applies on wide screens; on phones the list always opens from the bottom.",
       "sidebar": "On the left",
       "bottomBar": "At the bottom (like Packet Tracer)"
+    },
+    "deviceDetails": {
+      "label": "Device details",
+      "hint": "In a window: double-click a device on the map or press Enter; windows can be moved, resized and minimised, and several can stay open at once. Applies on wide screens; on phones the details always open from the bottom.",
+      "panel": "In the right panel",
+      "window": "In a separate window (like Packet Tracer)"
     }
   },
   "map": {

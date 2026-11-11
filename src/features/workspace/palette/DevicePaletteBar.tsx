@@ -37,7 +37,7 @@ function DevicePaletteBar({ models, onAdd, onChooseCable, activeCable, priceLabe
       <h2 id={titleId} className="sr-only">
         {t('palette.title')}
       </h2>
-      <div className="flex w-52 shrink-0 flex-col justify-between gap-1.5 border-e border-border p-2">
+      <div className="flex w-64 shrink-0 flex-col justify-between gap-1.5 border-e border-border p-2">
         <PaletteSectionBar views={palette.views} current={searching ? null : view} onSelect={palette.selectView} labelled />
         <PaletteSearchField query={palette.query} onQuery={palette.setQuery} compact />
       </div>

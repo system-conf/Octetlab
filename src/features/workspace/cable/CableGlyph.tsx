@@ -1,15 +1,6 @@
 import { Sparkles, Wifi } from 'lucide-react'
 import type { CableTool } from '../../../domain'
-
-/** Stroke colour and dash of each cable glyph (our own colour code, readable on white). */
-const CABLE_STYLE: Readonly<Record<Exclude<CableTool, 'auto' | 'wireless'>, { tone: string; dash?: string }>> = {
-  copperStraight: { tone: 'text-slate-700 dark:text-slate-300' },
-  copperCross: { tone: 'text-slate-700 dark:text-slate-300', dash: '3 2' },
-  fiber: { tone: 'text-orange-600 dark:text-orange-400' },
-  serial: { tone: 'text-red-600 dark:text-red-400' },
-  console: { tone: 'text-sky-600 dark:text-sky-400' },
-  coaxial: { tone: 'text-blue-900 dark:text-blue-300' },
-}
+import { CABLE_STYLE } from '../../shared/cableStyle'
 
 /** Small icon for a cable tool: a coloured cable, the Wi-Fi symbol or the "auto" sparkle. */
 function CableGlyph({ tool, className = 'h-5 w-5' }: { tool: CableTool; className?: string }) {
