@@ -43,6 +43,10 @@ const pwa = VitePWA({
     // App routes (/lab, /samples/…, /exercises/…, /design/…, /preferences) are client-side:
     // offline navigations get the precached index.html. `#lab=…` share links never reach the server.
     navigateFallback: 'index.html',
+    // Live labs (docs/LIVE_LABS.md) need the network anyway; loading them from the server always gets
+    // the newest app. From the precache, a tab still on an older version that lacks a newer route
+    // would redirect to the landing page and lose the lab id.
+    navigateFallbackDenylist: [/^\/live\//],
     // Old precached chunks stay until the new worker activates (after the user reloads).
     cleanupOutdatedCaches: true,
   },
