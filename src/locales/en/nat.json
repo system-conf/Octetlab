@@ -1,12 +1,77 @@
 {
   "section": {
-    "title": "Address translation (NAT)",
-    "placeholder": "NAT is configured in the CLI for now (ip nat …)."
+    "title": "Address translation (NAT)"
   },
   "port": {
     "role": "NAT role",
     "none": "None",
     "inside": "Inside (ip nat inside)",
     "outside": "Outside (ip nat outside)"
+  },
+  "notes": {
+    "translatedOut": "NAT inside→outside: the source {{from}} becomes {{to}}.",
+    "translatedIn": "NAT outside→inside: the destination {{from}} becomes {{to}} again.",
+    "translatedError": "NAT outside→inside: this ICMP error is about {{from}}; it goes to the inside host {{to}}.",
+    "created": "NAT has no translation for {{local}} yet: access list {{acl}} selects it, so a new entry maps it to {{global}}.",
+    "poolExhausted": "NAT access list {{acl}} selects {{local}}, but no address or port is free: the packet is dropped and ICMP host unreachable goes back.",
+    "noAddress": "NAT should use the address of {{iface}}, which has none: the packet leaves untranslated.",
+    "notSelected": "No NAT rule selects {{src}}: the packet leaves untranslated.",
+    "protocolNotTranslated": "NAT overload translates only ICMP, TCP and UDP: this packet leaves untranslated.",
+    "noTranslation": "{{dst}} is a NAT address but no translation exists for this packet: it is dropped."
+  },
+  "form": {
+    "rolesHint": "Mark the LAN ports “Inside” and the WAN port “Outside” in the port editor (NAT role). Only packets that go from an inside to an outside port are translated.",
+    "pools": "Address pools",
+    "pool": "Pool {{index}}",
+    "noPools": "No pools.",
+    "addPool": "Add pool",
+    "removePool": "Remove pool {{index}}",
+    "poolName": "Pool name",
+    "netmask": "Netmask",
+    "start": "First address",
+    "end": "Last address",
+    "rules": "Dynamic rules",
+    "rulesHint": "Inside addresses that the access list permits are translated to the pool or to the interface address. Overload (PAT) lets many inside hosts share one address by port.",
+    "rule": "Rule {{index}}",
+    "noRules": "No dynamic rules.",
+    "addRule": "Add rule",
+    "removeRule": "Remove rule {{index}}",
+    "acl": "Access list (number or name)",
+    "target": "Translate to",
+    "targets": {
+      "interface": "Interface address",
+      "pool": "Address pool"
+    },
+    "interface": "Interface",
+    "choose": "Choose…",
+    "overload": "Overload (PAT)",
+    "overloadHint": "Share the address between hosts by port number.",
+    "statics": "Static mappings",
+    "staticsHint": "A fixed inside ↔ outside pair, so the outside can reach an inside host. Choose TCP or UDP to forward one port only.",
+    "static": "Mapping {{index}}",
+    "noStatics": "No static mappings.",
+    "addStatic": "Add mapping",
+    "removeStatic": "Remove mapping {{index}}",
+    "protocol": "Protocol",
+    "protocols": {
+      "address": "Whole address",
+      "tcp": "TCP port",
+      "udp": "UDP port"
+    },
+    "insideLocal": "Inside local address",
+    "insideGlobal": "Inside global address",
+    "localPort": "Inside port",
+    "globalPort": "Outside port",
+    "errors": {
+      "nameRequired": "Enter a name without spaces.",
+      "duplicatePool": "Another pool has this name.",
+      "endBeforeStart": "The last address comes before the first one.",
+      "differentSubnets": "The first and last address must be in the same subnet of this netmask.",
+      "port": "Enter a port from 1 to 65535.",
+      "duplicateStatic": "This inside address already has a mapping.",
+      "unknownPool": "Choose a pool of this list.",
+      "interfaceRequired": "Choose an interface.",
+      "duplicateRule": "Another rule uses this access list."
+    }
   }
 }

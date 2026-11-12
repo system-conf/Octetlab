@@ -3,7 +3,7 @@ import { SimMessages, type EventFilter, type EventListItem, type SimEvent, type 
 import { EventSummaries } from './EventSummaries'
 
 /** Filter chips in the order learners meet the protocols. */
-export const FILTER_PROTOCOLS: readonly SimProtocol[] = ['arp', 'icmp', 'dhcp', 'dns', 'http', 'tcp', 'udp', 'ipv4', 'ethernet', 'hdlc']
+export const FILTER_PROTOCOLS: readonly SimProtocol[] = ['arp', 'icmp', 'dhcp', 'dns', 'http', 'telnet', 'ssh', 'tcp', 'udp', 'ipv4', 'ethernet', 'hdlc']
 
 /** One row of the event list: the contract's item plus what the row shows under it. */
 export interface EventRow extends EventListItem {

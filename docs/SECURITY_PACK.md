@@ -110,6 +110,7 @@ Agents A (ACL), B (NAT), C (SSH/Telnet/AAA) and D (content, QA, docs, cable fix)
   - `aclCounters: Record<aclName, Record<seq, matches>>`
   - `natTranslations: NatTranslation[]`, with lazy expiry on the virtual clock like ARP; static entries have `expiresAt: null`
   - `natStatistics {hits, misses, expired}`
+- **Clearing the tables** (contract change by agent B, approved): `SimClearTableRequest.table` also takes `natTranslations` (`clear ip nat translation *`) and `aclCounters` (`clear access-list counters`). `SimulationKernel` routes both to the network layer; `Ipv4NetworkLayer.onRequest` answers `{kind:'cleared', entries}` from `NatRuntime.clear(ctx)` (`src/sim/policy/nat/NatRuntime.ts`, removes the dynamic entries) and `AclRuntime.clear(ctx)` (`src/sim/policy/acl/AclRuntime.ts`, agent A). Static NAT rows are not stored in `natTranslations`: they are derived from the configuration, so an edit takes effect at once.
 - **SimReason codes** (texts in `simulation.json` en + tr): `aclDenied`, `natPoolExhausted`, `natNoTranslation`, `vtyAccessDenied`, `remoteLoginFailed`, `remoteAccessDisabled`.
 - **SimProtocol `telnet` / `ssh`:** TCP 22/23 with an opaque `RawData` payload (`PduLayers.protocolOf`). Colours, chips and layer 7 are added. Adding them to the event filter chips (`FILTER_PROTOCOLS`, `EVENT_FILTER_PROTOCOLS` in preferencesModel) is agent C's job.
 - **`SIM_PORTS.ssh = 22`, `SIM_PORTS.telnet = 23`.**
@@ -117,7 +118,7 @@ Agents A (ACL), B (NAT), C (SSH/Telnet/AAA) and D (content, QA, docs, cable fix)
   - `SimRemoteConnectRequest {kind:'remoteConnect', deviceId, protocol, targetIp, username?, password?}` → `RemoteConnectResult {protocol, targetIp, outcome}`.
   - `outcome` is `{ok:true, hostname, bannerMotd?, privilege}` or `{ok:false, failure, reason}`.
   - `failure` is one of `refused | timedOut | unreachable | adminProhibited | passwordNotSet | authFailed | localFailure`.
-  - Dispatched by `SimServiceLayer.onRequest` to `src/sim/services/remote/RemoteConnectStub.ts`, which agent C replaces.
+  - Dispatched by `SimServiceLayer.onRequest` to `src/sim/services/remote/RemoteClient.ts` (client) and `RemoteServer.ts` (TCP 22/23 listener); the client's open connection lives in `ServiceLayerState` as `RemoteClientSession` with a `remoteTimeout` timer (additive contract change, approved).
 - **AclMatcher** (`src/net/AclMatcher.ts`, a pure stub; A implements it, C uses it for `access-class`): `decide(list | undefined, AclPacketView) → AclDecision`, where the decision is `match {action, seq}`, `implicitDeny` or `noList`. Also `permits(decision)`.
 
 ## 6. CLI hooks
@@ -129,6 +130,8 @@ Agents A (ACL), B (NAT), C (SSH/Telnet/AAA) and D (content, QA, docs, cable fix)
 - **Running-config:** reserved slots are `accessLists: 85` and interface line order `features: 50` (`contract/RunningConfig.ts`).
   - NAT global lines go in their own section with a free order number. A free order number is one not used by any other set; pick it from the gaps around `ipGlobal: 50`.
   - Every written line must be accepted by a handler (CLI.md §5.3, a round-trip test), because startup-config replay uses the same parser.
+  - NAT uses order 75 (between `routerProtocols` 70 and `ipRoutes` 80), where IOS writes it; replay has then created every sub-interface a `… interface <if> overload` line names.
+- **Sub-mode fallback** (core change by agent B, approved; former bug K4): `CliRunner.execute` runs a line in global config, leaving the sub-mode, whenever the sub-mode rejects it (invalid at any token, or incomplete) and global config accepts it, like IOS. So `ip route`, `ip nat pool` and `ip access-list` right after an `interface` block replay. A line both reject keeps the sub-mode's own error.
 - **Show commands** read `ctx.env.runtime` (a `DeviceRuntime`) and `ctx.env.now`. View classes go in their own files (`*View.ts`).
 - **Interactive prompts:** for example `How many bits in the modulus [512]:` uses `CliQuestion`. Always offer the non-interactive form too: MCP types lines one by one and answers questions with Enter.
 

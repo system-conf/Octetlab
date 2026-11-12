@@ -69,8 +69,10 @@ export class CliRunner {
     const { device } = outcome
     let mode = outcome.state.mode
     let parsed = this.parser.parse(line, mode.kind, device)
-    if (parsed.kind === 'invalid' && parsed.tokenIndex === 0 && CONFIG_SUBMODE_KINDS.includes(mode.kind)) {
-      // IOS: a command the sub-mode does not know runs in global config and leaves the sub-mode.
+    if ((parsed.kind === 'invalid' || parsed.kind === 'incomplete') && CONFIG_SUBMODE_KINDS.includes(mode.kind)) {
+      // IOS: a command the sub-mode does not know runs in global config and leaves the sub-mode, also
+      // when the sub-mode knows its first words (`ip route` / `ip nat pool` after an interface block).
+      // A line global config rejects too keeps the sub-mode's own error.
       const retry = this.parser.parse(line, 'globalConfig', device)
       if (retry.kind === 'ok') {
         parsed = retry

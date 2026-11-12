@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import enExercises from '../locales/en/exercises.json'
 import trExercises from '../locales/tr/exercises.json'
-import type { V1ScenarioDefinition } from '../lab/migrations/v1Types'
-import { scenarioDefinitions } from './scenarioDefinitions'
+import type { ExerciseDefinition } from '../domain'
+import { exerciseDefinitions } from './exerciseDefinitions'
 
 const textsByLanguage: [string, unknown][] = [
   ['tr', trExercises],
@@ -39,22 +39,22 @@ function textKeys(value: unknown, path: string): string[] {
   return entries.map(([key]) => key).sort()
 }
 
-function deviceIds(definition: V1ScenarioDefinition): string[] {
-  return definition.initialState.devices.map((device) => device.id).sort()
+function deviceIds(definition: ExerciseDefinition): string[] {
+  return definition.lab.state.devices.map((device) => device.id).sort()
 }
 
-function appLinkIds(definition: V1ScenarioDefinition): string[] {
-  const ids = definition.initialState.devices.flatMap((device) => (device.appLinks ?? []).map((appLink) => appLink.id))
+function appLinkIds(definition: ExerciseDefinition): string[] {
+  const ids = definition.lab.state.devices.flatMap((device) => (device.host?.appLinks ?? []).map((appLink) => appLink.id))
   return [...new Set(ids)].sort()
 }
 
 describe.each(textsByLanguage)('exercises.json (%s)', (_language, texts) => {
   it('has texts for exactly the defined exercises', () => {
     const keys = typeof texts === 'object' && texts !== null ? Object.keys(texts).sort() : []
-    expect(keys).toEqual(scenarioDefinitions.map((definition) => definition.id).sort())
+    expect(keys).toEqual(exerciseDefinitions.map((definition) => definition.id).sort())
   })
 
-  it.each(scenarioDefinitions.map((definition): [string, V1ScenarioDefinition] => [definition.id, definition]))(
+  it.each(exerciseDefinitions.map((definition): [string, ExerciseDefinition] => [definition.id, definition]))(
     '%s has complete texts',
     (id, definition) => {
       const exercise = at(texts, id)
@@ -77,7 +77,7 @@ describe.each(textsByLanguage)('exercises.json (%s)', (_language, texts) => {
 })
 
 describe('exercises.json across languages', () => {
-  it.each(scenarioDefinitions.map((definition) => [definition.id]))('%s has the same topic count in tr and en', (id) => {
+  it.each(exerciseDefinitions.map((definition) => [definition.id]))('%s has the same topic count in tr and en', (id) => {
     const trTopics = at(trExercises, `${id}.topics`)
     const enTopics = at(enExercises, `${id}.topics`)
     expect(Array.isArray(trTopics) && Array.isArray(enTopics)).toBe(true)

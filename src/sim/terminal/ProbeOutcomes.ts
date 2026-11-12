@@ -36,6 +36,8 @@ export class ProbeOutcomes {
         return { kind: 'reply', fromIp: echo.fromIp, ttl: echo.ttl, baseTimeMs }
       }
       case 'unreachable':
+        // Every code, also 13 (ACL "administratively prohibited", pack 5.2), prints "Destination host
+        // unreachable.": the Windows text for code 13 could not be confirmed (SECURITY_PACK.md §7 keeps it).
         return { kind: 'unreachable', fromIp: echo.fromIp }
       case 'ttlExpired':
         return { kind: 'ttlExpired', fromIp: echo.fromIp }

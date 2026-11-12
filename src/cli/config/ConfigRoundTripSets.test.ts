@@ -25,14 +25,10 @@ const routerSet = modules.map((module) => module.routerCommandSet).find(isComman
 const bothSets = [modules.map((module) => module.createSwitchCommandSet?.({ ipAddress: false })).find(isCommandSet), routerSet].filter(isCommandSet)
 
 /**
- * Known core bug (K4, src/cli/core/CliRunner.ts execute): a sub-mode retries a line in global config only
- * when its FIRST word is unknown there. `ip route …` right after an `interface` block fails on the second
- * word (interface mode knows `ip address`), so a replayed config loses its static routes; IOS falls back
- * to global config for any line the sub-mode rejects. C2 works around it for `ip default-gateway` (an
- * interface-mode copy of the command); C3 does not for `ip route`. The round trips with static routes are
- * expected to fail until the runner (or C3) is fixed: then switch `roundTripWithRoutes` to `it`.
+ * Former core bug K4, fixed in pack 5.2 (src/cli/core/CliRunner.ts execute): a sub-mode now retries in
+ * global config any line it rejects, like IOS, so `ip route …` right after an `interface` block replays.
  */
-const roundTripWithRoutes = it.fails
+const roundTripWithRoutes = it
 
 function configured(sets: readonly CliCommandSet[], device: Device, ...lines: readonly string[]): Device {
   const cli = new CliDriver(device, sets)

@@ -1,6 +1,6 @@
 // Test-only (O3): detectors for the accepted divergences of docs/SIMULATION.md §10.3 and the later
 // "Additions" sections. A comparison that falls under one is skipped (and counted), never weakened.
-import type { Device, NetworkState, ReachResult } from '../../domain'
+import type { Device, L3Settings, NetworkState, ReachResult } from '../../domain'
 import { DeviceAddresses, HostAttachment, Ipv4, L3Interfaces, ReachabilityChecker, SegmentFinder, Topology, type L3Interface } from '../../engine'
 
 /** Why a comparison was skipped; the value names the doc line. */
@@ -19,6 +19,8 @@ export const DIVERGENCES = {
   tracertRouterReports: 'SIMULATION.md Additions after S2 (1)',
   /** Terminal / nslookup / renew on a powered-off device: the shell answers before any request (§10.1). */
   sourceOff: 'HostCommandShell: device powered off',
+  /** §10.3 item 6: ACL and NAT (pack 5.2) exist in the simulator only; a lab that uses them is not compared. */
+  securityPolicies: 'SIMULATION.md §10.3.7',
 } as const
 
 export type Divergence = keyof typeof DIVERGENCES
@@ -48,8 +50,13 @@ export class Divergences {
 
   /** §10.3.2: the answering device routes (255 − hops), or the internet behind two or more routers. */
   static replyTtl(state: NetworkState, targetIp: string, routers: number): boolean {
-    if (Ipv4.isPublic(targetIp)) return routers >= 2
-    return state.devices.some((device) => device.powered && L3Interfaces.isRouter(device) && DeviceAddresses.has(device, targetIp))
+    const owners = state.devices.filter((device) => device.powered && DeviceAddresses.has(device, targetIp))
+    if (Ipv4.isPublic(targetIp)) {
+      // A public address owned by a lab device (a provider router, a server "on the internet"): the engine
+      // still gives it the internet TTL (§10.3.2, pack 5.2 addition).
+      return owners.length > 0 || routers >= 2
+    }
+    return owners.some((device) => L3Interfaces.isRouter(device))
   }
 
   /** §10.3.3 / §10.3.4 for one client: servers with a pool for the client's segment, relays in it. */
@@ -101,6 +108,27 @@ export class Divergences {
     if (reach.ok || reach.atDeviceId === fromId) return false
     if (reach.reason !== 'noRouteToDestination' && reach.reason !== 'destinationNotInSegment') return false
     return reachability.trace(state, fromId, toIp).silent !== true
+  }
+
+  /**
+   * §10.3.7: some device filters or translates packets (pack 5.2): an access list, NAT rules, or a port
+   * bound to a list / marked inside or outside. The rule engine ignores all of it, so the whole lab is
+   * outside the oracle. vty `access-class` and SSH settings are not packet policies and do not count.
+   */
+  static securityPolicies(state: NetworkState): boolean {
+    return state.devices.some((device) => {
+      const features = device.features
+      if ((features?.accessLists?.lists.length ?? 0) > 0) return true
+      const nat = features?.nat
+      if (nat && nat.pools.length + nat.statics.length + nat.dynamics.length > 0) return true
+      return Divergences.networkSideL3(device).some(({ features: port }) => port?.natRole !== undefined || port?.accessGroups?.in !== undefined || port?.accessGroups?.out !== undefined)
+    })
+  }
+
+  /** Layer-3 settings of every routed port, sub-interface and SVI (host NICs ignore ACL / NAT keys). */
+  private static networkSideL3(device: Device): L3Settings[] {
+    const routed = device.ports.flatMap((port) => (port.role === 'routed' ? [port.l3, ...port.subInterfaces.map((sub) => sub.l3)] : []))
+    return [...routed, ...(device.switching?.svis.map((svi) => svi.l3) ?? [])]
   }
 
   private static helpersOf(device: Device, member: L3Interface): string[] {

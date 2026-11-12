@@ -439,7 +439,7 @@ fromDeviceId, toDeviceId, fraction, protocol, flowId, dropped }`.
 | Pack | PDU slot (`ReservedPdus.ts`, `never` today) | Runtime slot (`RuntimeExtensions`) | Other |
 |---|---|---|---|
 | 5.1 STP, EtherChannel, CDP/LLDP, port security | `StpBpdu`, `LacpPdu`, `PagpPdu`, `CdpAdvertisement`, `LldpAdvertisement` | `stp`, `etherChannel`, `neighbors`, `portSecurity` | STP replaces the `l2Loop` guard; port states block forwarding |
-| 5.2 ACL, NAT | — | `aclCounters`, `natTranslations` | reason codes (`aclDenied`), ICMP `adminProhibited` exists |
+| 5.2 ACL, NAT, SSH / Telnet (in progress, docs/SECURITY_PACK.md) | — (TCP 22 / 23 carry an opaque `RawData` payload; `SimProtocol` `ssh` / `telnet`) | `aclCounters`, `natTranslations`, `natStatistics` (`SecurityRuntime`) | `PacketPolicyChain([AclPolicy, NatPolicy])` on ingress (`PacketReceiver`, before the own-address check) and egress (`PacketForwarder`, after routing; router-originated packets skip it); reason codes `aclDenied`, `natPoolExhausted`, `natNoTranslation`, `vtyAccessDenied`, `remoteLoginFailed`, `remoteAccessDisabled`; ICMP `adminProhibited`; request `remoteConnect` |
 | 5.3 RIP, OSPF, EIGRP, HSRP | `RipMessage`, `OspfPacket`, `EigrpPacket`, `HsrpMessage` | `rip`, `ospf`, `eigrp`, `hsrp` | `RouteCode` members |
 | 5.4 IPv6 / NDP | `Ipv6Packet` | `ipv6` | `Pdu` gains `Ipv6Packet` |
 | 5.5 servers | `ServerAppPayload` | — | listeners in S3 |
@@ -494,12 +494,24 @@ On every generated topology (fresh engine, `settle`), for every host pair / publ
 1. Gateway is a host or a non-routing device: engine "unreachable from own IP", simulator `timeout` (ARP
    succeeds, the host drops the packet).
 2. Reply TTL from routers (255 − hops instead of 128 − hops) and from the internet behind two or more
-   routers (118 − routers instead of 117).
+   routers (118 − routers instead of 117). Pack 5.2 addition: a public address owned by a lab device (a
+   provider router or a server "on the internet" built without the cloud, as in the NAT labs) gets the
+   internet TTL from the engine; the simulator gives the device's own TTL.
 3. Two DHCP servers in one segment: the first OFFER to arrive wins (engine: first in BFS order).
 4. DHCP relay (`helperAddresses`) works in the simulator only.
 5. DNS forwarder chains deeper than 4 servers resolve in the simulator (engine gives up).
 6. After an edit, a duplicate address is found by the next probe (address change, link up, start), not at
    once; a conflict that disappears is noticed at the next probe too. O3 compares fresh engines only.
+7. **ACL and NAT (pack 5.2) exist in the simulator only.** `src/engine` knows no access list, translation or
+   remote login, so wherever it is used it ignores them: the app-link lights, `DeviceInfoModel`, the design
+   `RequirementChecker` / `HandoverPack` and the samples' `StepChecker`. A denied packet still counts as
+   delivered there, and a private source whose return path only NAT provides stays unreachable there. Every check
+   that ACL / NAT can change runs on the simulator instead: exercises are graded by `SimSolveChecker`
+   (`ExerciseAttempt`), including the `unreachable` condition; samples about ACL / NAT / SSH use manual
+   steps and keep their promises in simulator tests (`securitySamples.test.ts`). The oracle skips a lab as a
+   whole when any device has an access list, NAT rules, an `ip access-group` binding or a NAT role
+   (`Divergences.securityPolicies`, counted as `securityPolicies`); vty `access-class` and SSH settings do
+   not count because no ping or lookup crosses them.
 
 ## 11. Ownership and fixed APIs
 

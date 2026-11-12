@@ -32,6 +32,7 @@ come from the `cli` namespace (tr + en, informal "sen" in Turkish).
 | `vlan` | `S1(config-vlan)#` | `vlan 10` / `vlan 10,20` (C2 registers the entry command) | global config |
 | `dhcpPool` | `R1(dhcp-config)#` | `ip dhcp pool LAN` (C3) | global config |
 | `router` | `R1(config-router)#` | reserved for the routing packs 5.3 | global config |
+| `accessList` | `R1(config-std-nacl)#` / `R1(config-ext-nacl)#` | `ip access-list standard\|extended NAME` (pack 5.2, `src/cli/acl`); help header "Access list configuration commands:" | global config |
 
 - `end` and **Ctrl+Z** (`CliShell.control(…, 'ctrlZ')`) from any config mode → `R1#` and
   `%SYS-5-CONFIG_I: Configured from console by console`. Ctrl+C also cancels a question or paging.
@@ -134,13 +135,30 @@ security boundary); running-config shows `password 7 …` (real Cisco type 7) wi
 encoding so `reload` can replay it). All `vty` lines share one settings object; switches print it as
 `line vty 0 4` + `line vty 5 15`. The zod schema mirror lives in `src/lab/schemas/deviceSchemas.ts`.
 
+Pack 5.2 (docs/SECURITY_PACK.md §3) adds, all optional: `domainName?` (`ip domain-name` / `ip domain name`),
+`users?: LocalUser[]` (`username … [privilege n] secret|password`), `ssh?` (`ip ssh version|time-out|
+authentication-retries`, `rsaKeyBits` from `crypto key generate rsa`, kept by `reload`), and on the vty
+lines `transportInput?` (absent = all, [] = none), `loginLocal?` and `accessClass?`. Access lists
+(`features.accessLists`), NAT (`features.nat`) and the interface keys `l3.features.accessGroups` /
+`natRole` live outside `management`; their mirror is `src/lab/schemas/securitySchemas.ts`.
+
 ### 5.2 Console access rule
 The device's CLI tab is the console line 0 and is always available on a powered device whose model has
 the `deviceCli` capability (Packet Tracer behaviour). A PC cabled from its RS232 port to the device's
 `Console` port with a console cable opens the same CLI from its Terminal app (C4). `line con 0` with
 `login` **and** a password asks "User Access Verification / Password:" (3 tries, `% Bad passwords`);
-`login` without a password does not lock the learner out (lab rule). vty lines matter only with
-Telnet/SSH (pack 5.2).
+`login` without a password does not lock the learner out (lab rule).
+
+The vty lines are what Telnet / SSH sessions use (pack 5.2, `src/cli/remote`, `src/sim/services/remote`):
+- `transport input ssh|telnet|all|none` decides which TCP port (22 / 23) listens; SSH also needs RSA
+  keys (`ip domain name` first, then `crypto key generate rsa`). A closed port refuses the connection.
+- `login` with a vty password asks for it; `login` **without** a password refuses the session with
+  "Password required, but none set" (the console rule above is unchanged). `login local` checks
+  `username` entries.
+- `access-class <acl> in` filters by the client's source address; a denied client is reset.
+- Clients: `telnet <ip>` and `ssh -l <user> <ip>` from a host's command prompt and from a router (a
+  `job`). Scope A: a session ends after connect, authentication and banner with "Open" and the target's
+  name, or the failure text; there is no remote prompt yet.
 
 ### 5.3 running-config ↔ startup-config ↔ reload
 - `startupConfig` = NVRAM text (`!` … `end`). Absent = never saved: `show startup-config` prints
@@ -172,15 +190,18 @@ hostname R1           ← core
 enable secret 5 …     ← core
 !
 … sections by RUNNING_CONFIG_ORDER: dhcp 40 (C3) · ipGlobal 50 (core: no ip domain-lookup; C3: ip
-  routing / dns) · interfaces 60 · routerProtocols 70 · ipRoutes 80 (C2 ip default-gateway, C3 ip route)
-  · accessLists 85 · banner 90 (core) · lines 100 (core)
+  routing / dns; 5.2: ip domain-name) · 52 username (5.2) · 53 ip ssh (5.2) · interfaces 60 ·
+  routerProtocols 70 · 75 ip nat pool / ip nat inside source (5.2) · ipRoutes 80 (C2 ip
+  default-gateway, C3 ip route) · accessLists 85 (5.2) · banner 90 (core) · lines 100 (core; 5.2 adds
+  login local, transport input, access-class)
 end
 ```
 - `RunningConfigSection { id, order, blocks(device) }`: each block is followed by `!`; sub-mode lines
   start with one space.
 - `InterfaceConfigContributor { id, order, lines(device, iface) }` adds lines (without the leading
   space) to every `interface …` block, by `INTERFACE_LINE_ORDER`: description 10 (core) ·
-  encapsulation 15 (C3) · switchport 20 (C2) · ip 30 (C3, also SVIs) · helper 35 (C3) · features 50 ·
+  encapsulation 15 (C3) · switchport 20 (C2) · ip 30 (C3, also SVIs) · helper 35 (C3) · features 50
+  (5.2: `ip access-group`, `ip nat inside|outside`) ·
   physical 80 (core duplex/speed; C3 `clock rate`) · shutdown 90 (core).
 - Interfaces are listed by `DeviceInterfaces.list`: ports in device order (routed ports followed by their
   sub-interfaces), then SVIs by VLAN. VLAN definitions are **not** in running-config (vlan.dat, IOS).
@@ -199,6 +220,10 @@ end
 | `ping`, `traceroute` | C3 (also switches) | `job: SimRequest` (`ping` / `tracert`), output from the `RequestRecord` |
 | `clear arp-cache`, `clear mac address-table dynamic` | C3 / C2 | `job: { kind: 'clearTable', … }` |
 | Windows `ipconfig`, `ping`, `tracert`, `nslookup`, `arp`, `netstat`, `hostname` | C4 | `src/engine` formatters + `SimTerminal` |
+| `show access-lists`, `show ip access-lists`, `clear access-list counters` | 5.2 ACL | `features.accessLists` + `env.runtime` `aclCounters` (match counts) |
+| `show ip nat translations [verbose]`, `show ip nat statistics`, `clear ip nat translation *` | 5.2 NAT | `env.runtime` `natTranslations` (expiry vs `env.now`) / `natStatistics` + `features.nat` |
+| `show ip ssh`, `show ssh`, `show users`, `show crypto key mypubkey rsa` | 5.2 remote access | `management.ssh`, `domainName`, the CLI session |
+| `telnet`, `ssh -l` (router and host) | 5.2 remote access | `job: { kind: 'remoteConnect', … }` → `RemoteConnectResult` |
 
 Without a running simulation `env.runtime` is `undefined`: tables print empty, `ping` still returns a
 job (the UI creates the engine).
@@ -212,6 +237,11 @@ job (the UI creates the engine).
 | C3 router | `src/cli/router/**` | exports `routerCommandSet` — `ip address`, `encapsulation dot1Q` (creates the sub-interface: `DeviceEdits.updateSubInterface(…, create)`), `ip route`, `ip routing`, `ip dhcp pool/excluded-address` (+ dhcp mode), `ip helper-address`, `clock rate`, `show ip interface brief`, `show ip route`, `show arp`, `show ip dhcp binding`, `ping`, `traceroute` |
 | C4 host + views | `src/cli/host/**`, `src/features/device/config/**` | Windows commands; Config tab (running/startup text via `shell.runningConfig`), lab-wide export |
 | CI integrator | `src/cli/commandSets.ts`, UI wiring | adds `switchCommandSet`, `routerCommandSet` to `CLI_COMMAND_SETS` |
+| Pack 5.2 A (ACL) | `src/cli/acl/**` | `aclCommandSet` — `access-list`, `ip access-list standard\|extended` (+ `accessList` mode, sequence numbers, `remark`), `ip access-list resequence`, `ip access-group in\|out`, `show (ip) access-lists`, `clear access-list counters` |
+| Pack 5.2 B (NAT) | `src/cli/nat/**` | `natCommandSet` — `ip nat pool`, `ip nat inside source static\|list …`, `ip nat inside\|outside`, `show ip nat translations\|statistics`, `clear ip nat translation *` |
+| Pack 5.2 C (remote access) | `src/cli/remote/**` (+ core line commands) | `remoteAccessCommandSet` — `ip domain-name`, `username`, `crypto key generate\|zeroize rsa`, `ip ssh …`, vty `transport input` / `login local` / `access-class`, `show ip ssh` / `ssh` / `users` / `crypto key mypubkey rsa`, `telnet`, `ssh` |
+
+`CLI_COMMAND_SETS` order since pack 5.2: switch, router, ACL, NAT, remote access (docs/SECURITY_PACK.md §6).
 
 Fixed for wave 4.1 (change only through the coordinator): everything exported from
 `src/cli/contract`, `CliShell`'s public methods, `keyword` / `param` / `CliWhens`, `DeviceEdits`,

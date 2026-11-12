@@ -1,6 +1,73 @@
 {
   "section": {
     "title": "Uzaktan erişim (SSH / Telnet)",
-    "placeholder": "SSH, Telnet ve yerel kullanıcılar şimdilik komut satırından ayarlanıyor (username, crypto key generate rsa, line vty)."
+    "intro": "Ağ üzerinden kimin, nasıl giriş yapabileceği. Komut satırındaki ip domain-name, crypto key generate rsa, ip ssh, username ve line vty ayarlarının aynısı."
+  },
+  "fields": {
+    "domainName": "Alan adı",
+    "domainNameHint": "RSA anahtarları için gerekli, ör. lab.local.",
+    "keyBits": "RSA anahtar boyu (bit)",
+    "keyBitsHint": "360 ile 4096 arası; boş = anahtar yok, yani SSH kapalı. 1024 ve üstü iyi bir seçim.",
+    "sshVersion": "SSH sürümü",
+    "timeout": "Giriş zaman aşımı (saniye)",
+    "retries": "İzin verilen giriş denemesi",
+    "vty": "Uzak hatlar (vty)",
+    "transport": "İzin verilen protokoller",
+    "login": "Giriş denetimi",
+    "linePassword": "Hat parolası",
+    "linePasswordHint": "Hat parolası denetiminde kullanılır. Bu denetimde boş bırakılırsa uzaktan girişler reddedilir.",
+    "users": "Yerel kullanıcılar"
+  },
+  "sshVersions": {
+    "both": "1 ve 2 (varsayılan)",
+    "1": "Yalnız sürüm 1",
+    "2": "Yalnız sürüm 2"
+  },
+  "transports": {
+    "all": "SSH ve Telnet (varsayılan)",
+    "ssh": "Yalnız SSH",
+    "telnet": "Yalnız Telnet",
+    "none": "Hiçbiri"
+  },
+  "loginModes": {
+    "line": "Hat parolası (login)",
+    "local": "Yerel kullanıcılar (login local)",
+    "none": "Denetim yok (no login)"
+  },
+  "loginHints": {
+    "line": "Telnet hat parolasını sorar. SSH ise yerel kullanıcı ister.",
+    "local": "Telnet ve SSH, aşağıdaki listeden kullanıcı adı ve parola sorar.",
+    "none": "Telnet parolasız girer. Güvenli değil; SSH yine de yerel kullanıcı ister."
+  },
+  "users": {
+    "item": "Kullanıcı {{index}}",
+    "empty": "Henüz yerel kullanıcı yok.",
+    "add": "Kullanıcı ekle",
+    "remove": "{{index}}. kullanıcıyı kaldır",
+    "name": "Kullanıcı adı",
+    "privilege": "Yetki seviyesi",
+    "privilegeHint": "0 ile 15 arası; 15 = tam yetki.",
+    "kind": "Saklama biçimi",
+    "kinds": {
+      "secret": "Secret (karma olarak gösterilir)",
+      "password": "Parola"
+    },
+    "credential": "Secret ya da parola"
+  },
+  "errors": {
+    "range": "{{min}} ile {{max}} arasında bir tam sayı girin.",
+    "keysNeedDomain": "Önce bir alan adı girin: anahtarlar onun adını alır.",
+    "userName": "Kullanıcı adında boşluk olamaz."
+  },
+  "session": {
+    "opened": "{{hostname}} cihazına girildi (yetki seviyesi {{privilege}}). Uzak komut istemi henüz simüle edilmiyor, oturum burada biter."
+  },
+  "cli": {
+    "vtyOnly": "transport input yalnız vty hatlarında çalışır (line vty 0 4)."
+  },
+  "terminal": {
+    "passwordHint": "Bu terminal komut çalışırken parola soramaz: parolayı -pw <parola> ile ekleyin.",
+    "sshUsage": "Kullanım: ssh -l <kullanıcı adı> [-pw <parola>] <IP adresi>",
+    "telnetUsage": "Kullanım: telnet <IP adresi> [-l <kullanıcı adı>] [-pw <parola>]"
   }
 }

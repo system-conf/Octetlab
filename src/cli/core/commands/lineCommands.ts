@@ -32,10 +32,16 @@ function without<Key extends keyof LineSettings>(settings: LineSettings, key: Ke
   return copy
 }
 
-/** The line type's default (console: no login, vty: login) is stored as "not set". */
+/**
+ * The line type's default (console: no login, vty: login) is stored as "not set". `login` and `no login`
+ * replace `login local` (pack 5.2), as on IOS where the line has one login method.
+ */
 function setLogin(ctx: CliContext, login: boolean): CliCommandResult {
   const byDefault = ctx.mode.kind === 'line' && ctx.mode.lineType === 'vty'
-  return updateLine(ctx, (settings) => (login === byDefault ? without(settings, 'login') : { ...settings, login }))
+  return updateLine(ctx, (current) => {
+    const settings = without(current, 'loginLocal')
+    return login === byDefault ? without(settings, 'login') : { ...settings, login }
+  })
 }
 
 function vtyRange(ctx: CliContext): CliCommandResult {

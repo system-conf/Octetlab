@@ -8,6 +8,8 @@ import type {
   SimRequest,
   Undeliverable,
 } from '../contract'
+import { AclRuntime } from '../policy/acl/AclRuntime'
+import { NatRuntime } from '../policy/nat/NatRuntime'
 import type { PacketPolicy } from '../policy/PacketPolicy'
 import { SecurityPolicies } from '../policy/SecurityPolicies'
 import { CloudStack } from './CloudStack'
@@ -99,7 +101,16 @@ export class Ipv4NetworkLayer implements NetworkLayer, LocalStack {
     this.clients.onTimer(ctx, timer)
   }
 
+  /** ping / tracert, and the pack 5.2 tables (`clear ip nat translation *`, `clear access-list counters`). */
   onRequest(ctx: DeviceContext, requestId: string, request: SimRequest): void {
+    if (request.kind === 'clearTable' && request.table === 'natTranslations') {
+      ctx.report(requestId, { kind: 'cleared', entries: NatRuntime.clear(ctx) }, true)
+      return
+    }
+    if (request.kind === 'clearTable' && request.table === 'aclCounters') {
+      ctx.report(requestId, { kind: 'cleared', entries: AclRuntime.clear(ctx) }, true)
+      return
+    }
     this.clients.start(ctx, requestId, request)
   }
 }

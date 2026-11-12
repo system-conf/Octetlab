@@ -1165,6 +1165,149 @@
         "ICMP time exceeded",
         "Hops"
       ]
+    },
+    "securityGuestAcl": {
+      "title": "Guest Wi-Fi away from the till (ACL)",
+      "summary": "An extended access list stops café guests from reaching the till while they keep their internet.",
+      "intro": {
+        "what": "R1 routes three networks: the office (192.168.10.0/24, the till POS1 and PC1), the guest Wi-Fi (192.168.20.0/24, GUEST1 on AP1) and the internet. Because R1 routes between every network it knows, the guest laptop can reach the till. An access list (ACL) is an ordered list of permit and deny lines that the router checks for every packet on an interface.",
+        "why": "Separate subnets are not a wall: the router joins them. An ACL decides which packets may cross. The router reads the lines top to bottom, the first matching line decides, and a hidden 'deny any' ends every list. A standard ACL looks only at the source address; an extended ACL also looks at the destination, the protocol and the ports.",
+        "realWorld": "Every shop, café and hotel with free Wi-Fi must keep guests away from the till, the card terminal and the office PCs. The usual tool on a business router is exactly this: an extended ACL on the guest interface, applied inbound, as close to the guests as possible."
+      },
+      "steps": {
+        "guestSeesTill": {
+          "title": "See the problem",
+          "detail": "On GUEST1, ping 192.168.10.20 (the till) and 8.8.8.8. Both answer: nothing stops a guest from talking to the till."
+        },
+        "writeList": {
+          "title": "Write the list",
+          "detail": "On R1 (CLI or the access lists card): ip access-list extended GUEST_IN, then deny ip 192.168.20.0 0.0.0.255 192.168.10.0 0.0.0.255 and permit ip any any. The wildcard 0.0.0.255 means 'the last octet may be anything'."
+        },
+        "applyInbound": {
+          "title": "Apply it where the guests come in",
+          "detail": "interface Gi0/2, ip access-group GUEST_IN in. Ping the till from GUEST1 again: 'Reply from 192.168.20.1: Destination host unreachable.' R1 drops the packet and says so. A ping to 8.8.8.8 still works."
+        },
+        "readCounters": {
+          "title": "Read the counters",
+          "detail": "On R1, show access-lists: every line shows how many packets it matched. The deny line counts the blocked pings, the permit line the guest's internet traffic. clear access-list counters starts them from zero."
+        },
+        "watchDrop": {
+          "title": "Watch the drop",
+          "detail": "In Simulation mode, ping the till once from GUEST1. The echo request reaches R1 on Gi0/2 and stops there: the inspector shows that the access list denied it, and R1 sends an ICMP 'administratively prohibited' back to the guest."
+        }
+      },
+      "breakIt": {
+        "forgetPermit": {
+          "change": "Remove the permit ip any any line from GUEST_IN.",
+          "result": "The hidden deny any at the end now drops everything the guests send: no till, but no internet either."
+        },
+        "wrongDirection": {
+          "change": "Apply GUEST_IN out on Gi0/2 instead of in.",
+          "result": "Nothing is blocked: outbound on Gi0/2 only sees packets going to the guests, and none of them comes from 192.168.20.0/24."
+        },
+        "standardAtSource": {
+          "change": "Use a standard list instead: access-list 10 deny 192.168.20.0 0.0.0.255, access-list 10 permit any, applied in on Gi0/2.",
+          "result": "A standard list sees only the source, so every guest packet is denied: the guests lose the internet too. A standard ACL belongs close to the destination; an extended one close to the source."
+        }
+      },
+      "topics": [
+        "ACL",
+        "Extended ACL",
+        "Wildcard mask",
+        "Implicit deny",
+        "Guest Wi-Fi"
+      ]
+    },
+    "securityOfficePat": {
+      "title": "One public address for the whole office (PAT)",
+      "summary": "R1 shares its single public address with every PC by translating addresses and ports.",
+      "intro": {
+        "what": "The provider gave the office one public address, 203.0.113.2 on R1's Gi0/1, and routes back only that address. The PCs use private addresses (192.168.1.0/24). R1 runs PAT (NAT overload): it rewrites each outgoing packet's source to 203.0.113.2 plus a port, remembers the mapping and puts the private address back on the answer.",
+        "why": "Private addresses (10/8, 172.16/12, 192.168/16) are not routed on the internet: an answer to 192.168.1.10 would have nowhere to go. Overload lets thousands of inside connections share one public address because the port number tells them apart.",
+        "realWorld": "Almost every home and small business works this way. When the provider's modem is set to bridge mode or replaced by your own router, the NAT moves to your router and has to be configured: an ACL that lists the inside network, ip nat inside / outside on the interfaces and ip nat inside source list … interface … overload."
+      },
+      "steps": {
+        "pingWeb": {
+          "title": "Reach the server",
+          "detail": "From PC1 and PC2, ping WEB1 (198.51.100.10). Both get replies although ISP has no route to 192.168.1.0/24."
+        },
+        "readTranslations": {
+          "title": "Read the translation table",
+          "detail": "Right after the pings, show ip nat translations on R1. Each row pairs an inside local address (192.168.1.10) with the inside global one (203.0.113.2) and a port; for ping the ICMP identifier plays the port's role."
+        },
+        "watchRewrite": {
+          "title": "Watch the rewrite",
+          "detail": "In Simulation mode, ping WEB1 once from PC1. Open the echo request before and after R1: the source changes from 192.168.1.10 to 203.0.113.2. On the reply it changes back."
+        },
+        "readStatistics": {
+          "title": "Read the statistics",
+          "detail": "show ip nat statistics shows the inside and outside interfaces, the hits and misses and the dynamic rule built on access-list 1. clear ip nat translation * empties the dynamic table."
+        }
+      },
+      "breakIt": {
+        "dropInside": {
+          "change": "On Gi0/0, remove ip nat inside.",
+          "result": "R1 no longer translates the PCs' traffic: the requests leave with 192.168.1.x and the answers are dropped at ISP. The pings time out."
+        },
+        "wrongNetwork": {
+          "change": "Change access-list 1 to permit 192.168.2.0 0.0.0.255.",
+          "result": "The list no longer matches the office, so nothing is translated and the pings time out: the NAT list must name the inside addresses to translate."
+        }
+      },
+      "topics": [
+        "NAT",
+        "PAT (overload)",
+        "Private addresses",
+        "Inside / outside"
+      ]
+    },
+    "securitySshOnly": {
+      "title": "Manage the router over SSH only",
+      "summary": "Replace Telnet and its shared password with SSH and a personal user account.",
+      "intro": {
+        "what": "R1 can be managed remotely over its vty lines. Today they accept Telnet with one shared password, which everyone knows and which travels across the network unencrypted. SSH encrypts the session and, with login local, every administrator logs in with their own user name.",
+        "why": "SSH needs four things on the router: a host name, a domain name (they name the key), an RSA key pair, and somewhere to check users (login local + username). transport input ssh then closes the Telnet door.",
+        "realWorld": "Telnet is still found on old office routers. Moving to SSH is one of the first hardening steps of any audit, together with personal accounts instead of a shared password and an access-class that allows management only from the IT network."
+      },
+      "steps": {
+        "telnetToday": {
+          "title": "Telnet today",
+          "detail": "From PC1, telnet 192.168.1.1 and enter the shared password (Kafe2024). The session opens: anyone who sniffs the network could read that password."
+        },
+        "prepareKeys": {
+          "title": "Name and keys",
+          "detail": "On R1: ip domain name lab.local, then crypto key generate rsa general-keys modulus 2048 (the key is named R1.lab.local). show ip ssh confirms that SSH is enabled; add ip ssh version 2."
+        },
+        "localUser": {
+          "title": "A personal account",
+          "detail": "username admin privilege 15 secret <a strong password>. The secret is stored as a hash, unlike a line password."
+        },
+        "sshOnly": {
+          "title": "SSH only on the vty lines",
+          "detail": "line vty 0 4, login local, transport input ssh. From PC1, telnet 192.168.1.1 is now refused."
+        },
+        "sshIn": {
+          "title": "Log in with SSH",
+          "detail": "From LAPTOP1, ssh -l admin 192.168.1.1 and enter the user's password. The session opens and R1 answers with its name; in this lab a remote session ends there (no remote prompt yet)."
+        }
+      },
+      "breakIt": {
+        "zeroizeKeys": {
+          "change": "On R1, crypto key zeroize rsa.",
+          "result": "Without a key pair the router cannot run SSH: the connection is refused until you generate the keys again."
+        },
+        "noUsers": {
+          "change": "Delete the user admin but keep login local.",
+          "result": "SSH still connects, but no account matches: authentication fails. Always create the user before switching the lines to login local."
+        }
+      },
+      "topics": [
+        "SSH",
+        "Telnet",
+        "login local",
+        "RSA keys",
+        "vty lines"
+      ]
     }
   }
 }

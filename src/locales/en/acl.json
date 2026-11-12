@@ -1,7 +1,32 @@
 {
   "section": {
     "title": "Access lists (ACL)",
-    "placeholder": "Access lists are configured in the CLI for now (access-list, ip access-list)."
+    "intro": "Each line is one IOS entry, checked from top to bottom: the first match decides, and anything that matches no line is denied. An empty list allows everything.",
+    "empty": "No access lists yet.",
+    "add": "Add access list",
+    "item": "Access list {{name}}",
+    "itemNew": "New access list",
+    "remove": "Remove access list {{name}}",
+    "name": "Name or number",
+    "nameHint": "1-99 / 1300-1999 standard, 100-199 / 2000-2699 extended, or a name such as BLOCK_WEB.",
+    "type": "Type",
+    "typeStandard": "Standard (source address only)",
+    "typeExtended": "Extended (protocol, source, destination, ports)",
+    "entries": "Entries, one per line",
+    "entriesHint": "Like the CLI without the sequence number, e.g. \"permit 192.168.1.0 0.0.0.255\", \"deny tcp any host 10.0.0.5 eq www\", \"remark Staff only\".",
+    "errors": {
+      "nameRequired": "Enter a name or number.",
+      "nameInvalid": "A name is one word that does not start with a digit; a number must be in the ranges of the chosen type.",
+      "nameDuplicate": "Another access list already has this name."
+    },
+    "problems": {
+      "action": "Line {{line}}: start with permit, deny or remark.",
+      "address": "Line {{line}}: write an address as \"any\", \"host A.B.C.D\" or \"A.B.C.D wildcard\".",
+      "protocol": "Line {{line}}: name the protocol: ip, icmp, tcp or udp.",
+      "port": "Line {{line}}: write a port as eq / neq / gt / lt <port> or range <low> <high> (a number or a name such as www).",
+      "extra": "Line {{line}}: unexpected words at the end: \"{{text}}\".",
+      "remark": "Line {{line}}: a remark needs text (up to 100 characters)."
+    }
   },
   "port": {
     "inbound": "Inbound access list",
@@ -9,5 +34,15 @@
     "none": "None",
     "hint": "Name or number of an access list; leave empty for none.",
     "nameError": "An access list name is one word without spaces."
+  },
+  "cli": {
+    "switchportGroup": "This lab filters with access lists on routed ports, sub-interfaces and VLAN interfaces only, not on switchports.",
+    "vtyOnly": "In this lab, access-class works on the vty lines only (line vty 0 4)."
+  },
+  "notes": {
+    "permitted": "Access list {{acl}} ({{direction}} on {{iface}}): entry {{seq}} permits the packet.",
+    "denied": "Access list {{acl}} ({{direction}} on {{iface}}): entry {{seq}} denies the packet.",
+    "implicitDeny": "Access list {{acl}} ({{direction}} on {{iface}}): no entry matches, so the implicit \"deny any\" at the end drops the packet.",
+    "noEntries": "Access list {{acl}} ({{direction}} on {{iface}}) does not exist or has no entries, so the packet is allowed."
   }
 }

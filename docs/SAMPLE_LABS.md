@@ -25,7 +25,7 @@ level and required feature; "Open" loads it as a free lab (unlocked) with the le
 | Packet view | ARP step by step; MAC learning; TTL and tracert | Phase 3 |
 | Device CLI | first switch config; router basic config; `show` commands tour | Phase 4 |
 | STP / EtherChannel / CDP-LLDP / port security | loops and blocking; LACP bundle; neighbour discovery; sticky MAC | pack 5.1 |
-| ACL / NAT / SSH-AAA | standard and extended ACL; static NAT, PAT; SSH login | pack 5.2 |
+| ACL / NAT / SSH-AAA | standard and extended ACL; static NAT, PAT; SSH login (`securityGuestAcl`, `securityOfficePat`, `securitySshOnly`; manual steps, promises tested on the simulator) | pack 5.2 |
 | Dynamic routing / HSRP | RIPv2; OSPF single and multi-area; EIGRP; gateway redundancy | pack 5.3 |
 | IPv6 | addressing; SLAAC; stateless and stateful DHCPv6; OSPFv3; dual stack | pack 5.4 |
 | Servers and apps | web (HTTP/HTTPS), FTP/TFTP, e-mail, NTP, Syslog | pack 5.5 |

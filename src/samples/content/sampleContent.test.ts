@@ -27,13 +27,13 @@ describe('sample content', () => {
     expect(validator.validateAll(sampleDefinitions)).toEqual([])
   })
 
-  it('covers every "now" and Phase 3 category, and every sample is available in the catalogue', () => {
+  it('covers every "now", Phase 3 and pack 5.2 category, and every sample is available in the catalogue', () => {
     const catalog = new SampleCatalog(sampleDefinitions)
-    const shipped = SAMPLE_CATEGORIES.filter((category) => category.delivery === 'now' || category.delivery === 'phase3').map((category) => category.id)
+    const shipped = SAMPLE_CATEGORIES.filter((category) => category.delivery === 'now' || category.delivery === 'phase3' || category.delivery === 'pack5.2').map((category) => category.id)
     expect(catalog.byCategory().map((group) => group.category.id)).toEqual(shipped)
     expect(catalog.available().map((sample) => sample.id).sort()).toEqual(contentSamples.map((sample) => sample.id).sort())
     const counts = Object.fromEntries(catalog.byCategory().map((group) => [group.category.id, group.samples.length]))
-    expect(counts).toEqual({ basics: 5, dhcp: 5, dns: 3, switching: 6, routing: 3, packetView: 3 })
+    expect(counts).toEqual({ basics: 5, dhcp: 5, dns: 3, switching: 6, routing: 3, packetView: 3, security: 3 })
   })
 
   it.each(contentSamples.map((sample) => [sample.id, sample] as const))('%s opens as a valid lab with final hostnames', (_, sample) => {

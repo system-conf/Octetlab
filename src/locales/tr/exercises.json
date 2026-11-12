@@ -162,5 +162,68 @@
       "muhasebe": "PC Muhasebe",
       "satis": "PC Satış"
     }
+  },
+  "cafeGuestWifi": {
+    "title": "Misafirler kasayı görüyor",
+    "complaint": {
+      "from": "Kafe sahibi",
+      "message": "Misafir Wi-Fi'ına bağlanan bir müşteri dizüstü bilgisayarından kasamızı görebildiğini söyledi. Misafirler sadece internete çıksın, başka hiçbir şeye değil."
+    },
+    "hints": [
+      "Misafir dizüstü bilgisayarından kasaya (192.168.10.20) ve 8.8.8.8 adresine ping at. İkisi de cevap veriyor: router iki ağa da bağlı olduğu için misafir ağı ile ofis ağı arasında paketleri taşıyor.",
+      "Çözüm router'da, misafir trafiğinin girdiği portta (Gi0/2, 192.168.20.1). Oradaki bir süzgeç misafir → ofis trafiğini atmalı, misafir → internet trafiğini geçirmeli; erişim listeleri kartıyla ya da komut satırıyla yazabilirsin.",
+      "Router'da: ip access-list extended GUEST_IN, deny ip 192.168.20.0 0.0.0.255 192.168.10.0 0.0.0.255, permit ip any any; sonra interface Gi0/2 altında ip access-group GUEST_IN in. permit satırını unutma: her listenin sonunda görünmeyen bir deny any vardır."
+    ],
+    "explanation": {
+      "whatHappened": "Router'ın iki ağda da adresi vardı (ofis 192.168.10.1, misafir 192.168.20.1); bu yüzden aralarındaki trafiği de her trafik gibi yönlendirdi ve misafirler kasaya ve ofis PC'sine ulaşabildi. Farklı alt ağlar tek başına hiçbir şeyi ayırmaz. Misafir portuna gelen yönde (in) uygulanan genişletilmiş bir erişim listesi artık 192.168.20.0/24'ten 192.168.10.0/24'e giden paketleri atıyor, gerisine izin veriyor; misafirler internete çıkmaya devam ediyor. Router attığı her paket için geriye ICMP 'administratively prohibited' (yönetimsel olarak yasak) mesajı gönderir.",
+      "realLife": "Ücretsiz Wi-Fi veren her kafe, otel ve mağaza misafirleri kasadan, kart terminalinden ve ofis bilgisayarlarından uzak tutmak zorundadır; kartlı ödeme kuralları da bunu bekler. Küçük router'larda bu 'misafir izolasyonu' diye geçer; işletme router'ında bir erişim listesi yazarsın. Listeyi kısa tut, en özel satırı en üste koy, sondaki görünmeyen deny'ı unutma ve hem engellenmesi gerekeni hem de çalışmaya devam etmesi gerekeni test et.",
+      "interviewAnswer": "Önce sorunu doğrularım: misafir cihazından kasaya ve internetteki bir adrese ping atarım, ikisi de cevap verir; demek ki router misafir ve ofis alt ağları arasında yönlendiriyor. Sonra misafir alt ağından ofis alt ağına giden trafiği reddeden, gerisine izin veren genişletilmiş bir ACL yazar ve kaynağa en yakın yere, misafir arayüzüne gelen yönde uygularım. Son olarak tekrar test ederim: kasa artık cevap vermemeli, misafir internete çıkabilmeli ve show access-lists deny satırında eşleşme sayısı göstermeli."
+    },
+    "topics": [
+      "ACL",
+      "Genişletilmiş ACL",
+      "Misafir Wi-Fi",
+      "Ağ ayrımı"
+    ],
+    "devices": {
+      "internet": "İnternet",
+      "router": "Kafe router'ı",
+      "switch": "Ofis switch'i",
+      "kasa": "Kasa (POS)",
+      "ofisPc": "Ofis PC",
+      "misafirAp": "Misafir Wi-Fi erişim noktası",
+      "misafirLaptop": "Misafir dizüstü bilgisayarı"
+    }
+  },
+  "officeSharedIp": {
+    "title": "Ofis vergi portalına giremiyor",
+    "complaint": {
+      "from": "Muhasebe bürosu müdürü",
+      "message": "İnternet sağlayıcısı dün yeni hattımızı kurdu ve bize tek bir sabit IP verdi. O günden beri hiçbir bilgisayarımız vergi portalını açamıyor. Sağlayıcı hattın sağlam olduğunu söylüyor."
+    },
+    "hints": [
+      "Bir ofis bilgisayarından vergi portalına (198.51.100.10), sonra ofis router'ının hat adresine (203.0.113.2) ping at: router cevap veriyor, portal vermiyor. Şimdi portala ofis router'ının kendi komut satırından ping at: çalışıyor. Portalın 192.168.1.10'a vereceği cevabın nereye gittiğini düşün.",
+      "Özel adresler (192.168.x.x) internette yönlendirilmez: sağlayıcı yalnızca sana verdiği tek genel adresi (203.0.113.2) geri yönlendirir. Ofis router'ı bilgisayarların trafiğini bu adresle dışarı göndermeli ve kimin sorduğunu hatırlamalı: overload ile NAT (PAT).",
+      "Ofis router'ında: access-list 1 permit 192.168.1.0 0.0.0.255; interface Gi0/0 altında ip nat inside; interface Gi0/1 altında ip nat outside; sonra ip nat inside source list 1 interface Gi0/1 overload. Bir ping'den sonra show ip nat translations ile kontrol et."
+    ],
+    "explanation": {
+      "whatHappened": "Bilgisayarların istekleri portala 192.168.1.x özel kaynak adresiyle ulaştı. Portal cevap verdi ama sağlayıcının router'ında 192.168.1.0/24'e rota yoktu (internette kimsede yoktur), bu yüzden her cevap atıldı. PAT ile ofis router'ı kaynağı tek genel adresi 203.0.113.2 ve bir port numarasıyla değiştiriyor, bir çeviri tablosu tutuyor ve cevaplara doğru özel adresi geri koyuyor. Artık bütün bilgisayarlar tek bir genel adresi paylaşıyor.",
+      "realLife": "Neredeyse her küçük işletme ve ev ağı böyle çalışır: sağlayıcıdan bir genel adres, arkasında çok sayıda cihaz. NAT'ı genelde sağlayıcının modemi yapar; modem köprü moduna alınınca ya da yerine kendi router'ın konunca NAT'ı kendi router'ında kurman gerekir. Tipik belirti: router internete ping atabiliyor, bilgisayarlar atamıyor.",
+      "interviewAnswer": "Adım adım test ederim: bilgisayar ağ geçidine ulaşıyor, router sağlayıcıya ve portala ulaşıyor ama bilgisayar portala ulaşamıyor. Bu dönüş yolunu işaret eder: özel adresler internette yönlendirilmez. PAT kurarım: iç ağı listeleyen bir ACL, LAN arayüzünde ip nat inside, WAN arayüzünde ip nat outside ve ip nat inside source list … interface … overload. Sonra bir ping ve show ip nat translations ile doğrularım; bu komut her iç adresi, verilen genel adres ve portla birlikte listeler."
+    },
+    "topics": [
+      "NAT",
+      "PAT (overload)",
+      "Özel adresler",
+      "Dönüş yolu"
+    ],
+    "devices": {
+      "portal": "Vergi portalı sunucusu",
+      "isp": "Sağlayıcı router'ı",
+      "router": "Ofis router'ı",
+      "switch": "Ofis switch'i",
+      "muhasebePc": "Muhasebe PC",
+      "mudurPc": "Müdür PC"
+    }
   }
 }

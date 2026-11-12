@@ -153,7 +153,10 @@ Checks in order, first failure wins; `side` names the bad end where it applies:
 **Auto-MDIX** is on by default (`autoMdix` absent = true), so straight and crossover both work on every
 copper link, as on modern gear. Pinout default: MDI-X on switch, L3 switch, hub, cloud and the
 switched ports of a wireless router; MDI elsewhere. `autoCable` always proposes the *textbook* cable
-(straight MDI↔MDI-X, crossover otherwise) for teaching value; serial defaults to `dceEnd: 'a'`.
+(straight MDI↔MDI-X, crossover otherwise) for teaching value, except that an access point is always
+cabled straight-through, also to a router (pack 5.2 fix; with auto-MDIX off on both ends a crossover to
+an AP is refused with `straightThroughRequired`; the AP port itself stays MDI); serial defaults to
+`dceEnd: 'a'`.
 CableRules decides what may be plugged in; link lights and traffic are the engine's business
 (e.g. serial needs `clockRate` on the DCE end for the line protocol, unknown SSID = no association).
 
@@ -181,16 +184,18 @@ const router2Port: DeviceModel = {
 
 ## 8. Extension points (protocol packs)
 
-Each key below exists today as `key?: never`; the pack gives it a type (plus zod schema, engine,
-CLI, UI). Adding optional data never needs a lab migration; changing existing fields does (§9).
+Each key below exists as `key?: never` until its pack gives it a type (plus zod schema, simulator,
+CLI, UI); the pack 5.2 keys are typed. Adding optional data never needs a lab migration or a
+`schemaVersion` bump; changing existing fields does (§9). An older cached app refuses a lab that uses
+newer optional data (zod), and the PWA update flow fixes that.
 
 | Pack | Where |
 |---|---|
 | 5.1 STP/RSTP/PVST+ | `SwitchingSettings.features.stp`, `SwitchportSettings.features.stp` |
 | 5.1 EtherChannel | `SwitchportSettings.features.channelGroup` (+ a `Port-channel` logical interface list added to `switching`) |
 | 5.1 port security, CDP/LLDP | `SwitchportSettings.features.portSecurity`, `DeviceFeatures.discovery` |
-| 5.2 ACL / NAT | `DeviceFeatures.accessLists`, `DeviceFeatures.nat`; bindings `L3Features.accessGroups`, `L3Features.natRole` |
-| 5.2 SSH/Telnet, AAA · Phase 4 CLI | `DeviceFeatures.management` (hostname, secrets, lines, startup-config), `DeviceServices.aaa` |
+| 5.2 ACL / NAT (typed, in progress: docs/SECURITY_PACK.md) | `DeviceFeatures.accessLists: AccessListSettings` (`AccessListTypes.ts`), `DeviceFeatures.nat: NatSettings` (`NatTypes.ts`); bindings `L3Features.accessGroups: AclBinding`, `L3Features.natRole: NatRole` (hosts ignore both) |
+| 5.2 SSH/Telnet, local AAA · Phase 4 CLI | `DeviceFeatures.management` (hostname, secrets, lines, startup-config; 5.2 adds `domainName`, `users`, `ssh`, vty `transportInput` / `loginLocal` / `accessClass`). `DeviceServices.aaa` stays `never`: local AAA lives in `management.users`, server AAA (RADIUS / TACACS+) waits for the server pack 5.5 |
 | 5.3 RIP/OSPF/EIGRP, HSRP | `RoutingSettings.features.{rip,ospf,eigrp}`, `L3Features.{rip,ospf,eigrp,hsrp}` |
 | 5.4 IPv6 | `L3Settings.ipv6` (+ IPv6 static routes as a sibling list, `HostSettings` IPv6 gateway/DNS) |
 | 5.5 servers | `DeviceServices.{http,ftp,tftp,email,syslog,ntp}`, more `DnsRecord` types; real apps replace `appLinks` |
@@ -216,9 +221,12 @@ layout: { devices: Record<deviceId, {x,y}>, viewport? }, notes, annotations }`. 
 `ExerciseDefinition { id, order, setting: 'restaurant'|'office'|'shop', lab: { state, layout },
 solvedWhen: SolveCondition[], locks: ExerciseLock[] }` — data only; texts stay in the `exercises`
 namespace keyed by id (I18N.md §5). `SolveCondition` = v1 conditions (`internet`, `resolves`,
-`reachable`, `appLinksOk`). `ExerciseLock`: `{ scope: 'topology' }`, `{ scope: 'link', linkId }`,
-`{ scope: 'device' | 'section' | 'port', …, access: 'readOnly' | 'hidden' }`; sections `power, ports,
-host, switching, routing, wireless, services, internet, terminal`. Anything not locked is editable.
+`reachable`, `appLinksOk`) plus `unreachable` (pack 5.2: the target has an address and cannot be
+reached). `ExerciseLock`: `{ scope: 'topology' }`, `{ scope: 'link', linkId }`,
+`{ scope: 'device' | 'section' | 'port', …, access: 'readOnly' | 'hidden' }`, `{ scope: 'placement',
+deviceId }`; sections `power, ports, host, switching, routing, wireless, services, internet, terminal,
+security` (5.2: access lists, NAT, users, SSH, domain name). Anything not locked is editable. The
+pack 5.2 exercises (`src/scenarios/security`) are written as v2 data, not migrated.
 `Exercise` = definition + `texts` (title, complaint, guide ×3, explanation, topics) for the UI.
 Note: setting ids are now English; I2 renames `landing:settings.{restoran,ofis,magaza}` accordingly.
 
@@ -291,8 +299,9 @@ device, static-route interface ids exist, pool subnets match an interface.
   both sides, however it was assigned (static or DHCP); interfaces of routing devices keep it.
 - Routing: connected subnets of up interfaces + static routes, longest prefix, then AD; a static route
   whose next hop is one of the router's own addresses is ignored (IOS refuses it). Hosts need the gateway
-  in their own subnet. Every reply needs a way back, hop by hop, internet replies included (no NAT before
-  pack 5.2); an ICMP error reaches the sender only if the reporting router can route back to it, else
+  in their own subnet. Every reply needs a way back, hop by hop, internet replies included. The engine
+  has no NAT (and no ACL) even after pack 5.2: they exist in the simulator only (SIMULATION.md §10.3.7),
+  and the cloud still answers private sources there too (SECURITY_PACK.md §2.1); an ICMP error reaches the sender only if the reporting router can route back to it, else
   ping times out and tracert shows `*` for that router. Echo to a broadcast address gets no answer.
   Public destinations follow §5.
 - DNS forwarding: router with `services.dns.enabled` resolves via `forwarders` (reachability from

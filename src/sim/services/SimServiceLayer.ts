@@ -21,7 +21,8 @@ import { DhcpServer } from './DhcpServer'
 import { DnsClient } from './DnsClient'
 import { DnsServer } from './DnsServer'
 import { HttpClient } from './HttpClient'
-import { RemoteConnectStub } from './remote/RemoteConnectStub'
+import { RemoteClient } from './remote/RemoteClient'
+import { RemoteServer } from './remote/RemoteServer'
 import { ServiceChanges } from './ServiceChanges'
 import { ServiceNotes } from './ServiceNotes'
 import { ServiceRuntimes } from './ServiceRuntimes'
@@ -29,7 +30,8 @@ import { WebServer } from './WebServer'
 
 /**
  * The services layer (S3, docs/SIMULATION.md §6.3, §7.3): DHCP server / relay / client, DNS client /
- * server / forwarder and the internet's public resolvers, HTTP client and the internet's web servers.
+ * server / forwarder and the internet's public resolvers, HTTP client and the internet's web servers,
+ * SSH / Telnet client and vty server (pack 5.2).
  * Stateless: everything a device learns lives in its `runtime.services` slice.
  */
 export class SimServiceLayer implements ServiceLayer {
@@ -47,7 +49,7 @@ export class SimServiceLayer implements ServiceLayer {
       return DnsClient.listens(ctx, dstPort) || DnsServer.forwardListens(ctx, dstPort)
     }
     if (DeviceProfiles.of(ctx.device).isp && dstPort === SIM_PORTS.http && Ipv4.isPublic(dstIp)) return true
-    return HttpClient.listens(ctx, dstPort)
+    return HttpClient.listens(ctx, dstPort) || RemoteServer.listens(ctx, dstPort) || RemoteClient.listens(ctx, dstPort)
   }
 
   onDatagram(ctx: DeviceContext, delivery: TransportDelivery): void {
@@ -68,6 +70,8 @@ export class SimServiceLayer implements ServiceLayer {
     } else if (transport.kind === 'tcp') {
       if (DeviceProfiles.of(ctx.device).isp && transport.dstPort === SIM_PORTS.http) return WebServer.onSegment(ctx, delivery, transport)
       if (HttpClient.onSegment(ctx, delivery, transport)) return
+      if (RemoteClient.onSegment(ctx, delivery, transport)) return
+      if (RemoteServer.onSegment(ctx, delivery, transport)) return
       return SimServiceLayer.stale(event)
     }
     event.conclude('dropped', 4, 'unsupported')
@@ -81,6 +85,7 @@ export class SimServiceLayer implements ServiceLayer {
       if (DnsServer.onIcmpError(ctx, report, quote.srcPort, original.dst)) return
     } else if (quote.kind === 'tcp') {
       if (HttpClient.onIcmpError(ctx, report, quote.srcPort, original.dst)) return
+      if (RemoteClient.onIcmpError(ctx, report, quote.srcPort, original.dst)) return
     }
     SimServiceLayer.stale(report.event)
   }
@@ -95,6 +100,8 @@ export class SimServiceLayer implements ServiceLayer {
         return DnsServer.onTimeout(ctx, timer.upstreamQueryId)
       case 'httpTimeout':
         return HttpClient.onTimeout(ctx, timer.requestId)
+      case 'remoteTimeout':
+        return RemoteClient.onTimeout(ctx, timer.requestId)
     }
   }
 
@@ -112,7 +119,7 @@ export class SimServiceLayer implements ServiceLayer {
         if (request.table === 'dnsCache') return SimServiceLayer.flushDns(ctx, requestId)
         throw new Error(`clearTable ${request.table} belongs to the link layer`)
       case 'remoteConnect':
-        return RemoteConnectStub.start(ctx, requestId, request)
+        return RemoteClient.start(ctx, requestId, request)
       case 'ping':
       case 'tracert':
         throw new Error(`${request.kind} belongs to the network layer`)

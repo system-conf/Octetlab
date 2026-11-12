@@ -1165,6 +1165,149 @@
         "ICMP time exceeded",
         "Sekmeler"
       ]
+    },
+    "securityGuestAcl": {
+      "title": "Misafir Wi-Fi kasadan uzak (ACL)",
+      "summary": "Genişletilmiş bir erişim listesi kafe misafirlerinin kasaya ulaşmasını engeller, internetleri kalır.",
+      "intro": {
+        "what": "R1 üç ağı yönlendiriyor: ofis (192.168.10.0/24, kasa POS1 ve PC1), misafir Wi-Fi (192.168.20.0/24, AP1'e bağlı GUEST1) ve internet. R1 bildiği her ağ arasında yönlendirme yaptığı için misafir dizüstü bilgisayarı kasaya ulaşabiliyor. Erişim listesi (ACL), router'ın bir arayüzdeki her paket için sırayla baktığı permit (izin ver) ve deny (reddet) satırlarından oluşan bir listedir.",
+        "why": "Ayrı alt ağlar bir duvar değildir: router onları birleştirir. Hangi paketin geçeceğine ACL karar verir. Router satırları yukarıdan aşağı okur, ilk eşleşen satır karar verir ve her listenin sonunda görünmeyen bir 'deny any' vardır. Standart ACL yalnızca kaynak adrese bakar; genişletilmiş ACL hedefe, protokole ve portlara da bakar.",
+        "realWorld": "Ücretsiz Wi-Fi veren her mağaza, kafe ve otel misafirleri kasadan, kart terminalinden ve ofis bilgisayarlarından uzak tutmak zorundadır. İşletme router'ında bunun olağan aracı tam olarak budur: misafir arayüzünde, gelen yönde ve misafirlere olabildiğince yakın uygulanan genişletilmiş bir ACL."
+      },
+      "steps": {
+        "guestSeesTill": {
+          "title": "Sorunu gör",
+          "detail": "GUEST1'den 192.168.10.20'ye (kasa) ve 8.8.8.8'e ping at. İkisi de cevap veriyor: hiçbir şey misafirin kasayla konuşmasını engellemiyor."
+        },
+        "writeList": {
+          "title": "Listeyi yaz",
+          "detail": "R1'de (komut satırı ya da erişim listeleri kartı): ip access-list extended GUEST_IN, ardından deny ip 192.168.20.0 0.0.0.255 192.168.10.0 0.0.0.255 ve permit ip any any. 0.0.0.255 joker maskesi 'son oktet ne olursa olsun' demektir."
+        },
+        "applyInbound": {
+          "title": "Misafirlerin girdiği yere uygula",
+          "detail": "interface Gi0/2, ip access-group GUEST_IN in. GUEST1'den kasaya yeniden ping at: 'Reply from 192.168.20.1: Destination host unreachable.' R1 paketi atıyor ve bunu söylüyor. 8.8.8.8'e ping hâlâ çalışıyor."
+        },
+        "readCounters": {
+          "title": "Sayaçları oku",
+          "detail": "R1'de show access-lists: her satır kaç paketle eşleştiğini gösterir. deny satırı engellenen ping'leri, permit satırı misafirin internet trafiğini sayar. clear access-list counters sayaçları sıfırlar."
+        },
+        "watchDrop": {
+          "title": "Paketin atılışını izle",
+          "detail": "Simülasyon modunda GUEST1'den kasaya bir kez ping at. Echo isteği Gi0/2'den R1'e ulaşıyor ve orada duruyor: inceleyici erişim listesinin onu reddettiğini gösteriyor, R1 de misafire ICMP 'administratively prohibited' (yönetimsel olarak yasak) gönderiyor."
+        }
+      },
+      "breakIt": {
+        "forgetPermit": {
+          "change": "GUEST_IN'den permit ip any any satırını sil.",
+          "result": "Sondaki görünmeyen deny any artık misafirlerin gönderdiği her şeyi atıyor: kasa yok ama internet de yok."
+        },
+        "wrongDirection": {
+          "change": "GUEST_IN'i Gi0/2'ye in yerine out uygula.",
+          "result": "Hiçbir şey engellenmiyor: Gi0/2'de dışarı yönü yalnızca misafirlere giden paketleri görür ve hiçbiri 192.168.20.0/24'ten gelmez."
+        },
+        "standardAtSource": {
+          "change": "Bunun yerine standart bir liste kullan: access-list 10 deny 192.168.20.0 0.0.0.255, access-list 10 permit any, Gi0/2'ye in uygulanmış.",
+          "result": "Standart liste yalnızca kaynağı görür, bu yüzden misafirin her paketi reddedilir: misafirler interneti de kaybeder. Standart ACL hedefe yakın, genişletilmiş ACL kaynağa yakın konur."
+        }
+      },
+      "topics": [
+        "ACL",
+        "Genişletilmiş ACL",
+        "Joker maske",
+        "Örtük deny",
+        "Misafir Wi-Fi"
+      ]
+    },
+    "securityOfficePat": {
+      "title": "Bütün ofise tek genel adres (PAT)",
+      "summary": "R1, adresleri ve portları çevirerek tek genel adresini her bilgisayarla paylaşır.",
+      "intro": {
+        "what": "Sağlayıcı ofise tek bir genel adres verdi, R1'in Gi0/1'indeki 203.0.113.2, ve yalnızca bu adresi geri yönlendiriyor. Bilgisayarlar özel adres kullanıyor (192.168.1.0/24). R1 PAT (NAT overload) çalıştırıyor: giden her paketin kaynağını 203.0.113.2 ve bir port olarak yeniden yazıyor, eşleşmeyi hatırlıyor ve cevaba özel adresi geri koyuyor.",
+        "why": "Özel adresler (10/8, 172.16/12, 192.168/16) internette yönlendirilmez: 192.168.1.10'a gidecek bir cevabın gidecek yeri yoktur. Overload, binlerce iç bağlantının tek genel adresi paylaşmasını sağlar, çünkü onları port numarası ayırır.",
+        "realWorld": "Neredeyse her ev ve küçük işletme böyle çalışır. Sağlayıcının modemi köprü moduna alındığında ya da yerine kendi router'ın konduğunda NAT senin router'ına geçer ve kurulması gerekir: iç ağı listeleyen bir ACL, arayüzlerde ip nat inside / outside ve ip nat inside source list … interface … overload."
+      },
+      "steps": {
+        "pingWeb": {
+          "title": "Sunucuya ulaş",
+          "detail": "PC1 ve PC2'den WEB1'e (198.51.100.10) ping at. ISP'nin 192.168.1.0/24'e rotası olmadığı hâlde ikisi de cevap alıyor."
+        },
+        "readTranslations": {
+          "title": "Çeviri tablosunu oku",
+          "detail": "Ping'lerden hemen sonra R1'de show ip nat translations. Her satır bir iç yerel adresi (192.168.1.10) iç genel adresle (203.0.113.2) ve bir portla eşler; ping'de portun rolünü ICMP tanımlayıcısı (identifier) oynar."
+        },
+        "watchRewrite": {
+          "title": "Yeniden yazmayı izle",
+          "detail": "Simülasyon modunda PC1'den WEB1'e bir kez ping at. Echo isteğini R1'den önce ve sonra aç: kaynak 192.168.1.10'dan 203.0.113.2'ye dönüşüyor. Cevapta geri dönüşüyor."
+        },
+        "readStatistics": {
+          "title": "İstatistikleri oku",
+          "detail": "show ip nat statistics iç ve dış arayüzleri, isabet (hit) ve ıskaları (miss) ve access-list 1 üzerine kurulu dinamik kuralı gösterir. clear ip nat translation * dinamik tabloyu boşaltır."
+        }
+      },
+      "breakIt": {
+        "dropInside": {
+          "change": "Gi0/0'dan ip nat inside'ı kaldır.",
+          "result": "R1 artık bilgisayarların trafiğini çevirmiyor: istekler 192.168.1.x ile çıkıyor ve cevaplar ISP'de atılıyor. Ping'ler zaman aşımına uğruyor."
+        },
+        "wrongNetwork": {
+          "change": "access-list 1'i permit 192.168.2.0 0.0.0.255 yap.",
+          "result": "Liste artık ofisle eşleşmiyor, hiçbir şey çevrilmiyor ve ping'ler zaman aşımına uğruyor: NAT listesi çevrilecek iç adresleri göstermelidir."
+        }
+      },
+      "topics": [
+        "NAT",
+        "PAT (overload)",
+        "Özel adresler",
+        "Inside / outside"
+      ]
+    },
+    "securitySshOnly": {
+      "title": "Router'ı yalnızca SSH ile yönet",
+      "summary": "Telnet'i ve ortak parolasını SSH ve kişisel bir kullanıcı hesabıyla değiştir.",
+      "intro": {
+        "what": "R1 vty hatları üzerinden uzaktan yönetilebilir. Bugün bu hatlar Telnet'i tek bir ortak parolayla kabul ediyor; bu parolayı herkes biliyor ve ağda şifrelenmeden gidiyor. SSH oturumu şifreler ve login local ile her yönetici kendi kullanıcı adıyla girer.",
+        "why": "SSH için router'da dört şey gerekir: bir ana bilgisayar adı (hostname), bir alan adı (ikisi anahtara ad verir), bir RSA anahtar çifti ve kullanıcıların kontrol edileceği bir yer (login local + username). Ardından transport input ssh Telnet kapısını kapatır.",
+        "realWorld": "Eski ofis router'larında Telnet hâlâ karşımıza çıkar. SSH'ye geçmek her denetimin ilk sıkılaştırma adımlarındandır; ortak parola yerine kişisel hesaplar ve yönetime yalnızca BT ağından izin veren bir access-class ile birlikte."
+      },
+      "steps": {
+        "telnetToday": {
+          "title": "Bugün Telnet",
+          "detail": "PC1'den telnet 192.168.1.1 yaz ve ortak parolayı (Kafe2024) gir. Oturum açılıyor: ağı dinleyen herkes bu parolayı okuyabilirdi."
+        },
+        "prepareKeys": {
+          "title": "Ad ve anahtarlar",
+          "detail": "R1'de: ip domain name lab.local, ardından crypto key generate rsa general-keys modulus 2048 (anahtarın adı R1.lab.local olur). show ip ssh SSH'nin açıldığını doğrular; ip ssh version 2 ekle."
+        },
+        "localUser": {
+          "title": "Kişisel bir hesap",
+          "detail": "username admin privilege 15 secret <güçlü bir parola>. secret, hat parolasının aksine özet (hash) olarak saklanır."
+        },
+        "sshOnly": {
+          "title": "vty hatlarında yalnızca SSH",
+          "detail": "line vty 0 4, login local, transport input ssh. PC1'den telnet 192.168.1.1 artık reddediliyor."
+        },
+        "sshIn": {
+          "title": "SSH ile gir",
+          "detail": "LAPTOP1'den ssh -l admin 192.168.1.1 yaz ve kullanıcının parolasını gir. Oturum açılıyor ve R1 adıyla cevap veriyor; bu labda uzak oturum burada biter (henüz uzak komut istemi yok)."
+        }
+      },
+      "breakIt": {
+        "zeroizeKeys": {
+          "change": "R1'de crypto key zeroize rsa.",
+          "result": "Anahtar çifti olmadan router SSH çalıştıramaz: anahtarları yeniden üretene kadar bağlantı reddedilir."
+        },
+        "noUsers": {
+          "change": "admin kullanıcısını sil ama login local'i bırak.",
+          "result": "SSH hâlâ bağlanıyor ama hiçbir hesap eşleşmiyor: kimlik doğrulama başarısız. Hatları login local'e geçirmeden önce her zaman kullanıcıyı oluştur."
+        }
+      },
+      "topics": [
+        "SSH",
+        "Telnet",
+        "login local",
+        "RSA anahtarları",
+        "vty hatları"
+      ]
     }
   }
 }

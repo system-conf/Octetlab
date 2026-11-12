@@ -36,6 +36,8 @@ export type CommandStage =
   | { readonly kind: 'nslookup'; readonly deviceId: string; readonly name: string }
   | { readonly kind: 'dhcp'; readonly deviceId: string }
   | { readonly kind: 'arpClear'; readonly deviceId: string }
+  /** Pack 5.2: `ssh` / `telnet` (the output comes from the record alone). */
+  | { readonly kind: 'remote'; readonly deviceId: string }
 
 export class CommandStages {
   /**
@@ -57,9 +59,10 @@ export class CommandStages {
       case 'dhcpRenew':
       case 'dhcpRelease':
         return { kind: 'dhcp', deviceId }
+      case 'remoteConnect':
+        return { kind: 'remote', deviceId }
       case 'clearTable':
       case 'httpGet':
-      case 'remoteConnect':
         return { kind: 'arpClear', deviceId }
     }
   }

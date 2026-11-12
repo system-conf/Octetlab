@@ -63,12 +63,15 @@ export interface SimHttpGetRequest {
   readonly path: string
 }
 
-/** `arp -d`, `clear ip arp`, `clear mac address-table dynamic`, `ipconfig /flushdns`. No packets. */
+/**
+ * `arp -d`, `clear ip arp`, `clear mac address-table dynamic`, `ipconfig /flushdns`,
+ * `clear ip nat translation *`, `clear access-list counters`. No packets.
+ */
 export interface SimClearTableRequest {
   readonly kind: 'clearTable'
   readonly deviceId: string
-  /** arp, mac: link layer (S1); dnsCache: services (S3). */
-  readonly table: 'arp' | 'mac' | 'dnsCache'
+  /** arp, mac: link layer (S1); dnsCache: services (S3); natTranslations, aclCounters: network layer (pack 5.2). */
+  readonly table: 'arp' | 'mac' | 'dnsCache' | 'natTranslations' | 'aclCounters'
 }
 
 /**

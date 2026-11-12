@@ -1,6 +1,73 @@
 {
   "section": {
     "title": "Remote access (SSH / Telnet)",
-    "placeholder": "SSH, Telnet and local users are configured in the CLI for now (username, crypto key generate rsa, line vty)."
+    "intro": "Who may log in over the network, and how. Same settings as ip domain-name, crypto key generate rsa, ip ssh, username and line vty in the CLI."
+  },
+  "fields": {
+    "domainName": "Domain name",
+    "domainNameHint": "Needed for the RSA keys, e.g. lab.local.",
+    "keyBits": "RSA key size (bits)",
+    "keyBitsHint": "360 to 4096; empty = no keys, so SSH is off. 1024 or more is a good choice.",
+    "sshVersion": "SSH version",
+    "timeout": "Login time-out (seconds)",
+    "retries": "Login attempts allowed",
+    "vty": "Remote lines (vty)",
+    "transport": "Allowed protocols",
+    "login": "Login check",
+    "linePassword": "Line password",
+    "linePasswordHint": "Used by the line password check. Empty with that check = remote logins are refused.",
+    "users": "Local users"
+  },
+  "sshVersions": {
+    "both": "1 and 2 (default)",
+    "1": "Version 1 only",
+    "2": "Version 2 only"
+  },
+  "transports": {
+    "all": "SSH and Telnet (default)",
+    "ssh": "SSH only",
+    "telnet": "Telnet only",
+    "none": "None"
+  },
+  "loginModes": {
+    "line": "Line password (login)",
+    "local": "Local users (login local)",
+    "none": "No check (no login)"
+  },
+  "loginHints": {
+    "line": "Telnet asks for the line password. SSH needs local users instead.",
+    "local": "Telnet and SSH ask for a user name and password from the list below.",
+    "none": "Telnet gets in without a password. Not safe; SSH still needs local users."
+  },
+  "users": {
+    "item": "User {{index}}",
+    "empty": "No local users yet.",
+    "add": "Add user",
+    "remove": "Remove user {{index}}",
+    "name": "User name",
+    "privilege": "Privilege level",
+    "privilegeHint": "0 to 15; 15 = full access.",
+    "kind": "Stored as",
+    "kinds": {
+      "secret": "Secret (shown hashed)",
+      "password": "Password"
+    },
+    "credential": "Secret or password"
+  },
+  "errors": {
+    "range": "Enter a whole number from {{min}} to {{max}}.",
+    "keysNeedDomain": "Set a domain name first: the keys are named after it.",
+    "userName": "A user name has no spaces."
+  },
+  "session": {
+    "opened": "Logged in to {{hostname}} (privilege level {{privilege}}). The remote prompt is not simulated yet, so the session ends here."
+  },
+  "cli": {
+    "vtyOnly": "transport input works on the vty lines only (line vty 0 4)."
+  },
+  "terminal": {
+    "passwordHint": "This terminal cannot ask for a password while the command runs: add it with -pw <password>.",
+    "sshUsage": "Usage: ssh -l <user name> [-pw <password>] <IP address>",
+    "telnetUsage": "Usage: telnet <IP address> [-l <user name>] [-pw <password>]"
   }
 }

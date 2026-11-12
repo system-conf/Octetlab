@@ -9,6 +9,7 @@ import {
   type CableType,
   type DeviceKind,
   type Device,
+  type DeviceFeatures,
   type L3Settings,
   type LabDocument,
   type Link,
@@ -60,9 +61,36 @@ const BUILDERS: Readonly<Partial<Record<DeviceKind, () => Port[]>>> = {
 const KINDS = Object.keys(BUILDERS) as DeviceKind[]
 const CABLES: CableType[] = ['copperStraight', 'copperCross', 'fiber', 'serial', 'console', 'coaxial', 'wireless']
 
+/** Pack 5.2 data every generated router carries: lists, NAT, local AAA / SSH (docs/SECURITY_PACK.md §3). */
+const ROUTER_SECURITY: DeviceFeatures = {
+  accessLists: {
+    lists: [
+      { name: '1', type: 'standard', entries: [{ seq: 10, kind: 'standard', action: 'permit', source: { address: '192.168.1.0', wildcard: '0.0.0.255' } }] },
+      {
+        name: 'EDGE_IN',
+        type: 'extended',
+        entries: [
+          { seq: 5, kind: 'remark', text: 'web only' },
+          { seq: 10, kind: 'extended', action: 'permit', protocol: 'tcp', source: { address: '0.0.0.0', wildcard: '255.255.255.255' }, destination: { address: '10.0.0.1', wildcard: '0.0.0.0' }, destinationPort: { op: 'eq', port: 443 } },
+        ],
+      },
+    ],
+  },
+  nat: { pools: [], statics: [], dynamics: [{ kind: 'dynamic', aclName: '1', target: { kind: 'interface', interfaceId: 'Gi0/0' }, overload: true }] },
+  management: { domainName: 'lab.local', users: [{ name: 'admin', secret: 's', privilege: 15 }], ssh: { version: 2, rsaKeyBits: 1024 }, lines: { vty: { loginLocal: true, transportInput: ['ssh'] } } },
+}
+
+function withSecurity(device: Device): Device {
+  const ports = device.ports.map((item): Port =>
+    item.role === 'routed' && item.id === 'Gi0/0' ? { ...item, l3: { ...item.l3, features: { accessGroups: { in: 'EDGE_IN' }, natRole: 'outside' } } } : item,
+  )
+  return { ...device, ports, features: ROUTER_SECURITY }
+}
+
 function build(kind: DeviceKind, id: string): Device {
   const ports = BUILDERS[kind]?.() ?? []
   const base: Device = { id, kind, modelId: kind, name: id, powered: true, baseMac: nextMac(), ports }
+  if (kind === 'router') return withSecurity(base)
   return kind === 'accessPoint' ? { ...base, wireless: { ssids: [{ ssid: 'Office', vlan: 1, security: { mode: 'open' } }] } } : base
 }
 
@@ -79,7 +107,7 @@ function freePorts(doc: LabDocument, device: Device): Port[] {
 }
 
 /** How often interesting outcomes happened, so the test proves it exercised them. */
-const seen = { connected: 0, refused: 0, linkDroppedByUpdate: 0, updateRefused: 0, removedWithLinks: 0 }
+const seen = { connected: 0, refused: 0, linkDroppedByUpdate: 0, updateRefused: 0, removedWithLinks: 0, securityEdited: 0 }
 
 const index = fc.nat({ max: 50 })
 const coordinate = fc.integer({ min: -2000, max: 2000 })
@@ -132,7 +160,7 @@ const linkStep = fc.record({ i: index, remove: fc.boolean(), connected: fc.boole
   },
 )
 
-const PORT_CHANGES = ['dropPort', 'fiber', 'mdixOff', 'badVlan', 'duplicatePort', 'rename'] as const
+const PORT_CHANGES = ['dropPort', 'fiber', 'mdixOff', 'badVlan', 'duplicatePort', 'rename', 'dropLists', 'duplicateAcl'] as const
 
 const updateStep = fc.record({ i: index, p: index, change: fc.constantFrom(...PORT_CHANGES), name: fc.string() }).map(
   ({ i, p, change, name }): Step =>
@@ -159,6 +187,18 @@ const updateStep = fc.record({ i: index, p: index, change: fc.constantFrom(...PO
           return expectRefused(doc, { ...target, ports: [...target.ports, { ...chosen, mac: undefined }] })
         case 'rename':
           return editor.renameDevice(doc, target.id, name)
+        case 'dropLists': {
+          // Toggles the lists: bindings to a list that no longer exists stay valid (they permit everything,
+          // SECURITY_PACK.md §2.4); a device without lists gets the router's pack 5.2 data.
+          seen.securityEdited += 1
+          const lists = (target.features?.accessLists?.lists.length ?? 0) > 0 ? { lists: [] } : ROUTER_SECURITY.accessLists
+          return editor.updateDevice(doc, { ...target, features: { ...target.features, accessLists: lists } })
+        }
+        case 'duplicateAcl': {
+          const list = target.features?.accessLists?.lists[0]
+          if (!list) return doc
+          return expectRefused(doc, { ...target, features: { ...target.features, accessLists: { lists: [list, list] } } })
+        }
       }
     },
 )
@@ -185,11 +225,18 @@ const annotationStep = fc.record({ i: index, op: fc.constantFrom('add', 'update'
 
 const step = fc.oneof(addStep, addStep, removeStep, moveStep, connectStep, connectStep, connectStep, linkStep, updateStep, updateStep, annotationStep)
 
+function securityData(device: Device): unknown {
+  const l3 = device.ports.flatMap((item) => (item.role === 'routed' ? [item.l3.features ?? null] : []))
+  return { features: device.features ?? null, l3 }
+}
+
 function expectConsistent(doc: LabDocument): void {
   expect(invariants.violations(doc.state)).toEqual([])
   expect(Object.keys(doc.layout.devices).sort()).toEqual(doc.state.devices.map((device) => device.id).sort())
   const reloaded = serializer.parse(serializer.serialize(doc))
   expect(reloaded.ok).toBe(true)
+  // Pack 5.2 data (device features, port bindings and NAT roles) comes back exactly.
+  if (reloaded.ok) expect(reloaded.doc.state.devices.map(securityData)).toEqual(doc.state.devices.map(securityData))
 }
 
 describe('LabEditor random edit sequences', () => {

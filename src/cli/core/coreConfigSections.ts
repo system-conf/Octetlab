@@ -17,14 +17,28 @@ function passwordLine(prefix: string, password: string, encrypted: boolean): str
   return encrypted ? `${prefix} 7 ${PasswordEncoding.type7(password)}` : `${prefix} ${password}`
 }
 
-/** Lines of one `line …` block (IOS order: exec-timeout, password, logging synchronous, login). */
+/** `transport input …` as IOS writes it (telnet before ssh); absent = all, the default, not written. */
+function transportLine(transports: LineSettings['transportInput']): string[] {
+  if (transports === undefined) return []
+  if (transports.length === 0) return [' transport input none']
+  return [` transport input ${(['telnet', 'ssh'] as const).filter((name) => transports.includes(name)).join(' ')}`]
+}
+
+/**
+ * Lines of one `line …` block (IOS order: access-class, exec-timeout, password, logging synchronous,
+ * login / login local, transport input).
+ */
 function lineBody(settings: LineSettings, loginByDefault: boolean, encrypted: boolean): string[] {
   const lines: string[] = []
+  if (settings.accessClass?.in !== undefined) lines.push(` access-class ${settings.accessClass.in} in`)
+  if (settings.accessClass?.out !== undefined) lines.push(` access-class ${settings.accessClass.out} out`)
   const timeout = settings.execTimeout
   if (timeout !== undefined && (timeout.minutes !== 10 || timeout.seconds !== 0)) lines.push(` exec-timeout ${timeout.minutes} ${timeout.seconds}`)
   if (settings.password !== undefined) lines.push(` ${passwordLine('password', settings.password, encrypted)}`)
   if (settings.loggingSynchronous === true) lines.push(' logging synchronous')
-  if (settings.login ?? loginByDefault) lines.push(' login')
+  if (settings.loginLocal === true) lines.push(' login local')
+  else if (settings.login ?? loginByDefault) lines.push(' login')
+  lines.push(...transportLine(settings.transportInput))
   return lines
 }
 

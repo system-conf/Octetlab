@@ -140,5 +140,58 @@
       "muhasebe": "Accounting PC",
       "satis": "Sales PC"
     }
+  },
+  "cafeGuestWifi": {
+    "title": "Guests can see the till",
+    "complaint": {
+      "from": "Café owner",
+      "message": "A customer on our guest Wi-Fi told me he could see our till from his laptop. Guests should only get internet, nothing else."
+    },
+    "hints": [
+      "From the guest laptop, ping the till (192.168.10.20) and 8.8.8.8. Both answer: the router forwards between the guest network and the office network because it has a route to both.",
+      "The fix belongs on the router, on the port the guest traffic enters (Gi0/2, 192.168.20.1). A filter there has to drop guest → office traffic but let guest → internet traffic through; the access lists card or the CLI can write it.",
+      "On the router: ip access-list extended GUEST_IN, deny ip 192.168.20.0 0.0.0.255 192.168.10.0 0.0.0.255, permit ip any any, then on interface Gi0/2: ip access-group GUEST_IN in. Do not forget the permit line: every list ends with a hidden deny any."
+    ],
+    "explanation": {
+      "whatHappened": "The router had an address in both networks (192.168.10.1 office, 192.168.20.1 guests), so it routed between them like any other traffic: guests could reach the till and the office PC. Separate subnets alone do not isolate anything. An extended access list on the guest port, applied inbound, now drops packets from 192.168.20.0/24 to 192.168.10.0/24 and permits the rest, so guests still get online. For each dropped packet the router sends back an ICMP 'administratively prohibited' message.",
+      "realLife": "Every café, hotel and shop that offers free Wi-Fi has to keep guests away from the till, the card terminal and the office PCs; card payment rules also expect it. Small routers often call it 'guest isolation'; on a business router you write an access list. Keep the list short, put the most specific line first, remember the implicit deny at the end and test both what must be blocked and what must still work.",
+      "interviewAnswer": "I would first confirm the problem: from a guest device I ping the till and an internet address and both answer, so the router routes between the guest and office subnets. I then write an extended ACL that denies the guest subnet to the office subnet and permits everything else, and apply it inbound on the guest interface, as close to the source as possible. Finally I test again: the till must no longer answer, the guest must still reach the internet, and show access-lists must show matches on the deny line."
+    },
+    "topics": ["ACL", "Extended ACL", "Guest Wi-Fi", "Network segmentation"],
+    "devices": {
+      "internet": "Internet",
+      "router": "Café router",
+      "switch": "Office switch",
+      "kasa": "Till (POS)",
+      "ofisPc": "Office PC",
+      "misafirAp": "Guest Wi-Fi access point",
+      "misafirLaptop": "Guest laptop"
+    }
+  },
+  "officeSharedIp": {
+    "title": "The office cannot reach the tax portal",
+    "complaint": {
+      "from": "Accounting office manager",
+      "message": "The provider installed our new line yesterday and gave us a single fixed IP. Since then none of our computers can open the tax portal. The provider says the line is fine."
+    },
+    "hints": [
+      "From an office PC, ping the tax portal (198.51.100.10) and then the office router's line address (203.0.113.2): the router answers, the portal does not. Now ping the portal from the office router's own command line: it works. Ask yourself where the portal sends its answer to 192.168.1.10.",
+      "Private addresses (192.168.x.x) are not routed on the internet: the provider routes back only the single public address it gave you (203.0.113.2). The office router has to send the PCs' traffic out with that address and remember who asked: NAT with overload (PAT).",
+      "On the office router: access-list 1 permit 192.168.1.0 0.0.0.255; interface Gi0/0: ip nat inside; interface Gi0/1: ip nat outside; then ip nat inside source list 1 interface Gi0/1 overload. Check with show ip nat translations after a ping."
+    ],
+    "explanation": {
+      "whatHappened": "The PCs' requests reached the portal with their private source address 192.168.1.x. The portal answered, but the provider's router had no route to 192.168.1.0/24 (no one on the internet has), so every answer was dropped. With PAT the office router replaces the source with its single public address 203.0.113.2 and a port number, keeps a translation table, and puts the right private address back on the answers. Now all the PCs share one public address.",
+      "realLife": "Almost every small business and home network works like this: one public address from the provider, many devices behind it. Usually the provider's modem does the NAT; when the modem is put in bridge mode or replaced by your own router, the NAT has to be configured on your router. A typical sign: the router can ping the internet, the PCs cannot.",
+      "interviewAnswer": "I would test step by step: the PC reaches its gateway, the router reaches the provider and the portal, but the PC does not reach the portal. That points at the return path: private addresses are not routed on the internet. I would configure PAT: an ACL that lists the inside network, ip nat inside on the LAN interface, ip nat outside on the WAN interface and ip nat inside source list … interface … overload. Then I verify with a ping and show ip nat translations, which lists each inside address with the public address and port it was given."
+    },
+    "topics": ["NAT", "PAT (overload)", "Private addresses", "Return path"],
+    "devices": {
+      "portal": "Tax portal server",
+      "isp": "Provider router",
+      "router": "Office router",
+      "switch": "Office switch",
+      "muhasebePc": "Accounting PC",
+      "mudurPc": "Manager PC"
+    }
   }
 }

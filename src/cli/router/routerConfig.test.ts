@@ -153,10 +153,14 @@ describe('router CLI: running-config', () => {
     expect(cli.shell.runningConfig(replayed)).toEqual(config)
   })
 
-  // Needs the core (CliRunner) to retry a sub-mode line in global config when it is invalid past its first
-  // word, like IOS: running-config writes `ip route` right after the last interface block and
-  // `no ip domain-lookup` / `no ip routing` right after the last `ip dhcp pool` block.
-  it.todo('replays global lines that follow an interface or dhcp pool block without help')
+  // IOS: a sub-mode line invalid past its first word runs in global config (CliRunner): running-config
+  // writes `ip route` right after the last interface block and `no ip …` right after an `ip dhcp pool`.
+  it('replays global lines that follow an interface or dhcp pool block without help', () => {
+    const cli = configuredRouter()
+    const replayed = cli.shell.replay(FactoryReset.interfacesUp(FactoryReset.of(cli.device)), cli.config().join('\n'))
+    expect(replayed.routing?.staticRoutes).toEqual(cli.device.routing?.staticRoutes)
+    expect(replayed.features?.management?.domainLookup).toBe(cli.device.features?.management?.domainLookup)
+  })
 })
 
 describe('router CLI: saving and management (core commands with the router set)', () => {

@@ -49,6 +49,15 @@ describe('CableRules.check — copper and auto-MDIX', () => {
     expect(request({ a: end('sw', 'Fa0/1'), b: end('sw2', 'Fa0/1'), cable: 'copperStraight' }, oneEnd)).toEqual({ ok: true })
   })
 
+  it('needs a straight-through cable between a router and an access point with auto-MDIX off', () => {
+    const state = noMdix(noMdix(lab, 'router', 'Gi0/0'), 'ap', 'Gi0')
+    expect(request({ a: end('router', 'Gi0/0'), b: end('ap', 'Gi0'), cable: 'copperStraight' }, state)).toEqual({ ok: true })
+    expect(request({ a: end('router', 'Gi0/0'), b: end('ap', 'Gi0'), cable: 'copperCross' }, state)).toEqual({
+      ok: false,
+      reason: 'straightThroughRequired',
+    })
+  })
+
   it('uses an explicit pinout over the derived one', () => {
     const state = noMdix(noMdix(updatePort(lab, 'pc', 'eth0', (port) => ({ ...port, pinout: 'mdix' })), 'pc', 'eth0'), 'sw', 'Fa0/1')
     expect(request({ a: end('pc', 'eth0'), b: end('sw', 'Fa0/1'), cable: 'copperStraight' }, state)).toEqual({
@@ -183,6 +192,19 @@ describe('CableRules.autoCable', () => {
     expect(rules.autoCable(lab, end('router', 'Gi0/0'), end('sw', 'Fa0/1'))).toBe('copperStraight')
     expect(rules.autoCable(lab, end('sw', 'Fa0/1'), end('sw2', 'Fa0/1'))).toBe('copperCross')
     expect(rules.autoCable(lab, end('router', 'Gi0/0'), end('pc', 'eth0'))).toBe('copperCross')
+  })
+
+  it('cables an access point straight-through, to a router as well as to a switch', () => {
+    expect(rules.autoCable(lab, end('router', 'Gi0/0'), end('ap', 'Gi0'))).toBe('copperStraight')
+    expect(rules.autoCable(lab, end('ap', 'Gi0'), end('router', 'Gi0/0'))).toBe('copperStraight')
+    expect(rules.autoCable(lab, end('ap', 'Gi0'), end('sw', 'Fa0/1'))).toBe('copperStraight')
+  })
+
+  it('keeps the access point port MDI (it is not an MDI-X kind)', () => {
+    const ap = lab.devices.find((device) => device.id === 'ap')
+    const port = ap?.ports.find((candidate) => candidate.id === 'Gi0')
+    if (!ap || !port) throw new Error('cableLab has no ap/Gi0')
+    expect(rules.pinoutOf(ap, port)).toBe('mdi')
   })
 
   it('picks the cable of the shared medium', () => {

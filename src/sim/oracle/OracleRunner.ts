@@ -2,6 +2,7 @@
 // in the lab plus a public address and an address only a routing loop leads to) and groups mismatches.
 import type { NetworkState } from '../../domain'
 import { DeviceAddresses, HostAttachment, Topology } from '../../engine'
+import { Divergences } from './Divergences'
 import { type Mismatch, OracleChecks, type OracleTally } from './OracleChecks'
 import { TerminalChecks } from './TerminalChecks'
 
@@ -20,6 +21,11 @@ const SHAPE_KEYS = ['ok', 'reason', 'kind', 'aborted', 'reach', 'outcome', 'echo
 export class OracleRunner {
   /** Every mismatch of the chosen kinds on `state` (fresh simulator per request). */
   static check(state: NetworkState, tally: OracleTally, kinds: readonly CheckKind[] = CHECK_KINDS): Mismatch[] {
+    // The rule engine knows no ACL / NAT: such a lab is skipped as a whole, never compared (§10.3.7).
+    if (Divergences.securityPolicies(state)) {
+      tally.skip('securityPolicies')
+      return []
+    }
     const checks = new OracleChecks(state, tally)
     const terminal = new TerminalChecks(state, checks.sim, tally)
     const topology = Topology.of(state)

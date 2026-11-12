@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { makeDevice, routedPort } from '../../domain/testDevices'
 import type { DeviceContext, EventBuilder, Ipv4Packet } from '../contract'
 import type { EgressPacket, IngressPacket, PacketPolicy, PolicyVerdict } from './PacketPolicy'
 import { PacketPolicyChain } from './PacketPolicyChain'
@@ -12,7 +13,8 @@ const packet: Ipv4Packet = {
   identification: 1,
   payload: { kind: 'icmp', type: 'echoRequest', identifier: 1, sequence: 1, dataBytes: 32 },
 } as Ipv4Packet
-const ctx = {} as DeviceContext
+// A router without ACL or NAT configuration: the real policies must pass packets through untouched.
+const ctx = { device: makeDevice('router1', 'router', [routedPort('Gi0/0'), routedPort('Gi0/1')]) } as DeviceContext
 const event = {} as EventBuilder
 
 /** Records the order it was called in and rewrites the TTL to prove packets flow on. */

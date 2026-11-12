@@ -2,7 +2,7 @@
 import { findDeviceModel } from '../../catalog/DeviceCatalog'
 import { DeviceDefaults } from '../../catalog/DeviceDefaults'
 import { PortFactory } from '../../catalog/PortFactory'
-import type { Device, Port, PortTemplate } from '../../domain'
+import type { Device, ManagementSettings, Port, PortTemplate } from '../../domain'
 
 const factory = new PortFactory()
 const defaults = new DeviceDefaults()
@@ -23,7 +23,8 @@ export class FactoryReset {
   /**
    * Factory configuration of the device: identity, power, port ids and MACs kept; ports from the catalog
    * model's templates (an L3-switch port turned routed is a switchport again) and the kind's default
-   * settings groups; of the management settings only the NVRAM startup-config survives.
+   * settings groups; of the management settings only the NVRAM startup-config and the RSA key pair
+   * (`ssh.rsaKeyBits`, kept in NVRAM outside running-config on IOS; docs/SECURITY_PACK.md §2.5) survive.
    */
   static of(device: Device): Device {
     const model = findDeviceModel(device.modelId)
@@ -40,7 +41,12 @@ export class FactoryReset {
       ports,
       ...defaults.settingsFor(device.kind, ports),
     }
-    return startupConfig === undefined ? reset : { ...reset, features: { management: { startupConfig } } }
+    const rsaKeyBits = device.features?.management?.ssh?.rsaKeyBits
+    const management: ManagementSettings = {
+      ...(startupConfig === undefined ? {} : { startupConfig }),
+      ...(rsaKeyBits === undefined ? {} : { ssh: { rsaKeyBits } }),
+    }
+    return Object.keys(management).length === 0 ? reset : { ...reset, features: { management } }
   }
 
   /**

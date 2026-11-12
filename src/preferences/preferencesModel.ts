@@ -22,7 +22,7 @@ export const DEVICE_STYLES = ['simple', 'classic', 'realistic'] as const
 export const SIMULATION_MODES = ['realtime', 'simulation'] as const
 /** Event-list protocols in chip order (same list as FILTER_PROTOCOLS in features/simulation). */
 export const EVENT_FILTER_PROTOCOLS = [
-  'arp', 'icmp', 'dhcp', 'dns', 'http', 'tcp', 'udp', 'ipv4', 'ethernet', 'hdlc',
+  'arp', 'icmp', 'dhcp', 'dns', 'http', 'telnet', 'ssh', 'tcp', 'udp', 'ipv4', 'ethernet', 'hdlc',
 ] as const satisfies readonly SimProtocol[]
 export const TERMINAL_FONT_SIZE = { min: 11, max: 20 } as const
 export const TERMINAL_HISTORY_LENGTH = { min: 1, max: 256 } as const

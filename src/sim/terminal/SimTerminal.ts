@@ -12,9 +12,10 @@ import { Topology } from '../../net/Topology'
 import type { SimRequest, SimulationEngine } from '../contract'
 import { CommandOutcomes } from './CommandOutcomes'
 import { type CommandStage, CommandStages, type ProbeCommand, type SimCommandOutcome, type SimCommandStart } from './CommandStages'
+import { RemoteCommands } from './RemoteCommands'
 import { SimHostViews } from './SimHostViews'
 
-const KNOWN_COMMANDS: ReadonlySet<string> = new Set(['ipconfig', 'ping', 'tracert', 'nslookup', 'arp'])
+const KNOWN_COMMANDS: ReadonlySet<string> = new Set(['ipconfig', 'ping', 'tracert', 'nslookup', 'arp', 'ssh', 'telnet'])
 /** Windows tracert sends three probes per hop. */
 const TRACERT_PROBES = 3
 const NO_EFFECTS: SimCommandOutcome['effects'] = []
@@ -132,6 +133,12 @@ export class SimTerminal {
         if (name === undefined) return done(this.formatter.usage('nslookup'))
         return this.inject(engine, { kind: 'dnsQuery', deviceId, name, useCache: false }, { kind: 'nslookup', deviceId, name })
       }
+      case 'ssh':
+      case 'telnet': {
+        const parsed = RemoteCommands.parse(deviceId, command, args)
+        if (!parsed.ok) return done(parsed.lines)
+        return this.inject(engine, parsed.request, { kind: 'remote', deviceId })
+      }
       default:
         return this.arp(engine, deviceId, args)
     }
@@ -214,6 +221,8 @@ export class SimTerminal {
         return { kind: 'done', outcome: this.outcomes.dhcp(engine, stage.deviceId, record) }
       case 'arpClear':
         return done([])
+      case 'remote':
+        return done(RemoteCommands.outcome(engine.network(), record))
     }
   }
 

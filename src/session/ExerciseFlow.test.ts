@@ -1,4 +1,4 @@
-// The five exercises through the path the UI takes: v1 data → migrateV1Exercise (+ locks) →
+// Every exercise through the path the UI takes: v1 data → migrateV1Exercise (+ locks), or v2 data →
 // localized Exercise → lab document → device edits via LabEditor.updateDevice under the exercise's
 // lock policy → verify with SolveChecker (ExerciseAttempt).
 import { createInstance, type i18n as I18n } from 'i18next'
@@ -10,6 +10,7 @@ import enExercises from '../locales/en/exercises.json'
 import trExercises from '../locales/tr/exercises.json'
 import { exerciseDefinitions } from '../scenarios/exerciseDefinitions'
 import { ExerciseLocalizer } from '../scenarios/ExerciseLocalizer'
+import { blockGuests, overloadOffice } from '../scenarios/security/securityFixes'
 import { ExerciseAttempt } from './ExerciseAttempt'
 import { ExerciseLabs } from './ExerciseLabs'
 import { ExerciseLockPolicy } from './ExerciseLockPolicy'
@@ -50,6 +51,9 @@ const FIXES: Readonly<Record<string, { devices: string[]; fix: (state: NetworkSt
   },
   kitchenVlan: { devices: ['switch'], fix: (state) => editSwitchport(state, 'switch', 'Fa0/3', { mode: 'access', accessVlan: 10 }) },
   wrongDns: { devices: ['muhasebe'], fix: (state) => editHost(state, 'muhasebe', { dnsServers: ['192.168.1.1'] }) },
+  // Pack 5.2: solved only on the simulator (ExerciseAttempt uses SimSolveChecker), once the ACL / NAT policies are merged.
+  cafeGuestWifi: { devices: ['router'], fix: blockGuests },
+  officeSharedIp: { devices: ['router'], fix: overloadOffice },
 }
 
 function openExercise(id: string): { exercise: Exercise; doc: LabDocument } {

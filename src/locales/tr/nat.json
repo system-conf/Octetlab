@@ -1,12 +1,77 @@
 {
   "section": {
-    "title": "Adres çevirme (NAT)",
-    "placeholder": "NAT şimdilik komut satırından ayarlanıyor (ip nat …)."
+    "title": "Adres çevirme (NAT)"
   },
   "port": {
     "role": "NAT rolü",
     "none": "Yok",
     "inside": "İç taraf (ip nat inside)",
     "outside": "Dış taraf (ip nat outside)"
+  },
+  "notes": {
+    "translatedOut": "NAT içeriden dışarıya: kaynak adres {{from}}, {{to}} olarak değiştirildi.",
+    "translatedIn": "NAT dışarıdan içeriye: hedef adres {{from}}, yeniden {{to}} oldu.",
+    "translatedError": "NAT dışarıdan içeriye: bu ICMP hata mesajı {{from}} ile ilgili; içerideki {{to}} cihazına gider.",
+    "created": "NAT'ta {{local}} için henüz bir kayıt yok: {{acl}} erişim listesi onu seçiyor, yeni kayıt onu {{global}} adresine eşliyor.",
+    "poolExhausted": "NAT erişim listesi {{acl}}, {{local}} adresini seçiyor ama boş adres ya da port kalmadı: paket atılır ve geri 'host unreachable' ICMP mesajı gider.",
+    "noAddress": "NAT'ın kullanacağı {{iface}} arayüzünün adresi yok: paket çevrilmeden çıkar.",
+    "notSelected": "Hiçbir NAT kuralı {{src}} adresini seçmiyor: paket çevrilmeden çıkar.",
+    "protocolNotTranslated": "NAT overload yalnızca ICMP, TCP ve UDP'yi çevirir: bu paket çevrilmeden çıkar.",
+    "noTranslation": "{{dst}} bir NAT adresi ama bu paket için çeviri kaydı yok: paket atılır."
+  },
+  "form": {
+    "rolesHint": "Port düzenleyicide (NAT rolü) yerel ağ portlarını “İç taraf”, internet portunu “Dış taraf” olarak işaretleyin. Yalnızca iç taraftan dış tarafa giden paketler çevrilir.",
+    "pools": "Adres havuzları",
+    "pool": "Havuz {{index}}",
+    "noPools": "Havuz yok.",
+    "addPool": "Havuz ekle",
+    "removePool": "{{index}}. havuzu kaldır",
+    "poolName": "Havuz adı",
+    "netmask": "Ağ maskesi",
+    "start": "İlk adres",
+    "end": "Son adres",
+    "rules": "Dinamik kurallar",
+    "rulesHint": "Erişim listesinin izin verdiği iç adresler havuzdaki bir adrese ya da arayüzün adresine çevrilir. Overload (PAT) ile birçok iç cihaz tek adresi port numarasıyla paylaşır.",
+    "rule": "Kural {{index}}",
+    "noRules": "Dinamik kural yok.",
+    "addRule": "Kural ekle",
+    "removeRule": "{{index}}. kuralı kaldır",
+    "acl": "Erişim listesi (numara ya da ad)",
+    "target": "Çevrilecek adres",
+    "targets": {
+      "interface": "Arayüz adresi",
+      "pool": "Adres havuzu"
+    },
+    "interface": "Arayüz",
+    "choose": "Seçin…",
+    "overload": "Overload (PAT)",
+    "overloadHint": "Adresi cihazlar arasında port numarasıyla paylaştır.",
+    "statics": "Sabit eşlemeler",
+    "staticsHint": "Sabit bir iç ↔ dış adres çifti; böylece dışarıdan içerideki bir cihaza ulaşılabilir. Yalnızca bir portu yönlendirmek için TCP ya da UDP seçin.",
+    "static": "Eşleme {{index}}",
+    "noStatics": "Sabit eşleme yok.",
+    "addStatic": "Eşleme ekle",
+    "removeStatic": "{{index}}. eşlemeyi kaldır",
+    "protocol": "Protokol",
+    "protocols": {
+      "address": "Adresin tamamı",
+      "tcp": "TCP portu",
+      "udp": "UDP portu"
+    },
+    "insideLocal": "İç yerel adres (inside local)",
+    "insideGlobal": "İç genel adres (inside global)",
+    "localPort": "İç port",
+    "globalPort": "Dış port",
+    "errors": {
+      "nameRequired": "Boşluk içermeyen bir ad girin.",
+      "duplicatePool": "Bu ad başka bir havuzda kullanılıyor.",
+      "endBeforeStart": "Son adres ilk adresten önce geliyor.",
+      "differentSubnets": "İlk ve son adres bu maskeyle aynı alt ağda olmalı.",
+      "port": "1 ile 65535 arasında bir port girin.",
+      "duplicateStatic": "Bu iç adresin zaten bir eşlemesi var.",
+      "unknownPool": "Listeden bir havuz seçin.",
+      "interfaceRequired": "Bir arayüz seçin.",
+      "duplicateRule": "Bu erişim listesini başka bir kural kullanıyor."
+    }
   }
 }

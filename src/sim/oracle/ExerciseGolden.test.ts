@@ -1,11 +1,13 @@
-// O3 golden tests (docs/SIMULATION.md §10.2) on the five exercises (exerciseDefinitions), at the start and
+// O3 golden tests (docs/SIMULATION.md §10.2) on every exercise (exerciseDefinitions), at the start and
 // after the hint-3 fix: the simulator's SimSolveChecker gives the rule engine's SolveChecker results, and
 // SimTerminal prints the rule engine's text for a scripted command list on every host with a terminal.
+// A lab with ACL / NAT (pack 5.2) is not compared: the rule engine ignores both (§10.3.7).
 import { describe, expect, it } from 'vitest'
 import type { NetworkState } from '../../domain'
 import { DeviceAddresses, solveChecker } from '../../engine'
 import { exerciseDefinitions } from '../../scenarios/exerciseDefinitions'
 import { SimSolveChecker } from '../terminal'
+import { Divergences } from './Divergences'
 import { EXERCISE_FIXES } from './exerciseFixes'
 import { OracleTally } from './OracleChecks'
 import { OracleSimulation } from './OracleSimulation'
@@ -17,7 +19,7 @@ interface GoldenCase {
   state: NetworkState
 }
 
-const cases: GoldenCase[] = exerciseDefinitions.flatMap((exercise) => {
+const allCases: GoldenCase[] = exerciseDefinitions.flatMap((exercise) => {
   const fix = EXERCISE_FIXES[exercise.id]
   if (!fix) throw new Error(`no hint-3 fix for exercise ${exercise.id}`)
   return [
@@ -26,6 +28,10 @@ const cases: GoldenCase[] = exerciseDefinitions.flatMap((exercise) => {
   ]
 })
 
+/** Cases the oracle compares; the others use ACL / NAT. */
+const cases = allCases.filter((golden) => !Divergences.securityPolicies(golden.state))
+const skipped = allCases.filter((golden) => Divergences.securityPolicies(golden.state))
+
 function conditionsOf(id: string) {
   const exercise = exerciseDefinitions.find((candidate) => candidate.id === id)
   if (!exercise) throw new Error(`unknown exercise ${id}`)
@@ -33,8 +39,10 @@ function conditionsOf(id: string) {
 }
 
 describe('exercises: simulator vs rule engine (golden)', () => {
-  it('covers all five exercises', () => {
-    expect(new Set(cases.map((golden) => golden.id)).size).toBe(5)
+  it('covers every exercise at the start, and skips exactly the fixed ACL / NAT labs', () => {
+    expect(new Set(cases.map((golden) => golden.id)).size).toBe(exerciseDefinitions.length)
+    expect(cases.filter((golden) => golden.stage === 'start')).toHaveLength(exerciseDefinitions.length)
+    expect(skipped.map((golden) => `${golden.id} ${golden.stage}`).sort()).toEqual(['cafeGuestWifi fixed', 'officeSharedIp fixed'])
   })
 
   it.each(cases.map((golden): [string, string, GoldenCase] => [golden.id, golden.stage, golden]))('%s (%s): SimSolveChecker = SolveChecker', (_id, stage, golden) => {

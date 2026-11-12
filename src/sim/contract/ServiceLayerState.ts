@@ -2,7 +2,7 @@
 // Owner-extensible: S3 may ADD optional fields, session members and timer members here during wave 3.1.
 // DhcpBinding, DhcpClientLease and DnsCacheEntry are read by Phase 4 (`show ip dhcp binding`,
 // `ipconfig /all`, `ipconfig /displaydns`): frozen.
-import type { DhcpAdapterResult, StateEffect } from './Requests'
+import type { DhcpAdapterResult, RemoteConnectOutcome, StateEffect } from './Requests'
 
 /** A DHCP server's view of one client (`show ip dhcp binding`). CLI. */
 export interface DhcpBinding {
@@ -95,7 +95,24 @@ export interface DhcpRenewSession {
   readonly effects: readonly StateEffect[]
 }
 
-export type ServiceSession = DnsClientSession | DnsForwardSession | HttpClientSession | DhcpRenewSession
+/**
+ * Pack 5.2 addition (agent C, docs/SECURITY_PACK.md §9): an `ssh` / `telnet` client connection, scope A
+ * (handshake, login data, the server's greeting, close). `verdict` is the login outcome the client
+ * reports once the server greets it; it is worked out when the request starts, so no password is kept.
+ */
+export interface RemoteClientSession {
+  readonly kind: 'remoteClient'
+  readonly requestId: string
+  readonly protocol: 'ssh' | 'telnet'
+  readonly targetIp: string
+  readonly srcPort: number
+  readonly state: 'synSent' | 'loginSent'
+  readonly seq: number
+  readonly ack?: number
+  readonly verdict: RemoteConnectOutcome
+}
+
+export type ServiceSession = DnsClientSession | DnsForwardSession | HttpClientSession | DhcpRenewSession | RemoteClientSession
 
 export interface ServiceRuntime {
   /** CLI */
@@ -123,3 +140,5 @@ export type ServiceTimer =
   | { readonly layer: 'services'; readonly kind: 'dnsTimeout'; readonly queryId: number }
   | { readonly layer: 'services'; readonly kind: 'dnsForwardTimeout'; readonly upstreamQueryId: number }
   | { readonly layer: 'services'; readonly kind: 'httpTimeout'; readonly requestId: string }
+  /** Pack 5.2 addition (agent C): an `ssh` / `telnet` connection attempt gives up. */
+  | { readonly layer: 'services'; readonly kind: 'remoteTimeout'; readonly requestId: string }

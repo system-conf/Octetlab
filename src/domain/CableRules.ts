@@ -126,6 +126,7 @@ export class CableRules {
     if (a.port.medium !== b.port.medium) return null
     switch (a.port.medium) {
       case 'copper':
+        if (this.alwaysStraight(a, b)) return 'copperStraight'
         return this.pinoutOf(a.device, a.port) === this.pinoutOf(b.device, b.port) ? 'copperCross' : 'copperStraight'
       case 'wireless':
         return this.checkFit('wireless', a, b).ok ? 'wireless' : null
@@ -145,6 +146,15 @@ export class CableRules {
     if (port.pinout !== undefined) return port.pinout
     if (MDIX_KINDS.includes(device.kind)) return 'mdix'
     return device.kind === 'wirelessRouter' && port.role === 'switched' ? 'mdix' : 'mdi'
+  }
+
+  /**
+   * An access point is cabled straight-through to anything, router included (lab rule, research
+   * §1.7): it is wired like an end device on a patch cable. Its port stays MDI in
+   * `pinoutOf` so an AP to a switch is still straight by the pinout rule.
+   */
+  private alwaysStraight(a: ResolvedEnd, b: ResolvedEnd): boolean {
+    return a.device.kind === 'accessPoint' || b.device.kind === 'accessPoint'
   }
 
   private resolve(state: NetworkState, end: LinkEnd, side: LinkSide): Resolution {
@@ -178,6 +188,7 @@ export class CableRules {
 
   private checkPinouts(cable: 'copperStraight' | 'copperCross', a: ResolvedEnd, b: ResolvedEnd): CableCheck {
     if ((a.port.autoMdix ?? true) || (b.port.autoMdix ?? true)) return OK
+    if (this.alwaysStraight(a, b)) return cable === 'copperCross' ? refuse('straightThroughRequired') : OK
     const samePinout = this.pinoutOf(a.device, a.port) === this.pinoutOf(b.device, b.port)
     if (samePinout && cable === 'copperStraight') return refuse('crossoverRequired')
     if (!samePinout && cable === 'copperCross') return refuse('straightThroughRequired')

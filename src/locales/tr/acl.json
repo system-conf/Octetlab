@@ -1,7 +1,32 @@
 {
   "section": {
     "title": "Erişim listeleri (ACL)",
-    "placeholder": "Erişim listeleri şimdilik komut satırından ayarlanıyor (access-list, ip access-list)."
+    "intro": "Her satır bir IOS kaydıdır ve yukarıdan aşağı denenir: ilk uyan karar verir, hiçbir satıra uymayan engellenir. Boş liste her şeye izin verir.",
+    "empty": "Henüz erişim listesi yok.",
+    "add": "Erişim listesi ekle",
+    "item": "Erişim listesi {{name}}",
+    "itemNew": "Yeni erişim listesi",
+    "remove": "{{name}} erişim listesini kaldır",
+    "name": "Ad ya da numara",
+    "nameHint": "Standart için 1-99 / 1300-1999, genişletilmiş için 100-199 / 2000-2699 ya da BLOCK_WEB gibi bir ad.",
+    "type": "Tür",
+    "typeStandard": "Standart (yalnız kaynak adres)",
+    "typeExtended": "Genişletilmiş (protokol, kaynak, hedef, portlar)",
+    "entries": "Kayıtlar, her satıra bir tane",
+    "entriesHint": "Komut satırındaki gibi, sıra numarası olmadan: \"permit 192.168.1.0 0.0.0.255\", \"deny tcp any host 10.0.0.5 eq www\", \"remark Yalnız personel\".",
+    "errors": {
+      "nameRequired": "Bir ad ya da numara gir.",
+      "nameInvalid": "Ad, rakamla başlamayan tek bir kelimedir; numara seçilen türün aralığında olmalı.",
+      "nameDuplicate": "Bu ad başka bir erişim listesinde kullanılıyor."
+    },
+    "problems": {
+      "action": "{{line}}. satır: permit, deny ya da remark ile başlamalı.",
+      "address": "{{line}}. satır: adresi \"any\", \"host A.B.C.D\" ya da \"A.B.C.D joker-maske\" olarak yaz.",
+      "protocol": "{{line}}. satır: protokolü yaz: ip, icmp, tcp ya da udp.",
+      "port": "{{line}}. satır: portu eq / neq / gt / lt <port> ya da range <alt> <üst> olarak yaz (sayı ya da www gibi bir ad).",
+      "extra": "{{line}}. satır: sonda beklenmeyen kelimeler var: \"{{text}}\".",
+      "remark": "{{line}}. satır: açıklama için metin gerekli (en çok 100 karakter)."
+    }
   },
   "port": {
     "inbound": "Gelen trafik erişim listesi",
@@ -9,5 +34,15 @@
     "none": "Yok",
     "hint": "Erişim listesinin adı ya da numarası; yoksa boş bırak.",
     "nameError": "Erişim listesi adı boşluksuz tek bir kelime olmalı."
+  },
+  "cli": {
+    "switchportGroup": "Bu laboratuvarda erişim listeleri yalnız yönlendirilen portlarda, alt arayüzlerde ve VLAN arayüzlerinde süzer; anahtar portlarında süzmez.",
+    "vtyOnly": "Bu laboratuvarda access-class yalnız uzaktan bağlantı hatlarında (line vty 0 4) çalışır."
+  },
+  "notes": {
+    "permitted": "{{acl}} erişim listesi ({{iface}} üzerinde {{direction}}): {{seq}} numaralı kayıt pakete izin veriyor.",
+    "denied": "{{acl}} erişim listesi ({{iface}} üzerinde {{direction}}): {{seq}} numaralı kayıt paketi engelliyor.",
+    "implicitDeny": "{{acl}} erişim listesi ({{iface}} üzerinde {{direction}}): hiçbir kayıt uymuyor, listenin sonundaki görünmez \"deny any\" paketi düşürüyor.",
+    "noEntries": "{{acl}} erişim listesi ({{iface}} üzerinde {{direction}}) yok ya da boş; pakete izin veriliyor."
   }
 }
