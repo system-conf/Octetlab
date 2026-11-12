@@ -37,6 +37,11 @@ export class FailedCheckDescriber {
           from: FailedCheckDescriber.nameOf(state, condition.fromDeviceId),
           to: FailedCheckDescriber.nameOf(state, condition.toDeviceId),
         })
+      case 'unreachable':
+        return localizedMessage('session:failedChecks.unreachable', {
+          from: FailedCheckDescriber.nameOf(state, condition.fromDeviceId),
+          to: FailedCheckDescriber.nameOf(state, condition.toDeviceId),
+        })
       case 'appLinksOk':
         return localizedMessage('session:failedChecks.appLinksOk', {
           device: FailedCheckDescriber.nameOf(state, condition.deviceId),

@@ -1,4 +1,6 @@
 // v2 port model: every device has explicit ports (docs/MODEL_V2.md §2).
+import type { AclBinding } from './AccessListTypes'
+import type { NatRole } from './NatTypes'
 // A port's `role` decides which layer-2 / layer-3 settings it carries; the union makes an invalid
 // mix (e.g. a switchport with an IP address) a compile error.
 
@@ -47,10 +49,10 @@ export interface Ipv4Settings {
  * is a non-breaking change for stored labs.
  */
 export interface L3Features {
-  /** ACL pack 5.2: `ip access-group <acl> in|out`. */
-  accessGroups?: never
-  /** NAT pack 5.2: `ip nat inside|outside`. */
-  natRole?: never
+  /** ACL pack 5.2: `ip access-group <acl> in|out` (ignored on host NICs). */
+  accessGroups?: AclBinding
+  /** NAT pack 5.2: `ip nat inside|outside` (ignored on host NICs). */
+  natRole?: NatRole
   /** Routing packs 5.3: per-interface OSPF / RIP / EIGRP settings (cost, area, passive). */
   ospf?: never
   rip?: never

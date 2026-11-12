@@ -45,6 +45,10 @@ export interface AppResources {
   preferences: typeof import('../locales/en/preferences.json')
   // Live labs: docs/LIVE_LABS.md
   live: typeof import('../locales/en/live.json')
+  // Pack 5.2 (docs/SECURITY_PACK.md): agents A, B, C
+  acl: typeof import('../locales/en/acl.json')
+  nat: typeof import('../locales/en/nat.json')
+  remoteAccess: typeof import('../locales/en/remoteAccess.json')
 }
 
 declare module 'i18next' {

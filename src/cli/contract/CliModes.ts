@@ -27,6 +27,11 @@ export type CliMode =
   | { readonly kind: 'dhcpPool'; readonly poolId: string }
   /** `Router(config-router)#`: reserved for the routing packs (5.3); `protocol` e.g. 'ospf', 'rip'. */
   | { readonly kind: 'router'; readonly protocol: string; readonly processId: number | null }
+  /**
+   * Pack 5.2: `ip access-list standard|extended <name>` → `Router(config-std-nacl)#` /
+   * `Router(config-ext-nacl)#`. The list itself is created by the command that enters the mode.
+   */
+  | { readonly kind: 'accessList'; readonly listType: 'standard' | 'extended'; readonly name: string }
 
 export type CliModeKind = CliMode['kind']
 
@@ -42,6 +47,7 @@ export const CLI_MODE_KINDS: readonly CliModeKind[] = [
   'vlan',
   'dhcpPool',
   'router',
+  'accessList',
 ]
 
 /** The EXEC modes (no `(config…)` in the prompt). */
@@ -56,6 +62,7 @@ export const CONFIG_SUBMODE_KINDS: readonly CliModeKind[] = [
   'vlan',
   'dhcpPool',
   'router',
+  'accessList',
 ]
 
 /** Every config mode (global config and its sub-modes): `do`, `end` and Ctrl+Z work here. */

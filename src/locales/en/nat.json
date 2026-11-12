@@ -1,0 +1,12 @@
+{
+  "section": {
+    "title": "Address translation (NAT)",
+    "placeholder": "NAT is configured in the CLI for now (ip nat …)."
+  },
+  "port": {
+    "role": "NAT role",
+    "none": "None",
+    "inside": "Inside (ip nat inside)",
+    "outside": "Outside (ip nat outside)"
+  }
+}

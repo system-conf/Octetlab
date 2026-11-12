@@ -38,6 +38,10 @@ const SECTION_DATA: Readonly<Record<Exclude<DeviceSection, 'terminal'>, (device:
   wireless: (device) => device.wireless,
   services: (device) => device.services,
   internet: (device) => device.internet,
+  security: (device) => {
+    const management = device.features?.management
+    return [device.features?.accessLists, device.features?.nat, management?.users, management?.ssh, management?.domainName]
+  },
 }
 
 export class ExerciseLockPolicy {

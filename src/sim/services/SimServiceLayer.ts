@@ -21,6 +21,7 @@ import { DhcpServer } from './DhcpServer'
 import { DnsClient } from './DnsClient'
 import { DnsServer } from './DnsServer'
 import { HttpClient } from './HttpClient'
+import { RemoteConnectStub } from './remote/RemoteConnectStub'
 import { ServiceChanges } from './ServiceChanges'
 import { ServiceNotes } from './ServiceNotes'
 import { ServiceRuntimes } from './ServiceRuntimes'
@@ -110,6 +111,8 @@ export class SimServiceLayer implements ServiceLayer {
       case 'clearTable':
         if (request.table === 'dnsCache') return SimServiceLayer.flushDns(ctx, requestId)
         throw new Error(`clearTable ${request.table} belongs to the link layer`)
+      case 'remoteConnect':
+        return RemoteConnectStub.start(ctx, requestId, request)
       case 'ping':
       case 'tracert':
         throw new Error(`${request.kind} belongs to the network layer`)

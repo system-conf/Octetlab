@@ -100,6 +100,8 @@ class NullResults {
         return { kind: 'http', outcome: { ok: false, reason: 'unsupported' } }
       case 'clearTable':
         return { kind: 'cleared', entries: 0 }
+      case 'remoteConnect':
+        return { kind: 'remoteConnect', protocol: request.protocol, targetIp: request.targetIp, outcome: { ok: false, failure: 'localFailure', reason: 'unsupported' } }
     }
   }
 }

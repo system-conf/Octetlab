@@ -54,10 +54,13 @@ export class SimSolveChecker {
         return SimProbes.reach(engine, condition.fromDeviceId, INTERNET_PROBE_IP).result.ok
       case 'resolves':
         return SimProbes.resolve(engine, condition.fromDeviceId, condition.name).ok
-      case 'reachable': {
-        // 'reachable' means the target's current (first) address.
+      case 'reachable':
+      case 'unreachable': {
+        // Both mean the target's current (first) address; 'unreachable' needs one to exist.
         const targetIp = DeviceAddresses.of(Topology.of(engine.network()).require(condition.toDeviceId))[0]
-        return targetIp !== undefined && SimProbes.reach(engine, condition.fromDeviceId, targetIp).result.ok
+        if (targetIp === undefined) return false
+        const reached = SimProbes.reach(engine, condition.fromDeviceId, targetIp).result.ok
+        return condition.type === 'reachable' ? reached : !reached
       }
       case 'appLinksOk':
         return SimAppLinks.status(engine, condition.deviceId).every((status) => status.ok)

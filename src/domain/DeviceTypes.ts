@@ -1,5 +1,7 @@
 // Device model (docs/MODEL_V2.md §3).
+import type { AccessListSettings } from './AccessListTypes'
 import type { ManagementSettings } from './ManagementTypes'
+import type { NatSettings } from './NatTypes'
 import type { L3Settings, Port } from './PortTypes'
 import type { DeviceServices, InternetSettings } from './ServiceTypes'
 
@@ -161,10 +163,10 @@ export interface WirelessSettings {
 export interface DeviceFeatures {
   /** Phase 4 (K4, docs/CLI.md §5): hostname, enable secret, lines, banner, startup-config. */
   management?: ManagementSettings
-  /** Pack 5.2: numbered / named ACL definitions. */
-  accessLists?: never
+  /** Pack 5.2: numbered / named ACL definitions (docs/SECURITY_PACK.md). */
+  accessLists?: AccessListSettings
   /** Pack 5.2: NAT pools, static mappings, overload. */
-  nat?: never
+  nat?: NatSettings
   /** Pack 5.1: CDP / LLDP. */
   discovery?: never
   /** Pack 5.8: SNMP, NetFlow. */

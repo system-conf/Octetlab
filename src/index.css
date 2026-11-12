@@ -74,6 +74,8 @@
   --color-packet-ipv4: #2563eb;
   --color-packet-ethernet: #475569;
   --color-packet-hdlc: #57534e;
+  --color-packet-telnet: #ea580c;
+  --color-packet-ssh: #65a30d;
   --color-packet-dropped: #dc2626;
   --color-packet-highlight: #f59e0b;
 }
@@ -135,6 +137,8 @@
     --color-packet-ipv4: #60a5fa;
     --color-packet-ethernet: #94a3b8;
     --color-packet-hdlc: #a8a29e;
+    --color-packet-telnet: #fb923c;
+    --color-packet-ssh: #a3e635;
     --color-packet-dropped: #f87171;
     --color-packet-highlight: #fbbf24;
   }

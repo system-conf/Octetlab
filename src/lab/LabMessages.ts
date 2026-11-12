@@ -135,6 +135,12 @@ export class LabMessages {
         return localizedMessage('lab:invariant.missingDefaultVlan', { deviceId })
       case 'invalidLink':
         return localizedMessage(`lab:invariant.invalidLink.${violation.reason ?? 'unknownPort'}`, { linkId })
+      case 'duplicateAclName':
+      case 'aclNumberOutOfRange':
+      case 'duplicateAclSeq':
+      case 'duplicateNatPool':
+      case 'duplicateUser':
+        return localizedMessage(`lab:invariant.${violation.code}`, { deviceId, name: violation.name ?? '' })
     }
   }
 }

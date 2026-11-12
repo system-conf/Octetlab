@@ -82,6 +82,20 @@ export const SIM_REASONS = [
   /** TCP connection refused (RST). */
   'connectionRefused',
 
+  // ---- security pack 5.2 (docs/SECURITY_PACK.md)
+  /** An access list on the interface (in or out) denied the packet; ICMP admin-prohibited follows. */
+  'aclDenied',
+  /** NAT had no free inside-global address / port for the packet (ICMP host unreachable follows). */
+  'natPoolExhausted',
+  /** A packet to an outside address has no translation and matches no static rule. */
+  'natNoTranslation',
+  /** The vty `access-class` refused the remote session. */
+  'vtyAccessDenied',
+  /** Remote login failed: wrong user / password, or `login` without a password. */
+  'remoteLoginFailed',
+  /** SSH asked of a device without RSA keys, or the transport input does not allow the protocol. */
+  'remoteAccessDisabled',
+
   // ---- clients
   /** A client gave up waiting for an answer (ping, tracert, DHCP, DNS, HTTP). */
   'requestTimedOut',

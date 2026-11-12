@@ -8,6 +8,8 @@ import type {
   SimRequest,
   Undeliverable,
 } from '../contract'
+import type { PacketPolicy } from '../policy/PacketPolicy'
+import { SecurityPolicies } from '../policy/SecurityPolicies'
 import { CloudStack } from './CloudStack'
 import { EchoClients } from './EchoClients'
 import { IcmpResponder } from './IcmpResponder'
@@ -29,15 +31,17 @@ export class Ipv4NetworkLayer implements NetworkLayer, LocalStack {
   private readonly clients: EchoClients
   private readonly receiver: PacketReceiver
 
-  constructor() {
+  /** `policy`: the pack 5.2 chain (ACL, NAT); tests may pass their own. */
+  constructor(policy: PacketPolicy = SecurityPolicies.create()) {
     this.sender = new PacketSender(this)
     this.responder = new IcmpResponder(this.sender)
     this.clients = new EchoClients(this.sender)
     this.receiver = new PacketReceiver({
       responder: this.responder,
       clients: this.clients,
-      forwarder: new PacketForwarder(this.responder),
+      forwarder: new PacketForwarder(this.responder, policy),
       cloud: new CloudStack(this.responder),
+      policy,
     })
   }
 

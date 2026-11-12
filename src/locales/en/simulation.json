@@ -158,7 +158,9 @@
     "tcp": "TCP",
     "dhcp": "DHCP",
     "dns": "DNS",
-    "http": "HTTP"
+    "http": "HTTP",
+    "telnet": "Telnet",
+    "ssh": "SSH"
   },
   "layers": {
     "layer1": "Layer 1: Physical",
@@ -262,6 +264,12 @@
     "dnsLoop": "The DNS query is already being forwarded (forwarder loop).",
     "dnsNotAResolver": "No DNS server runs at this address.",
     "connectionRefused": "The connection was refused.",
+    "aclDenied": "An access list on the interface denied the packet.",
+    "natPoolExhausted": "NAT has no free address or port left for this packet.",
+    "natNoTranslation": "No NAT translation exists for this packet.",
+    "vtyAccessDenied": "The remote-access lines refuse this source address (access-class).",
+    "remoteLoginFailed": "Remote login failed (user name or password).",
+    "remoteAccessDisabled": "Remote access with this protocol is not enabled on the device.",
     "requestTimedOut": "No answer in time.",
     "staleReply": "An answer nobody waits for any more.",
     "unsupported": "The device does not process this PDU."

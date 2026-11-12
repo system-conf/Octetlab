@@ -59,6 +59,7 @@ export class CommandStages {
         return { kind: 'dhcp', deviceId }
       case 'clearTable':
       case 'httpGet':
+      case 'remoteConnect':
         return { kind: 'arpClear', deviceId }
     }
   }

@@ -1,0 +1,13 @@
+{
+  "section": {
+    "title": "Access lists (ACL)",
+    "placeholder": "Access lists are configured in the CLI for now (access-list, ip access-list)."
+  },
+  "port": {
+    "inbound": "Inbound access list",
+    "outbound": "Outbound access list",
+    "none": "None",
+    "hint": "Name or number of an access list; leave empty for none.",
+    "nameError": "An access list name is one word without spaces."
+  }
+}

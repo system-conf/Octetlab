@@ -1,0 +1,6 @@
+{
+  "section": {
+    "title": "Remote access (SSH / Telnet)",
+    "placeholder": "SSH, Telnet and local users are configured in the CLI for now (username, crypto key generate rsa, line vty)."
+  }
+}

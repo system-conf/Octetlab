@@ -30,6 +30,10 @@ export const namespaces = [
   'preferences',
   // Live labs: docs/LIVE_LABS.md
   'live',
+  // Pack 5.2 (docs/SECURITY_PACK.md): one namespace per agent
+  'acl',
+  'nat',
+  'remoteAccess',
 ] as const
 
 export type Namespace = (typeof namespaces)[number]

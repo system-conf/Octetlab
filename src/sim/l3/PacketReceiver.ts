@@ -12,6 +12,7 @@ import type { EchoClients } from './EchoClients'
 import type { IcmpResponder } from './IcmpResponder'
 import { InterfaceAddresses } from './InterfaceAddresses'
 import { L3Notes } from './L3Notes'
+import type { PacketPolicy } from '../policy/PacketPolicy'
 import type { PacketForwarder } from './PacketForwarder'
 import type { LocalStack } from './PacketSender'
 
@@ -21,6 +22,8 @@ export interface ReceiverParts {
   readonly clients: EchoClients
   readonly forwarder: PacketForwarder
   readonly cloud: CloudStack
+  /** Pack 5.2 ingress hook (ACL in, NAT outside→inside) for routers and L3 switches. */
+  readonly policy: PacketPolicy
 }
 
 /**
@@ -36,13 +39,16 @@ export class PacketReceiver implements LocalStack {
     this.parts = parts
   }
 
-  receive(ctx: DeviceContext, delivery: Ipv4Delivery): void {
-    const { packet, event } = delivery
-    event.note(3, 'in', L3Notes.of('packetReceived', { src: packet.src, dst: packet.dst, ttl: packet.ttl }))
+  receive(ctx: DeviceContext, arrival: Ipv4Delivery): void {
+    const { event } = arrival
+    event.note(3, 'in', L3Notes.of('packetReceived', { src: arrival.packet.src, dst: arrival.packet.dst, ttl: arrival.packet.ttl }))
     const profile = DeviceProfiles.of(ctx.device)
-    if (profile.isp) return this.parts.cloud.receive(ctx, delivery)
+    if (profile.isp) return this.parts.cloud.receive(ctx, arrival)
     if (profile.ipRole === 'none') return event.conclude('dropped', 3, 'unsupported')
     const router = profile.ipRole === 'router'
+    const delivery = router ? this.admitted(ctx, arrival) : arrival
+    if (!delivery) return
+    const { packet } = delivery
     const ingress = L3Interfaces.find(ctx.device, delivery.interfaceId)
     if (InterfaceAddresses.isBroadcastFor(ingress, packet.dst)) {
       event.note(3, 'in', L3Notes.of('broadcastReceived', { dst: packet.dst }))
@@ -55,6 +61,22 @@ export class PacketReceiver implements LocalStack {
     if (router) return this.parts.forwarder.forward(ctx, delivery)
     event.note(3, 'in', L3Notes.of('notRouting', { dst: packet.dst }))
     event.conclude('dropped', 3, 'notRouting')
+  }
+
+  /** The arrival after the ingress policies (possibly translated), or null when they dropped it. */
+  private admitted(ctx: DeviceContext, arrival: Ipv4Delivery): Ipv4Delivery | null {
+    const { packet, event } = arrival
+    const verdict = this.parts.policy.ingress(ctx, { interfaceId: arrival.interfaceId, packet, linkBroadcast: arrival.linkBroadcast, event })
+    if (verdict.kind === 'pass') return verdict.packet === packet ? arrival : { ...arrival, packet: verdict.packet }
+    event.conclude('dropped', 3, verdict.reason)
+    if (verdict.icmp !== undefined) {
+      this.parts.responder.error(
+        ctx,
+        { packet, ids: arrival.ids, causeEventId: event.id, linkBroadcast: arrival.linkBroadcast, ingressInterfaceId: arrival.interfaceId, event },
+        { type: 'unreachable', code: verdict.icmp },
+      )
+    }
+    return null
   }
 
   /** Demultiplexes a packet for this device by IP protocol. */

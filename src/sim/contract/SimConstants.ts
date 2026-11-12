@@ -46,6 +46,9 @@ export const SIM_PORTS = {
   dhcpServer: 67,
   dhcpClient: 68,
   http: 80,
+  /** Pack 5.2 remote access (vty). */
+  ssh: 22,
+  telnet: 23,
   /** First ephemeral port (Windows). */
   ephemeralStart: 49152,
 } as const

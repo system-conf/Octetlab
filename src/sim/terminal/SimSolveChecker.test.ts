@@ -31,6 +31,15 @@ describe('SimSolveChecker (rule engine SolveChecker = oracle)', () => {
     }
   })
 
+  it("'unreachable' is the opposite of 'reachable' and never holds for a target without an address", () => {
+    const blocked: SolveCondition[] = [{ type: 'unreachable', fromDeviceId: 'pc1', toDeviceId: 'printer' }]
+    expect(SimSolveChecker.check(officeLab(), blocked)[0]?.ok).toBe(false)
+    // A printer in another subnet without routing is a stand-in for "blocked" until ACLs exist.
+    expect(SimSolveChecker.check(editNic(officeLab(), 'printer', { address: '10.9.9.9' }), blocked)[0]?.ok).toBe(true)
+    expect(SimSolveChecker.check(editNic(officeLab(), 'printer', { address: '' }), blocked)[0]?.ok).toBe(false)
+    expect(solveChecker.check(officeLab(), blocked)).toEqual(SimSolveChecker.check(officeLab(), blocked))
+  })
+
   it('checks app links like the engine: reachable and the right kind of device', () => {
     for (const [state, deviceId] of [[officeLab(), 'pc1'], [vlanLab(), 'kasa']] as const) {
       const engine = createSimulation(state)

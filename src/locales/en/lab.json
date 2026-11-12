@@ -57,6 +57,11 @@
     "vlanOutOfRange": "Device \"{{deviceId}}\": a VLAN id is outside 1–4094.",
     "vlanOutOfRangeOnPort": "Device \"{{deviceId}}\", interface \"{{portId}}\": a VLAN id is outside 1–4094.",
     "missingDefaultVlan": "Device \"{{deviceId}}\": the VLAN database must contain VLAN 1.",
+    "duplicateAclName": "Device \"{{deviceId}}\": two access lists are named \"{{name}}\".",
+    "aclNumberOutOfRange": "Device \"{{deviceId}}\": access list {{name}} has a number outside the range of its type.",
+    "duplicateAclSeq": "Device \"{{deviceId}}\": access list \"{{name}}\" has two entries with the same sequence number.",
+    "duplicateNatPool": "Device \"{{deviceId}}\": two NAT pools are named \"{{name}}\".",
+    "duplicateUser": "Device \"{{deviceId}}\": two local users are named \"{{name}}\".",
     "invalidLink": {
       "unknownDevice": "Cable \"{{linkId}}\" ends on a device that does not exist.",
       "unknownPort": "Cable \"{{linkId}}\" ends on a port that does not exist.",

@@ -12,9 +12,9 @@ export type OsiLayer = 1 | 2 | 3 | 4 | 5 | 6 | 7
  * Top-most protocol of a PDU (event-list filters, colours). Protocol packs add members (stp, cdp,
  * ospf, ipv6…); exhaustive switches then fail to compile until they handle them.
  */
-export type SimProtocol = 'ethernet' | 'hdlc' | 'arp' | 'ipv4' | 'icmp' | 'udp' | 'tcp' | 'dhcp' | 'dns' | 'http'
+export type SimProtocol = 'ethernet' | 'hdlc' | 'arp' | 'ipv4' | 'icmp' | 'udp' | 'tcp' | 'dhcp' | 'dns' | 'http' | 'telnet' | 'ssh'
 
-export const SIM_PROTOCOLS: readonly SimProtocol[] = ['ethernet', 'hdlc', 'arp', 'ipv4', 'icmp', 'udp', 'tcp', 'dhcp', 'dns', 'http']
+export const SIM_PROTOCOLS: readonly SimProtocol[] = ['ethernet', 'hdlc', 'arp', 'ipv4', 'icmp', 'udp', 'tcp', 'dhcp', 'dns', 'http', 'telnet', 'ssh']
 
 /**
  * What a device did with a PDU (one event per device and PDU; docs/SIMULATION.md §3.2):

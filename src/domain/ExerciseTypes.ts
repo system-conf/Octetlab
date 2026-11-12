@@ -16,6 +16,11 @@ export type SolveCondition =
   | { type: 'resolves'; fromDeviceId: string; name: string }
   /** fromDeviceId can reach the current address of toDeviceId. */
   | { type: 'reachable'; fromDeviceId: string; toDeviceId: string }
+  /**
+   * Pack 5.2: fromDeviceId can NOT reach the current address of toDeviceId (an ACL blocks it). Holds only
+   * when the target has an address, so an unconfigured target never counts as "blocked".
+   */
+  | { type: 'unreachable'; fromDeviceId: string; toDeviceId: string }
   /** Every AppLink on deviceId reports ok. */
   | { type: 'appLinksOk'; deviceId: string }
 
@@ -30,6 +35,8 @@ export type DeviceSection =
   | 'services'
   | 'internet'
   | 'terminal'
+  /** Pack 5.2: access lists, NAT, local users, SSH and the domain name (features.accessLists / nat / management users, ssh, domainName). */
+  | 'security'
 
 /** readOnly = shown but not editable; hidden = not shown at all (the learner must find it another way). */
 export type LockAccess = 'readOnly' | 'hidden'

@@ -1,6 +1,7 @@
 import { Ipv4 } from '../../net/Ipv4'
 import { L3Interfaces } from '../../net/L3Interfaces'
 import type { DeviceContext, Ipv4Delivery } from '../contract'
+import type { PacketPolicy } from '../policy/PacketPolicy'
 import type { ErrorCause, IcmpResponder } from './IcmpResponder'
 import { InterfaceAddresses } from './InterfaceAddresses'
 import { L3Notes } from './L3Notes'
@@ -14,9 +15,12 @@ import { RouteLookup } from './RouteLookup'
  */
 export class PacketForwarder {
   private readonly responder: IcmpResponder
+  /** Pack 5.2 egress hook (NAT inside→outside, ACL out), after routing. */
+  private readonly policy: PacketPolicy
 
-  constructor(responder: IcmpResponder) {
+  constructor(responder: IcmpResponder, policy: PacketPolicy) {
     this.responder = responder
+    this.policy = policy
   }
 
   forward(ctx: DeviceContext, delivery: Ipv4Delivery): void {
@@ -59,10 +63,16 @@ export class PacketForwarder {
     const route = { dst, prefix: entry.prefix, length: entry.prefixLength, iface: exitInterfaceId }
     event.note(3, 'out', entry.nextHop === null ? L3Notes.of('connectedRoute', route) : L3Notes.of('routeFound', { ...route, via: nextHopIp }))
     event.note(3, 'out', L3Notes.of('ttlDecremented', { from: packet.ttl, to: packet.ttl - 1 }))
+    const verdict = this.policy.egress(ctx, { ingressInterfaceId: delivery.interfaceId, exitInterfaceId, packet: { ...packet, ttl: packet.ttl - 1 }, event })
+    if (verdict.kind === 'drop') {
+      event.conclude('dropped', 3, verdict.reason)
+      if (verdict.icmp !== undefined) this.responder.error(ctx, cause, { type: 'unreachable', code: verdict.icmp })
+      return
+    }
     ctx.layers.link.send(ctx, {
       interfaceId: exitInterfaceId,
       nextHopIp,
-      packet: { ...packet, ttl: packet.ttl - 1 },
+      packet: verdict.packet,
       ids: { ...delivery.ids, frameId: ctx.newFrameId() },
       event,
       ingressInterfaceId: delivery.interfaceId,

@@ -4,6 +4,7 @@ import { CableRules, type CableRefusal } from './CableRules'
 import type { Device } from './DeviceTypes'
 import { MacAddress } from './MacAddress'
 import type { NetworkState } from './NetworkState'
+import { SecurityInvariants, type SecurityInvariantCode } from './SecurityInvariants'
 
 export type InvariantCode =
   | 'duplicateDeviceId'
@@ -20,6 +21,8 @@ export type InvariantCode =
   | 'missingDefaultVlan'
   /** A link CableRules refuses (see `reason`). */
   | 'invalidLink'
+  /** Pack 5.2 (SecurityInvariants): ACL, NAT pool and local-user data; `name` says which. */
+  | SecurityInvariantCode
 
 export interface InvariantViolation {
   code: InvariantCode
@@ -27,6 +30,8 @@ export interface InvariantViolation {
   portId?: string
   linkId?: string
   reason?: CableRefusal
+  /** ACL, NAT pool or user name (pack 5.2 codes). */
+  name?: string
 }
 
 function isVlanId(vlan: number): boolean {
@@ -42,6 +47,7 @@ function duplicates(values: readonly string[]): string[] {
 
 export class StateInvariants {
   private readonly cableRules = new CableRules()
+  private readonly security = new SecurityInvariants()
 
   /** Every violation, in a stable order; [] = the state is consistent. */
   violations(state: NetworkState): InvariantViolation[] {
@@ -83,6 +89,7 @@ export class StateInvariants {
     const clashes = [...duplicates(logicalIds), ...logicalIds.filter((id) => portIds.has(id))]
     for (const portId of clashes) found.push({ code: 'badInterfaceId', deviceId, portId })
     found.push(...this.vlanViolations(device))
+    found.push(...this.security.violations(device))
     return found
   }
 

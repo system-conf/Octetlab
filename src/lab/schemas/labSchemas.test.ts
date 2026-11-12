@@ -3,6 +3,10 @@
 import { describe, expect, it } from 'vitest'
 import type { z } from 'zod'
 import type {
+  AccessListSettings,
+  LocalUser,
+  NatSettings,
+  SshSettings,
   Annotation,
   Device,
   DeviceKind,
@@ -41,6 +45,7 @@ import {
   networkStateSchema,
 } from './labDocumentSchema'
 import { l3SettingsSchema, portSchema, switchportSettingsSchema } from './portSchemas'
+import { accessListSettingsSchema, localUserSchema, natSettingsSchema, sshSettingsSchema } from './securitySchemas'
 import { deviceServicesSchema, internetSettingsSchema } from './serviceSchemas'
 import { v1NetworkStateSchema, v1ScenarioDefinitionSchema } from './v1Schemas'
 
@@ -76,6 +81,10 @@ const proofs = [
   assertTrue<Mirrors<typeof wirelessSettingsSchema, WirelessSettings>>(true),
   assertTrue<Mirrors<typeof deviceServicesSchema, DeviceServices>>(true),
   assertTrue<Mirrors<typeof internetSettingsSchema, InternetSettings>>(true),
+  assertTrue<Mirrors<typeof accessListSettingsSchema, AccessListSettings>>(true),
+  assertTrue<Mirrors<typeof natSettingsSchema, NatSettings>>(true),
+  assertTrue<Mirrors<typeof localUserSchema, LocalUser>>(true),
+  assertTrue<Mirrors<typeof sshSettingsSchema, SshSettings>>(true),
   assertTrue<Mirrors<typeof v1NetworkStateSchema, V1NetworkState>>(true),
   assertTrue<Mirrors<typeof v1ScenarioDefinitionSchema, V1ScenarioDefinition>>(true),
 ]

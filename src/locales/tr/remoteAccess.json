@@ -1,0 +1,6 @@
+{
+  "section": {
+    "title": "Uzaktan erişim (SSH / Telnet)",
+    "placeholder": "SSH, Telnet ve yerel kullanıcılar şimdilik komut satırından ayarlanıyor (username, crypto key generate rsa, line vty)."
+  }
+}

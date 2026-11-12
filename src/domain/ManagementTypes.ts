@@ -1,6 +1,7 @@
 // Device management settings of IOS-style devices (Phase 4, docs/CLI.md §5): what `hostname`,
 // `enable secret`, `line …`, `banner motd` and `copy running-config startup-config` configure.
 // Optional and additive: a device without `features.management` has the IOS factory values.
+import type { AclBinding } from './AccessListTypes'
 
 /** Settings of one terminal line group (`line con 0`, `line vty 0 4`). */
 export interface LineSettings {
@@ -15,9 +16,35 @@ export interface LineSettings {
   execTimeout?: { minutes: number; seconds: number }
   /** `logging synchronous`; absent = false. */
   loggingSynchronous?: boolean
-  /** Reserved for pack 5.2: `transport input ssh|telnet`, `login local`. */
-  transportInput?: never
-  loginLocal?: never
+  /** vty only: `transport input ssh|telnet|all|none`; absent = all ([] = none). */
+  transportInput?: VtyTransport[]
+  /** `login local` (authenticate against `users`); handlers keep it exclusive with `login`. */
+  loginLocal?: boolean
+  /** vty only: `access-class <acl> in|out`. */
+  accessClass?: AclBinding
+}
+
+export type VtyTransport = 'ssh' | 'telnet'
+
+/** `username <name> [privilege n] secret|password <text>`; stored as typed (a lab is no security boundary). */
+export interface LocalUser {
+  name: string
+  secret?: string
+  password?: string
+  /** 0..15; absent = 1. */
+  privilege?: number
+}
+
+/** SSH server settings (`ip ssh …`, `crypto key generate rsa`). */
+export interface SshSettings {
+  /** `ip ssh version 1|2`; absent = both (shown as "1.99"). */
+  version?: 1 | 2
+  /** Modulus of the generated RSA key pair, 360..4096; absent = no keys (SSH disabled). Survives reload. */
+  rsaKeyBits?: number
+  /** `ip ssh time-out`; absent = 120. */
+  timeoutSeconds?: number
+  /** `ip ssh authentication-retries`; absent = 3. */
+  authRetries?: number
 }
 
 export interface LineGroups {
@@ -48,8 +75,9 @@ export interface ManagementSettings {
    * present"). `reload` replays it on the factory configuration.
    */
   startupConfig?: string
-  /** Reserved for pack 5.2: `ip domain-name`, local users, SSH. */
-  domainName?: never
-  users?: never
-  ssh?: never
+  /** `ip domain-name` / `ip domain name` (pack 5.2). */
+  domainName?: string
+  /** Local user database (`username …`), used by `login local`. */
+  users?: LocalUser[]
+  ssh?: SshSettings
 }

@@ -19,6 +19,8 @@ export const PROTOCOL_STYLES: Readonly<Record<SimProtocol, ProtocolStyle>> = {
   ipv4: { fill: 'var(--color-packet-ipv4)', chip: 'bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-200 ring-blue-300 dark:ring-blue-700' },
   ethernet: { fill: 'var(--color-packet-ethernet)', chip: 'bg-surface-muted text-fg ring-border-strong' },
   hdlc: { fill: 'var(--color-packet-hdlc)', chip: 'bg-stone-100 dark:bg-stone-900/40 text-stone-800 dark:text-stone-200 ring-stone-300 dark:ring-stone-700' },
+  telnet: { fill: 'var(--color-packet-telnet)', chip: 'bg-orange-100 dark:bg-orange-900/40 text-orange-900 dark:text-orange-200 ring-orange-300 dark:ring-orange-700' },
+  ssh: { fill: 'var(--color-packet-ssh)', chip: 'bg-lime-100 dark:bg-lime-900/40 text-lime-900 dark:text-lime-200 ring-lime-300 dark:ring-lime-700' },
 }
 
 export const NO_PROTOCOL_CHIP = 'bg-surface text-fg-muted ring-border-strong'

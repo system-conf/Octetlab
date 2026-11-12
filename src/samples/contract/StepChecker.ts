@@ -17,6 +17,7 @@ export function solveConditionDevices(condition: SolveCondition): string[] {
     case 'resolves':
       return [condition.fromDeviceId]
     case 'reachable':
+    case 'unreachable':
       return [condition.fromDeviceId, condition.toDeviceId]
     case 'appLinksOk':
       return [condition.deviceId]

@@ -4,6 +4,7 @@
 // lazy (`expiresAt` compared with the current time), protocol timers are queued tasks (SimTimer).
 import type { LinkRuntime, LinkTimer } from './LinkLayerState'
 import type { NetworkRuntime, NetworkTimer } from './NetworkLayerState'
+import type { AclCounters, NatStatistics, NatTranslation } from './SecurityRuntime'
 import type { ServiceRuntime, ServiceTimer } from './ServiceLayerState'
 
 /**
@@ -17,9 +18,10 @@ export interface RuntimeExtensions {
   etherChannel?: never
   portSecurity?: never
   neighbors?: never
-  /** 5.2: NAT translation table, ACL hit counters. */
-  natTranslations?: never
-  aclCounters?: never
+  /** 5.2 (docs/SECURITY_PACK.md §5): NAT translation table and counters (agent B), ACL hit counters (agent A). */
+  natTranslations?: readonly NatTranslation[]
+  natStatistics?: NatStatistics
+  aclCounters?: AclCounters
   /** 5.3: RIP / OSPF / EIGRP databases and neighbours, HSRP state. */
   rip?: never
   ospf?: never

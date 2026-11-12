@@ -71,6 +71,21 @@ export interface SimClearTableRequest {
   readonly table: 'arp' | 'mac' | 'dnsCache'
 }
 
+/**
+ * Pack 5.2 (docs/SECURITY_PACK.md §6): `ssh -l <user> <ip>` / `telnet <ip>` from a host or router.
+ * Connect over TCP 22 / 23, then authenticate against the target's vty settings (scope A: no remote
+ * prompt; the result says how far it got). Owner: services (agent C).
+ */
+export interface SimRemoteConnectRequest {
+  readonly kind: 'remoteConnect'
+  readonly deviceId: string
+  readonly protocol: 'ssh' | 'telnet'
+  readonly targetIp: string
+  /** ssh `-l <user>`; telnet with `login local` asks for one (taken from here; absent = none given). */
+  readonly username?: string
+  readonly password?: string
+}
+
 export type SimRequest =
   | SimPingRequest
   | SimTracertRequest
@@ -79,6 +94,7 @@ export type SimRequest =
   | SimDnsQueryRequest
   | SimHttpGetRequest
   | SimClearTableRequest
+  | SimRemoteConnectRequest
 
 // ---------------------------------------------------------------- results
 
@@ -181,7 +197,27 @@ export interface ClearResult {
   readonly entries: number
 }
 
-export type RequestResult = PingResult | TracertResult | DhcpResult | DnsResult | HttpResult | ClearResult
+/**
+ * How a remote session attempt ended. `open` = connected and authenticated (scope A ends there);
+ * the failures map to client messages ("% Connection refused by remote host", time-out, "Password
+ * required, but none set", "% Authentication failed").
+ */
+export type RemoteConnectOutcome =
+  | { readonly ok: true; readonly hostname: string; readonly bannerMotd?: string; readonly privilege: number }
+  | {
+      readonly ok: false
+      readonly failure: 'refused' | 'timedOut' | 'unreachable' | 'adminProhibited' | 'passwordNotSet' | 'authFailed' | 'localFailure'
+      readonly reason: SimReason
+    }
+
+export interface RemoteConnectResult {
+  readonly kind: 'remoteConnect'
+  readonly protocol: 'ssh' | 'telnet'
+  readonly targetIp: string
+  readonly outcome: RemoteConnectOutcome
+}
+
+export type RequestResult = PingResult | TracertResult | DhcpResult | DnsResult | HttpResult | ClearResult | RemoteConnectResult
 
 export type RequestStatus = 'queued' | 'running' | 'done'
 

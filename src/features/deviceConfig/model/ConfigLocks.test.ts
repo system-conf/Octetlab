@@ -66,11 +66,11 @@ describe('DeviceSections', () => {
     expect(DeviceSections.of(byId('ap'), undefined)).toEqual(['general', 'ports', 'wireless'])
     expect(DeviceSections.of(byId('cloud'), undefined)).toEqual(['general', 'internet'])
     const router = { ...byId('router'), routing: { ipRouting: true, staticRoutes: [] } }
-    expect(DeviceSections.of(router, findDeviceModel('router2Port'))).toEqual(['general', 'ports', 'routing', 'dhcp', 'dns'])
+    expect(DeviceSections.of(router, findDeviceModel('router2Port'))).toEqual(['general', 'ports', 'routing', 'dhcp', 'dns', 'accessLists', 'nat', 'security'])
     const pc = { ...byId('pc'), host: { defaultGateway: '', dnsServers: [], appLinks: [] } }
     expect(DeviceSections.of(pc, undefined)).toEqual(['general', 'ports', 'host'])
     expect(DeviceSections.of(pc, findDeviceModel('pos'))).toContain('appLinks')
     const sw = { ...byId('sw'), switching: { vlans: [{ id: 1, name: 'default' }], svis: [], defaultGateway: '' } }
-    expect(DeviceSections.of(sw, undefined)).toEqual(['general', 'ports', 'vlans', 'svis'])
+    expect(DeviceSections.of(sw, undefined)).toEqual(['general', 'ports', 'vlans', 'svis', 'security'])
   })
 })

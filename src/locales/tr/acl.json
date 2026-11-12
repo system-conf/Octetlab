@@ -1,0 +1,13 @@
+{
+  "section": {
+    "title": "Erişim listeleri (ACL)",
+    "placeholder": "Erişim listeleri şimdilik komut satırından ayarlanıyor (access-list, ip access-list)."
+  },
+  "port": {
+    "inbound": "Gelen trafik erişim listesi",
+    "outbound": "Giden trafik erişim listesi",
+    "none": "Yok",
+    "hint": "Erişim listesinin adı ya da numarası; yoksa boş bırak.",
+    "nameError": "Erişim listesi adı boşluksuz tek bir kelime olmalı."
+  }
+}

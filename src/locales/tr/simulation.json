@@ -158,7 +158,9 @@
     "tcp": "TCP",
     "dhcp": "DHCP",
     "dns": "DNS",
-    "http": "HTTP"
+    "http": "HTTP",
+    "telnet": "Telnet",
+    "ssh": "SSH"
   },
   "layers": {
     "layer1": "Katman 1: Fiziksel",
@@ -262,6 +264,12 @@
     "dnsLoop": "DNS sorgusu zaten iletiliyor (yönlendirici döngüsü).",
     "dnsNotAResolver": "Bu adreste çalışan bir DNS sunucusu yok.",
     "connectionRefused": "Bağlantı reddedildi.",
+    "aclDenied": "Arayüzdeki bir erişim listesi paketi engelledi.",
+    "natPoolExhausted": "NAT'ta bu paket için boş adres ya da port kalmadı.",
+    "natNoTranslation": "Bu paket için bir NAT çevirisi yok.",
+    "vtyAccessDenied": "Uzaktan erişim hatları bu kaynak adresi kabul etmiyor (access-class).",
+    "remoteLoginFailed": "Uzaktan giriş başarısız (kullanıcı adı ya da parola).",
+    "remoteAccessDisabled": "Cihazda bu protokolle uzaktan erişim açık değil.",
     "requestTimedOut": "Zamanında yanıt gelmedi.",
     "staleReply": "Artık kimsenin beklemediği bir yanıt.",
     "unsupported": "Cihaz bu PDU'yu işlemiyor."

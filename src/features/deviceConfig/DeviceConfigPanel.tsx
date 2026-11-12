@@ -6,7 +6,10 @@ import { ExerciseLockPolicy } from '../../session/ExerciseLockPolicy'
 import ProblemList from './fields/ProblemList'
 import { ConfigLocks, type ConfigAccess } from './model/ConfigLocks'
 import { DeviceSections, LOCK_SECTION_OF, type ConfigSectionId } from './model/DeviceSections'
+import AccessListsSection from './sections/acl/AccessListsSection'
 import AppLinksSection from './sections/AppLinksSection'
+import NatSection from './sections/nat/NatSection'
+import SecuritySection from './sections/security/SecuritySection'
 import GeneralSection from './sections/GeneralSection'
 import HostSection from './sections/HostSection'
 import InternetSection from './sections/InternetSection'
@@ -105,6 +108,12 @@ function DeviceConfigPanel({ device, state, onChange, problems = [], policy = Ex
         return device.wireless && <WirelessSection key={draftKey(section, device, device.wireless)} {...cardProps(section)} wireless={device.wireless} />
       case 'internet':
         return <InternetSection key={draftKey(section, device, [device.internet, device.ports.map((port) => port.id)])} {...cardProps(section)} />
+      case 'accessLists':
+        return <AccessListsSection key={draftKey(section, device, device.features?.accessLists)} {...cardProps(section)} />
+      case 'nat':
+        return <NatSection key={draftKey(section, device, device.features?.nat)} {...cardProps(section)} />
+      case 'security':
+        return <SecuritySection key={draftKey(section, device, device.features?.management)} {...cardProps(section)} />
     }
   }
 

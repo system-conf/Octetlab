@@ -13,7 +13,11 @@ const MODE_SUFFIXES: Readonly<Record<CliModeKind, string>> = {
   vlan: '(config-vlan)#',
   dhcpPool: '(dhcp-config)#',
   router: '(config-router)#',
+  // Standard lists; extended lists use EXTENDED_ACL_SUFFIX (the mode carries the type).
+  accessList: '(config-std-nacl)#',
 }
+
+const EXTENDED_ACL_SUFFIX = '(config-ext-nacl)#'
 
 /** IOS hostname rule: a letter first, then letters, digits and hyphens, no hyphen at the end. */
 export const HOSTNAME_PATTERN = /^[A-Za-z](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/
@@ -46,6 +50,7 @@ export class CliPrompt {
   }
 
   static render(device: Device, mode: CliMode): string {
-    return `${CliPrompt.hostname(device)}${MODE_SUFFIXES[mode.kind]}`
+    const suffix = mode.kind === 'accessList' && mode.listType === 'extended' ? EXTENDED_ACL_SUFFIX : MODE_SUFFIXES[mode.kind]
+    return `${CliPrompt.hostname(device)}${suffix}`
   }
 }

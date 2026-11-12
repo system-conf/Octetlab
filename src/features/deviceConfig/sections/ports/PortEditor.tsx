@@ -20,6 +20,7 @@ import {
   type PortDraft,
 } from '../../model/PortEditorModel'
 import { fieldGrid } from '../sectionTypes'
+import PortSecurityFields from './PortSecurityFields'
 import SubInterfaceList from './SubInterfaceList'
 import SwitchportFields from './SwitchportFields'
 
@@ -157,6 +158,7 @@ function PortEditor({ device, port, model, access, onSave, onClose }: PortEditor
               )}
             </div>
           )}
+          <PortSecurityFields device={device} role={draft.role} draft={draft.security} errors={validation} show={errors.show} onChange={(security) => change({ security })} />
           {PortEditorModel.hasClockRate(draft, port) && (
             <InputField
               label={t('port.clockRate')}

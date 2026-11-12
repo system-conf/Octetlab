@@ -1,5 +1,7 @@
 // Configuration readers and lab rules shared by the rule engine (src/engine, the oracle) and the packet
 // simulator (src/sim): pure functions over a NetworkState, no reachability decisions.
+export { AclMatcher } from './AclMatcher'
+export type { AclDecision, AclPacketView } from './AclMatcher'
 export { AppLinkVerdicts } from './AppLinkVerdicts'
 export { DeviceAddresses } from './DeviceAddresses'
 export { DhcpPoolAllocator } from './DhcpPoolAllocator'

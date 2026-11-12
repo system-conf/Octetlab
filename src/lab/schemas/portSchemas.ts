@@ -33,9 +33,14 @@ export const ipv4SettingsSchema = z.strictObject({
   mask: nameSchema,
 })
 
+/** Pack 5.2: `ip access-group` / `access-class` (AccessListTypes.AclBinding); values are ACL names. */
+export const aclBindingSchema = z.strictObject({ in: nameSchema.optional(), out: nameSchema.optional() })
+
+export const natRoleSchema = z.enum(['inside', 'outside'])
+
 export const l3FeaturesSchema = z.strictObject({
-  accessGroups: reservedKey,
-  natRole: reservedKey,
+  accessGroups: aclBindingSchema.optional(),
+  natRole: natRoleSchema.optional(),
   ospf: reservedKey,
   rip: reservedKey,
   eigrp: reservedKey,

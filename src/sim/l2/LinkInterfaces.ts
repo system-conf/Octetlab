@@ -28,6 +28,8 @@ const PROTOCOL_LAYER: Record<SimProtocol, OsiLayer> = {
   dhcp: 7,
   dns: 7,
   http: 7,
+  telnet: 7,
+  ssh: 7,
 }
 
 /**

@@ -4,6 +4,7 @@
     "internet": "{{device}} hâlâ internete çıkamıyor.",
     "resolves": "{{device}} hâlâ {{name}} adresini açamıyor.",
     "reachable": "{{from}} hâlâ {{to}} ile haberleşemiyor.",
+    "unreachable": "{{from}} hâlâ {{to}} cihazına ulaşabiliyor, oysa engellenmiş olmalı.",
     "appLinksOk": "{{device}} kullandığı bazı cihazlara hâlâ ulaşamıyor."
   }
 }

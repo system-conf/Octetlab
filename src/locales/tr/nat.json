@@ -1,0 +1,12 @@
+{
+  "section": {
+    "title": "Adres çevirme (NAT)",
+    "placeholder": "NAT şimdilik komut satırından ayarlanıyor (ip nat …)."
+  },
+  "port": {
+    "role": "NAT rolü",
+    "none": "Yok",
+    "inside": "İç taraf (ip nat inside)",
+    "outside": "Dış taraf (ip nat outside)"
+  }
+}

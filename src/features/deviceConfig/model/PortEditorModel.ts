@@ -16,6 +16,7 @@ import type {
 import { localizedMessage } from '../../../i18n/messageKeys'
 import { anyRowErrors, hasErrors, optionalText, parseWholeNumber, type FieldErrors } from './formTypes'
 import { Ipv4Fields } from './Ipv4Fields'
+import { PortSecurityModel, type PortSecurityDraft } from './PortSecurityModel'
 import { SubInterfaceFormModel, type SubInterfaceDraft, type SubInterfaceField } from './SubInterfaceFormModel'
 import { SwitchManagement } from './SwitchManagement'
 import { VlanListParser } from './VlanListParser'
@@ -37,9 +38,11 @@ export interface PortDraft {
   mask: string
   clockRate: string
   subInterfaces: SubInterfaceDraft[]
+  /** Pack 5.2: ACL bindings and NAT role of a routed port (PortSecurityModel). */
+  security: PortSecurityDraft
 }
 
-export type PortField = 'accessVlan' | 'nativeVlan' | 'allowedList' | 'address' | 'mask' | 'clockRate'
+export type PortField = 'accessVlan' | 'nativeVlan' | 'allowedList' | 'address' | 'mask' | 'clockRate' | 'aclIn' | 'aclOut'
 
 export interface PortErrors {
   fields: FieldErrors<PortField>
@@ -116,6 +119,7 @@ export class PortEditorModel {
       mask: ipv4.mask,
       clockRate: port.role === 'routed' && port.serial?.clockRate !== undefined ? String(port.serial.clockRate) : '',
       subInterfaces: port.role === 'routed' ? port.subInterfaces.map((sub) => SubInterfaceFormModel.toDraft(sub, port.id)) : [],
+      security: PortSecurityModel.toDraft(port.role === 'routed' ? port.l3 : undefined),
     }
   }
 
@@ -135,6 +139,10 @@ export class PortEditorModel {
     if ((draft.role === 'routed' || draft.role === 'host') && draft.addressing === 'static') {
       // A NIC set to static needs an address (as in Windows); an interface may stay unaddressed.
       Object.assign(fields, Ipv4Fields.interfaceAddress(draft.address, draft.mask, draft.role === 'host'))
+    }
+    if (draft.role === 'routed') {
+      fields.aclIn = PortSecurityModel.nameError(draft.security.aclIn)
+      fields.aclOut = PortSecurityModel.nameError(draft.security.aclOut)
     }
     if (PortEditorModel.hasClockRate(draft, port) && draft.clockRate.trim() !== '' && parseWholeNumber(draft.clockRate, 1, MAX_CLOCK_RATE) === null) {
       fields.clockRate = localizedMessage('deviceConfig:errors.clockRate')
@@ -159,7 +167,8 @@ export class PortEditorModel {
         const subInterfaces = PortEditorModel.hasSubInterfaces(draft, port)
           ? draft.subInterfaces.map((row) => SubInterfaceFormModel.apply(row, port.id))
           : []
-        return { ...common, role: 'routed', l3: PortEditorModel.l3Of(draft, port), subInterfaces, ...serial }
+        const l3 = PortSecurityModel.apply(PortEditorModel.l3Of(draft, port), draft.security)
+        return { ...common, role: 'routed', l3, subInterfaces, ...serial }
       }
       case 'host':
         return { ...common, role: 'host', l3: PortEditorModel.l3Of(draft, port) }

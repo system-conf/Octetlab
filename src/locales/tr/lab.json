@@ -57,6 +57,11 @@
     "vlanOutOfRange": "\"{{deviceId}}\" cihazı: bir VLAN numarası 1–4094 aralığının dışında.",
     "vlanOutOfRangeOnPort": "\"{{deviceId}}\" cihazı, \"{{portId}}\" arayüzü: bir VLAN numarası 1–4094 aralığının dışında.",
     "missingDefaultVlan": "\"{{deviceId}}\" cihazı: VLAN veritabanında VLAN 1 bulunmalı.",
+    "duplicateAclName": "\"{{deviceId}}\" cihazı: \"{{name}}\" adlı iki erişim listesi var.",
+    "aclNumberOutOfRange": "\"{{deviceId}}\" cihazı: {{name}} numaralı erişim listesinin numarası türünün aralığı dışında.",
+    "duplicateAclSeq": "\"{{deviceId}}\" cihazı: \"{{name}}\" erişim listesinde aynı sıra numarasına sahip iki kural var.",
+    "duplicateNatPool": "\"{{deviceId}}\" cihazı: \"{{name}}\" adlı iki NAT havuzu var.",
+    "duplicateUser": "\"{{deviceId}}\" cihazı: \"{{name}}\" adlı iki yerel kullanıcı var.",
     "invalidLink": {
       "unknownDevice": "\"{{linkId}}\" kablosu var olmayan bir cihaza bağlı.",
       "unknownPort": "\"{{linkId}}\" kablosu var olmayan bir porta bağlı.",

@@ -16,9 +16,16 @@ export type ConfigSectionId =
   | 'dns'
   | 'wireless'
   | 'internet'
+  // Pack 5.2 (docs/SECURITY_PACK.md): agents A, B, C own the cards
+  | 'accessLists'
+  | 'nat'
+  | 'security'
 
 /** Exercise lock section of each card; 'general' (name) follows the device lock only. */
 export const LOCK_SECTION_OF: Record<ConfigSectionId, DeviceSection | null> = {
+  accessLists: 'security',
+  nat: 'security',
+  security: 'security',
   general: null,
   ports: 'ports',
   host: 'host',
@@ -49,6 +56,10 @@ export class DeviceSections {
       dns: device.services?.dns !== undefined || capabilities.has('dnsServer'),
       wireless: device.wireless !== undefined,
       internet: device.internet !== undefined || device.kind === 'internet',
+      // ACLs on routers and L3 switches (routed ports, SVIs); NAT on routers; SSH on every IOS device.
+      accessLists: device.routing !== undefined,
+      nat: device.routing !== undefined && device.kind !== 'l3Switch',
+      security: device.routing !== undefined || vlans,
     }
     return (Object.keys(shown) as ConfigSectionId[]).filter((section) => shown[section])
   }

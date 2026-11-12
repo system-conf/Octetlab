@@ -2,7 +2,8 @@
 import { z } from 'zod'
 import type { DeviceKind } from '../../domain'
 import { LAB_LIMITS } from './labLimits'
-import { idSchema, l3SettingsSchema, listOf, nameSchema, portSchema, reservedKey, textSchema, vlanIdSchema } from './portSchemas'
+import { aclBindingSchema, idSchema, l3SettingsSchema, listOf, nameSchema, portSchema, reservedKey, textSchema, vlanIdSchema } from './portSchemas'
+import { accessListSettingsSchema, localUserSchema, natSettingsSchema, sshSettingsSchema, vtyTransportSchema } from './securitySchemas'
 import { deviceServicesSchema, internetSettingsSchema } from './serviceSchemas'
 
 /** Every DeviceKind (the type-equality test fails when the domain union gains a member). */
@@ -110,8 +111,9 @@ const lineSettingsSchema = z.strictObject({
   login: z.boolean().optional(),
   execTimeout: z.strictObject({ minutes: z.number().int().min(0), seconds: z.number().int().min(0) }).optional(),
   loggingSynchronous: z.boolean().optional(),
-  transportInput: reservedKey,
-  loginLocal: reservedKey,
+  transportInput: listOf(vtyTransportSchema, 2).optional(),
+  loginLocal: z.boolean().optional(),
+  accessClass: aclBindingSchema.optional(),
 })
 
 export const managementSettingsSchema = z.strictObject({
@@ -123,15 +125,15 @@ export const managementSettingsSchema = z.strictObject({
   domainLookup: z.boolean().optional(),
   lines: z.strictObject({ console: lineSettingsSchema.optional(), vty: lineSettingsSchema.optional() }).optional(),
   startupConfig: z.string().max(STARTUP_CONFIG_LENGTH).optional(),
-  domainName: reservedKey,
-  users: reservedKey,
-  ssh: reservedKey,
+  domainName: nameSchema.optional(),
+  users: listOf(localUserSchema).optional(),
+  ssh: sshSettingsSchema.optional(),
 })
 
 export const deviceFeaturesSchema = z.strictObject({
   management: managementSettingsSchema.optional(),
-  accessLists: reservedKey,
-  nat: reservedKey,
+  accessLists: accessListSettingsSchema.optional(),
+  nat: natSettingsSchema.optional(),
   discovery: reservedKey,
   monitoring: reservedKey,
 })

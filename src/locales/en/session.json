@@ -4,6 +4,7 @@
     "internet": "{{device}} still can’t get online.",
     "resolves": "{{device}} still can’t open {{name}}.",
     "reachable": "{{from}} still can’t reach {{to}}.",
+    "unreachable": "{{from}} can still reach {{to}}, but it should be blocked.",
     "appLinksOk": "{{device}} still can’t reach some of the devices it uses."
   }
 }

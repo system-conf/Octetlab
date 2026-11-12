@@ -19,6 +19,7 @@ import type {
   UdpDatagram,
 } from './Pdu'
 import type { OsiLayer, SimProtocol } from './SimEvent'
+import { SIM_PORTS } from './SimConstants'
 
 export type PduFieldKey =
   | 'dstMac'
@@ -159,8 +160,16 @@ export class PduLayers {
         if (transport.payload.kind === 'dhcp') return 'dhcp'
         return transport.payload.kind === 'dns' ? 'dns' : 'udp'
       case 'tcp':
-        return transport.payload?.kind === 'http' ? 'http' : 'tcp'
+        if (transport.payload?.kind === 'http') return 'http'
+        return PduLayers.remoteAccessProtocol(transport.srcPort, transport.dstPort) ?? 'tcp'
     }
+  }
+
+  /** Pack 5.2: TCP 22 / 23 segments are SSH / Telnet (their payload is opaque RawData). */
+  private static remoteAccessProtocol(srcPort: number, dstPort: number): 'ssh' | 'telnet' | null {
+    if (srcPort === SIM_PORTS.ssh || dstPort === SIM_PORTS.ssh) return 'ssh'
+    if (srcPort === SIM_PORTS.telnet || dstPort === SIM_PORTS.telnet) return 'telnet'
+    return null
   }
 
   /**
