@@ -37,17 +37,29 @@ tracert / show commands, and gets a link that opens the lab in https://octetlab.
 | `create_lab` | empty lab (title) → labId + live link |
 | `open_sample` | sample id → new labId + live link |
 | `import_share_link` | Octetlab share URL (`/lab#lab=…`) → labId + live link |
-| `build_lab` | one call: `devices[]` (ref, modelId, name?, x?, y?), `links[]` (a / b = ref or id, ports?, cable?, ssid?), `hosts[]` (configure_host settings, `deviceId` = ref or id), `cli[]` (`deviceRef`, config); all-or-nothing (rejected IOS lines count as failures) with every failed step listed (`failures[]`: section, index, reason); optional `labId` else a new lab with `title`; ≤ 100 devices, 200 links |
-| `get_lab` | devices (id, name, model, powered, ports with IP/VLAN/status), links, layout summary |
+| `build_lab` | one call: `devices[]` (ref, modelId, name?, x?, y?), `links[]` (a / b = ref or id, ports?, cable?, ssid?), `hosts[]` (configure_host settings, `deviceId` = ref or id), `settings[]` (configure_device settings, `deviceId` = ref or id), `cli[]` (`deviceRef`, config), `annotations[]` (edit_annotations add items), `description?`, `notes?`; applied in that order, then DHCP leases for waiting end devices; all-or-nothing (rejected IOS lines count as failures) with every failed step listed (`failures[]`: section, index, reason); optional `labId` else a new lab with `title`; ≤ 100 devices, 200 links |
+| `get_lab` | title, description, notes; devices (id, name, model, powered, position, ports with IP/VLAN/status, gateway, DNS, `settings`: ssids / dhcp / dns / internetService); links (plugged or not); annotations |
+| `update_lab_info` | `title?`, `description?` ("" clears), `notes?` (replace) or `appendNotes?` (add on a new line); LabEditor.updateMeta / setNotes |
+| `edit_annotations` | `add[]` ({type: text / rectangle / ellipse / line, at?, from?, to?, text?, size?, color?, width?, height?, label?, filled?, arrow?}), `update[]` ({id, …same fields}), `remove[]` (ids); fields per type checked, LabEditor annotation methods |
 | `add_device` | modelId, optional name and x/y (auto layout when absent) → device id |
+| `configure_device` | deviceId + any of: `name`, `x`/`y` (move), `ssids[]` ({ssid, vlan?, security?: open}; AP / wireless router), `dhcp` ({enabled?, pools[]?: {name, network, mask, rangeStart?, rangeEnd?, defaultRouter?, dnsServers?}, excludedRanges[]?: {start, end?}}), `dns` ({enabled?, forwarders[]?, records[]?: {name, address}}), `internetService[]` ({portId, up}; internet cloud = ISP outage). Validated by the app's own form models (src/features/deviceConfig/model: GeneralFormModel, SsidFormModel, DhcpPoolFormModel, DnsServiceFormModel, InternetServiceModel), offered where the app shows the card (DeviceSections); lists replace the whole list like the GUI forms; a DHCP change lets waiting clients ask for leases |
 | `remove_device` | device id |
 | `connect` | deviceA, deviceB, optional ports (else first free compatible port) and cable (else `CableRules.autoCable`); clear refusal text when not allowed |
-| `disconnect` | link id |
+| `disconnect` | link id (removes the cable) |
+| `set_cable_connected` | link id + `connected` (unplug / plug back in; LabEditor.setLinkConnected) |
 | `set_power` | device on/off |
-| `configure_host` | host NIC: dhcp or static ip/mask, gateway, DNS list |
-| `apply_cli_config` | IOS-style config lines on a router/switch (`CliShell.replay`) → resulting running-config excerpt and errors |
+| `configure_host` | host NIC: dhcp or static ip/mask, gateway, DNS list; in DHCP mode the device asks for a lease right away |
+| `apply_cli_config` | IOS-style config lines on a router/switch (`CliShell.replay`) → resulting running-config excerpt and errors; then waiting DHCP clients ask for leases |
+| `renew_dhcp` | `deviceIds?` (absent = every DHCP client): the `ipconfig /renew` exchange (simulator `dhcpRenew` request) for any end device, also cameras / phones / printers, one after the other on one simulator → lease or reason per card |
 | `run_command` | one command on a device: host terminal (ping, ipconfig, ipconfig /renew, tracert, nslookup, arp…) or device CLI exec (show …, ping) through the simulator; returns the terminal lines; applies state changes (DHCP) |
 | `share_link` | frozen snapshot URL that opens a copy of the lab in the web app (fails clearly when over the share size limit) |
+
+DHCP leases (`DhcpLeases`): build_lab (after all steps), configure_host (dhcp), apply_cli_config and configure_device
+(dhcp) let every powered end device whose DHCP card is cabled and has no address ask for a lease, in lab order, on
+one simulator; the engine's network with the leases becomes the lab (same as `ipconfig /renew`). Router interfaces
+with `ip address dhcp` are not DHCP clients in Octetlab's simulator (the cloud has no ISP DHCP yet:
+`IspHandoff.customerAddressing` is reserved); like the app samples, a WAN port reaches the internet with
+`ip route 0.0.0.0 0.0.0.0 <WAN interface>`.
 
 Every tool result: short human-readable text plus `structuredContent` where useful; results about a lab
 carry `liveUrl` (`<APP_ORIGIN>/live/<labId>`). Errors: `isError` with a clear sentence (validation / not
@@ -65,4 +77,5 @@ classes (one responsibility each), validate every tool input with zod at the bou
 catch, no secrets in code. Tests with Vitest for the service classes (lab store on in-memory rooms
 (`MemoryLabRooms`: the real `LabRoomState` on memory storage) + an in-memory KV fake, tool handlers
 end-to-end on a small lab: add PC + switch + router, configure, ping; live events, build_lab, CAS
-retry, the `/live` API). The `LabRoom` Durable Object stays a thin adapter around `LabRoomState`.
+retry, the `/live` API; editTools.test.ts and dhcpTools.test.ts for lab info, annotations, device settings,
+cable plug state and DHCP leases). The `LabRoom` Durable Object stays a thin adapter around `LabRoomState`.

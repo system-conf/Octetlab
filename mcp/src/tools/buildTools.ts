@@ -1,13 +1,16 @@
 // build_lab (docs/LIVE_LABS.md §7): a whole network in one call, all-or-nothing, one save, one live event.
 import type { McpServer } from '@modelcontextprotocol/server'
 import { z } from 'zod'
+import type { LabDocument } from '../../../src/domain'
 import { createEmptyLab } from '../../../src/lab/createLab'
 import { LAB_LIMITS } from '../../../src/lab/schemas/labLimits'
 import { ToolError } from '../errors/ToolError'
+import type { LeaseOutcome } from '../lab/DhcpLeases'
 import type { BuildPlan, BuildResult } from '../lab/LabBuilder'
 import { MAX_MCP_DEVICES } from '../lab/LabTopology'
 import type { LiveEventDescription } from '../live/LiveEvent'
 import type { OctetlabServices } from '../server/OctetlabServices'
+import { deviceSettingsRequestOf, deviceSettingsShape, labInfoRequestOf, labInfoShape, newAnnotationOf, newAnnotationSchema } from './editSchemas'
 import { cableSchema, cliConfigSchema, coordinateSchema, hostSettingsShape, labIdSchema, nameSchema, portIdSchema } from './toolSchemas'
 import type { ToolResponder } from './ToolResponder'
 
@@ -52,38 +55,60 @@ const buildInput = z.object({
     .max(MAX_BUILD_HOSTS)
     .default([])
     .describe('configure_host settings per end device'),
+  settings: z
+    .array(z.object({ deviceId: deviceNameSchema, ...deviceSettingsShape }))
+    .max(MAX_BUILD_DEVICES)
+    .default([])
+    .describe('configure_device settings per device (SSIDs, DHCP / DNS server, ISP lines, name, x / y)'),
   cli: z
     .array(z.object({ deviceRef: deviceNameSchema, config: cliConfigSchema }))
     .max(MAX_BUILD_CLI)
     .default([])
     .describe('apply_cli_config per router / managed switch'),
+  annotations: z.array(newAnnotationSchema).max(LAB_LIMITS.annotations).default([]).describe('edit_annotations add[] items: canvas notes and shapes'),
+  description: labInfoShape.description,
+  notes: labInfoShape.notes,
 })
 
 type BuildInput = z.infer<typeof buildInput>
 
 function planOf(input: BuildInput): BuildPlan {
+  const info = input.description === undefined && input.notes === undefined ? undefined : labInfoRequestOf({ description: input.description, notes: input.notes })
   return {
     devices: input.devices,
     links: input.links,
     hosts: input.hosts.map(({ deviceId, ...settings }) => ({ device: deviceId, ...settings })),
+    settings: input.settings.map(({ deviceId, ...settings }) => deviceSettingsRequestOf(deviceId, settings)),
     cli: input.cli.map(({ deviceRef, config }) => ({ device: deviceRef, config })),
+    annotations: input.annotations.map(newAnnotationOf),
+    info,
   }
 }
 
-export function registerBuildTools(server: McpServer, services: OctetlabServices, responder: ToolResponder): void {
-  const { builder } = services
+type BuildRun = BuildResult & { leases: LeaseOutcome[] }
 
-  /** The result, or a ToolError listing every failed step (nothing is saved then). */
-  const checked = (result: BuildResult): BuildResult => {
-    if (result.failures.length === 0) return result
-    throw ToolError.validation(
-      `build_lab changed nothing: ${result.failures.length} step(s) failed. Fix them and send the whole build again.\n${builder.failureText(result.failures)}`,
-      { failures: result.failures },
-    )
+export function registerBuildTools(server: McpServer, services: OctetlabServices, responder: ToolResponder): void {
+  const { builder, leases } = services
+
+  /**
+   * The build, then DHCP leases for every end device still waiting for one (after all config, so the
+   * servers and routers are ready); a ToolError listing every failed step instead (nothing is saved then).
+   */
+  const run = (doc: LabDocument, plan: BuildPlan): BuildRun => {
+    const result = builder.build(doc, plan)
+    if (result.failures.length > 0) {
+      throw ToolError.validation(
+        `build_lab changed nothing: ${result.failures.length} step(s) failed. Fix them and send the whole build again.\n${builder.failureText(result.failures)}`,
+        { failures: result.failures },
+      )
+    }
+    const leased = leases.settle(result.doc)
+    return { ...result, doc: leased.doc, leases: leased.outcomes }
   }
-  const describe = (result: BuildResult): LiveEventDescription => ({
-    summary: builder.summary(result),
-    deviceIds: [...new Set([...result.devices.map((device) => device.deviceId), ...result.configuredHosts, ...result.configuredDevices])],
+  const summary = (result: BuildRun): string => [builder.summary(result), leases.summary(result.leases)].filter((part) => part !== '').join(' ')
+  const describe = (result: BuildRun): LiveEventDescription => ({
+    summary: summary(result),
+    deviceIds: [...new Set([...result.devices.map((device) => device.deviceId), ...result.configuredHosts, ...result.configuredDevices, ...result.leases.map((lease) => lease.deviceId)])],
     linkIds: result.linkIds,
   })
 
@@ -93,7 +118,8 @@ export function registerBuildTools(server: McpServer, services: OctetlabServices
       title: 'Build lab',
       description:
         'Builds a whole network in ONE call (prefer this over many add_device / connect / configure_host / apply_cli_config calls): ' +
-        'devices[] (each with your own ref), then links[] (a / b = refs), hosts[] (end-device IP settings) and cli[] (IOS config per router / switch), applied in that order. ' +
+        'devices[] (each with your own ref), then links[] (a / b = refs), hosts[] (end-device IP settings), settings[] (configure_device: SSIDs, DHCP / DNS server, ISP lines), cli[] (IOS config per router / switch), ' +
+        'annotations[] (canvas notes / shapes) and description / notes, applied in that order. Finally every end device on DHCP without an address asks for a lease (listed in the result). ' +
         `All-or-nothing: if any step fails nothing is saved and every failed step is listed with its index and reason. Without labId a new lab is created. Limits: ${MAX_BUILD_DEVICES} devices, ${MAX_BUILD_LINKS} links per call. ` +
         'The result has the live link; give it to the user once.',
       inputSchema: buildInput,
@@ -102,25 +128,28 @@ export function registerBuildTools(server: McpServer, services: OctetlabServices
     (input) =>
       responder.respond('build_lab', async () => {
         const plan = planOf(input)
-        if (plan.devices.length + plan.links.length + plan.hosts.length + plan.cli.length === 0) {
-          throw ToolError.validation('build_lab needs at least one step in devices, links, hosts or cli.')
+        const steps = plan.devices.length + plan.links.length + plan.hosts.length + plan.settings.length + plan.cli.length + plan.annotations.length
+        if (steps === 0 && plan.info === undefined) {
+          throw ToolError.validation('build_lab needs at least one step in devices, links, hosts, settings, cli or annotations, or a description / notes.')
         }
         let labId = input.labId
-        let result: BuildResult
+        let result: BuildRun
         if (labId === undefined) {
-          result = checked(builder.build(createEmptyLab(input.title ?? ''), plan))
+          result = run(createEmptyLab(input.title ?? ''), plan)
           labId = await services.labs.create(result.doc, responder.event('build_lab', describe(result)))
         } else {
-          result = await responder.withLab(labId, 'build_lab', (doc) => checked(builder.build(doc, plan)), describe)
+          result = await responder.withLab(labId, 'build_lab', (doc) => run(doc, plan), describe)
         }
         const devices = result.devices.map((device) => `${device.ref} → ${device.deviceId} "${device.name}" (${device.modelId})`)
         const text = [
-          `${builder.summary(result)} Lab ${labId}.`,
+          `${summary(result)} Lab ${labId}.`,
           ...(input.labId === undefined ? [services.liveLinks.sentence(labId)] : []),
           ...(devices.length === 0 ? [] : ['Devices:', ...devices.map((line) => `  ${line}`)]),
           ...(result.linkIds.length === 0 ? [] : [`Cables: ${result.linkIds.join(', ')}`]),
+          ...(result.annotationIds.length === 0 ? [] : [`Annotations: ${result.annotationIds.join(', ')}`]),
+          ...(result.leases.length === 0 ? [] : ['DHCP leases:', ...leases.lines(result.leases).map((line) => `  ${line}`)]),
         ].join('\n')
-        return { text, labId, structured: { labId, devices: result.devices, linkIds: result.linkIds } }
+        return { text, labId, structured: { labId, devices: result.devices, linkIds: result.linkIds, annotationIds: result.annotationIds, leases: result.leases } }
       }),
   )
 }

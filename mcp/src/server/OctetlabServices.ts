@@ -4,12 +4,18 @@ import { CliConfigApplier } from '../cli/CliConfigApplier'
 import { CommandRunner } from '../cli/CommandRunner'
 import { DeviceCliRunner } from '../cli/DeviceCliRunner'
 import { HostTerminalRunner } from '../cli/HostTerminalRunner'
+import { AnnotationEditor } from '../lab/AnnotationEditor'
 import { DeviceAccess } from '../lab/DeviceAccess'
+import { DhcpLeases } from '../lab/DhcpLeases'
 import { DeviceNamer } from '../lab/DeviceNamer'
+import { DeviceSettingsEditor } from '../lab/DeviceSettingsEditor'
+import { FieldProblems } from '../lab/FieldProblems'
 import { HostConfigurator } from '../lab/HostConfigurator'
+import { LabInfoEditor } from '../lab/LabInfoEditor'
 import { LabSummary } from '../lab/LabSummary'
 import { LabTopology } from '../lab/LabTopology'
 import { LayoutPlanner } from '../lab/LayoutPlanner'
+import { ServiceSettingsEditor } from '../lab/ServiceSettingsEditor'
 import { ShareLinks } from '../lab/ShareLinks'
 import { LabBuilder } from '../lab/LabBuilder'
 import type { LabRooms } from '../live/LabRooms'
@@ -43,6 +49,10 @@ export class OctetlabServices {
   readonly shareLinks: ShareLinks
   readonly liveLinks: LiveLinks
   readonly builder: LabBuilder
+  readonly deviceSettings: DeviceSettingsEditor
+  readonly labInfo = new LabInfoEditor()
+  readonly annotations = new AnnotationEditor()
+  readonly leases = new DhcpLeases()
 
   constructor(config: OctetlabServicesConfig) {
     const messages = this.messages
@@ -61,6 +71,15 @@ export class OctetlabServices {
     this.commands = new CommandRunner(this.devices, new DeviceCliRunner(this.devices, messages), new HostTerminalRunner(messages))
     this.shareLinks = new ShareLinks(messages, config.appLabUrl)
     this.liveLinks = new LiveLinks(config.appOrigin)
-    this.builder = new LabBuilder({ topology: this.topology, hosts: this.hosts, cliConfig: this.cliConfig })
+    const problems = new FieldProblems(messages)
+    this.deviceSettings = new DeviceSettingsEditor(this.devices, new ServiceSettingsEditor(problems), problems)
+    this.builder = new LabBuilder({
+      topology: this.topology,
+      hosts: this.hosts,
+      cliConfig: this.cliConfig,
+      deviceSettings: this.deviceSettings,
+      annotations: this.annotations,
+      labInfo: this.labInfo,
+    })
   }
 }

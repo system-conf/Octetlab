@@ -84,16 +84,26 @@ export class LabTopology {
   }
 
   disconnect(doc: LabDocument, linkId: string): LabDocument {
-    if (!doc.state.links.some((link) => link.id === linkId)) {
-      const known = doc.state.links.map((link) => link.id).join(', ')
-      throw ToolError.notFound(`Cable "${linkId}" is not in this lab. Cables: ${known === '' ? '(none)' : known}.`)
-    }
+    this.requireLink(doc, linkId)
     return labEditor.disconnect(doc, linkId)
+  }
+
+  /** Unplugs a cable (it stays and keeps its ports, like a pulled plug) or plugs it back in. */
+  setCableConnected(doc: LabDocument, linkId: string, connected: boolean): { doc: LabDocument; link: Link } {
+    const link = this.requireLink(doc, linkId)
+    return { doc: labEditor.setLinkConnected(doc, linkId, connected), link }
   }
 
   setPower(doc: LabDocument, deviceId: string, powered: boolean): LabDocument {
     const device = this.deps.devices.require(doc, deviceId)
     return device.powered === powered ? doc : this.deps.devices.update(doc, { ...device, powered })
+  }
+
+  private requireLink(doc: LabDocument, linkId: string): Link {
+    const link = doc.state.links.find((candidate) => candidate.id === linkId)
+    if (link !== undefined) return link
+    const known = doc.state.links.map((candidate) => candidate.id).join(', ')
+    throw ToolError.notFound(`Cable "${linkId}" is not in this lab. Cables: ${known === '' ? '(none)' : known}.`)
   }
 
   private requirePort(device: Device, portId: string | undefined): void {

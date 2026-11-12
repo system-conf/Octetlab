@@ -28,7 +28,7 @@ export function registerConfigTools(server: McpServer, services: OctetlabService
     {
       title: 'Configure host',
       description:
-        'Sets an end device\'s network card: DHCP, or a static IP + mask, plus default gateway and DNS servers (absent = unchanged, "" clears the gateway). After switching to DHCP run "ipconfig /renew" with run_command. To set up many hosts at once while building, use build_lab.',
+        'Sets an end device\'s network card: DHCP, or a static IP + mask, plus default gateway and DNS servers (absent = unchanged, "" clears the gateway). In DHCP mode the device asks for a lease right away (works for every end device, also cameras / phones / printers); the result shows the lease or why there was none. To set up many hosts at once while building, use build_lab.',
       inputSchema: z.object({ labId: labIdSchema, deviceId: deviceIdSchema, ...hostSettingsShape }),
       annotations: EDIT,
     },
@@ -37,17 +37,29 @@ export function registerConfigTools(server: McpServer, services: OctetlabService
         const request = hostSettingsRequestOf(input.deviceId, input)
         const { addressing } = request
         const address = addressing.mode === 'dhcp' ? 'DHCP' : `${addressing.ip} ${addressing.mask}`
-        const { device, portId } = await responder.withLab(
+        const { doc, portId, leases } = await responder.withLab(
           input.labId,
           'configure_host',
-          (doc) => services.hosts.configure(doc, request),
-          (result) => ({ summary: `Configured ${result.device.name} ${result.portId}: ${address}.`, deviceIds: [result.device.id], linkIds: [] }),
+          (current) => {
+            const configured = services.hosts.configure(current, request)
+            const leased = addressing.mode === 'dhcp' && services.leases.isClient(configured.device) ? services.leases.obtain(configured.doc, [configured.device.id]) : { doc: configured.doc, outcomes: [] }
+            return { ...configured, doc: leased.doc, leases: leased.outcomes }
+          },
+          (result) => ({
+            summary: [`Configured ${result.device.name} ${result.portId}: ${address}.`, services.leases.summary(result.leases)].filter((part) => part !== '').join(' '),
+            deviceIds: [result.device.id],
+            linkIds: [],
+          }),
         )
-        const text = `${device.id} ${portId}: ${address}; gateway ${device.host?.defaultGateway || '(none)'}; DNS ${device.host?.dnsServers.join(', ') || '(none)'}.`
+        const device = services.devices.require(doc, input.deviceId)
+        const text = [
+          `${device.id} ${portId}: ${address}; gateway ${device.host?.defaultGateway || '(none)'}; DNS ${device.host?.dnsServers.join(', ') || '(none)'}.`,
+          ...services.leases.lines(leases),
+        ].join('\n')
         return {
           text,
           labId: input.labId,
-          structured: { deviceId: device.id, portId, addressing, gateway: device.host?.defaultGateway ?? '', dnsServers: device.host?.dnsServers ?? [] },
+          structured: { deviceId: device.id, portId, addressing, gateway: device.host?.defaultGateway ?? '', dnsServers: device.host?.dnsServers ?? [], leases },
         }
       }),
   )
@@ -57,7 +69,9 @@ export function registerConfigTools(server: McpServer, services: OctetlabService
     {
       title: 'Apply IOS config',
       description:
-        'Types IOS configuration lines into a router / managed switch console (configure terminal is entered automatically; "enable" / "conf t" / "end" / "write memory" lines also work). Returns rejected lines with their errors and the resulting running-config.',
+        'Types IOS configuration lines into a router / managed switch console (configure terminal is entered automatically; "enable" / "conf t" / "end" / "write memory" lines also work). Returns rejected lines with their errors and the resulting running-config. ' +
+        'Afterwards, end devices on DHCP that still have no address ask for a lease (listed in the result). ' +
+        'Internet: the internet cloud does not hand out WAN addresses (a router interface with "ip address dhcp" stays unassigned, as in the app); give the WAN port a static address or route out of it with "ip route 0.0.0.0 0.0.0.0 <WAN interface>".',
       inputSchema: z.object({ labId: labIdSchema, deviceId: deviceIdSchema, config: cliConfigSchema }),
       annotations: EDIT,
     },
@@ -66,11 +80,20 @@ export function registerConfigTools(server: McpServer, services: OctetlabService
         const result = await responder.withLab(
           labId,
           'apply_cli_config',
-          (doc) => services.cliConfig.apply(doc, deviceId, config),
+          (doc) => {
+            const applied = services.cliConfig.apply(doc, deviceId, config)
+            const leased = services.leases.settle(applied.doc)
+            return { ...applied, doc: leased.doc, leases: leased.outcomes }
+          },
           (applied) => {
             const lines = config.split('\n').filter((line) => line.trim() !== '').length
             const rejected = applied.errors.length === 0 ? '' : `, ${applied.errors.length} rejected`
-            return { summary: `Configured ${applied.device.name} (${plural(lines, 'line')}${rejected}).`, deviceIds: [applied.device.id], linkIds: [] }
+            const leases = services.leases.summary(applied.leases)
+            return {
+              summary: `Configured ${applied.device.name} (${plural(lines, 'line')}${rejected}).${leases === '' ? '' : ` ${leases}`}`,
+              deviceIds: [applied.device.id, ...new Set(applied.leases.map((lease) => lease.deviceId))],
+              linkIds: [],
+            }
           },
         )
         const errorText = result.errors.map((error) => `  ${error.line.trim()} → ${error.error}`)
@@ -79,10 +102,11 @@ export function registerConfigTools(server: McpServer, services: OctetlabService
           result.errors.length === 0 ? `All lines accepted on ${deviceId}.` : `${result.errors.length} line(s) rejected on ${deviceId}:`,
           ...errorText,
           ...(result.notes.length === 0 ? [] : ['Console messages:', ...result.notes.map((note) => `  ${note}`)]),
+          ...(result.leases.length === 0 ? [] : ['DHCP leases:', ...services.leases.lines(result.leases).map((line) => `  ${line}`)]),
           'running-config:',
           ...runningConfig,
         ].join('\n')
-        return { text, labId, structured: { deviceId, errors: result.errors, notes: result.notes, runningConfig } }
+        return { text, labId, structured: { deviceId, errors: result.errors, notes: result.notes, runningConfig, leases: result.leases } }
       }),
   )
 

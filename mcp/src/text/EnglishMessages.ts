@@ -5,6 +5,7 @@ import type { LocalizedMessage } from '../../../src/domain/Messages'
 import type { TerminalLine } from '../../../src/domain'
 import catalog from '../../../src/locales/en/catalog.json'
 import cli from '../../../src/locales/en/cli.json'
+import deviceConfig from '../../../src/locales/en/deviceConfig.json'
 import engine from '../../../src/locales/en/engine.json'
 import hostCli from '../../../src/locales/en/hostCli.json'
 import lab from '../../../src/locales/en/lab.json'
@@ -13,7 +14,7 @@ import simulation from '../../../src/locales/en/simulation.json'
 import workspace from '../../../src/locales/en/workspace.json'
 
 /** Namespaces a message of the Worker's code paths can come from. */
-const NAMESPACES: Readonly<Record<string, unknown>> = { catalog, cli, engine, hostCli, lab, samples, simulation, workspace }
+const NAMESPACES: Readonly<Record<string, unknown>> = { catalog, cli, deviceConfig, engine, hostCli, lab, samples, simulation, workspace }
 
 const PLACEHOLDER = /\{\{\s*([A-Za-z0-9_]+)\s*(?:,\s*([A-Za-z]+)\s*)?\}\}/g
 const englishPlurals = new Intl.PluralRules('en')

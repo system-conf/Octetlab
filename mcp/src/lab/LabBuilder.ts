@@ -1,11 +1,15 @@
-// build_lab (docs/LIVE_LABS.md §7): devices, then cables, then host settings, then IOS config, applied
-// in order to one document. Every step runs even after a failure so that the result lists every failed
+// build_lab (docs/LIVE_LABS.md §7): devices, then cables, host settings, device settings (SSIDs, DHCP /
+// DNS server, ISP lines), IOS config, annotations and finally the lab's description / notes, applied in
+// order to one document. Every step runs even after a failure so that the result lists every failed
 // step; the caller saves nothing when any step failed (all-or-nothing). A CLI step with rejected lines
 // counts as failed. Devices are named in later steps by their `ref` or, in an existing lab, by id.
 import type { CanvasPoint, Device, DeviceKind, LabDocument } from '../../../src/domain'
 import type { CliConfigApplier } from '../cli/CliConfigApplier'
 import { ToolError } from '../errors/ToolError'
+import type { AnnotationEditor, NewAnnotation } from './AnnotationEditor'
+import type { DeviceSettingsEditor, DeviceSettingsRequest } from './DeviceSettingsEditor'
 import { type HostConfigurator, type HostSettingsInput, hostSettingsRequestOf } from './HostConfigurator'
+import type { LabInfoEditor, LabInfoRequest } from './LabInfoEditor'
 import type { ConnectRequest, LabTopology } from './LabTopology'
 import type { CableChoice } from './PortPicker'
 
@@ -35,11 +39,18 @@ export interface BuildCliStep {
   config: string
 }
 
+/** configure_device settings; `deviceId` is a ref from devices[] or a device id. */
+export type BuildSettingsStep = DeviceSettingsRequest
+
 export interface BuildPlan {
   devices: BuildDeviceStep[]
   links: BuildLinkStep[]
   hosts: BuildHostStep[]
+  settings: BuildSettingsStep[]
   cli: BuildCliStep[]
+  annotations: NewAnnotation[]
+  /** The lab's description / notes; absent = unchanged. */
+  info?: LabInfoRequest | undefined
 }
 
 export type BuildSection = keyof BuildPlan
@@ -61,9 +72,12 @@ export interface BuildResult {
   doc: LabDocument
   devices: BuiltDevice[]
   linkIds: string[]
-  /** Devices whose host settings / IOS config were applied. */
+  /** Devices whose host settings / device settings / IOS config were applied. */
   configuredHosts: string[]
   configuredDevices: string[]
+  annotationIds: string[]
+  /** "description", "notes" when the info step changed them. */
+  infoChanges: string[]
   failures: BuildFailure[]
 }
 
@@ -71,6 +85,9 @@ export interface LabBuilderDeps {
   topology: LabTopology
   hosts: HostConfigurator
   cliConfig: CliConfigApplier
+  deviceSettings: DeviceSettingsEditor
+  annotations: AnnotationEditor
+  labInfo: LabInfoEditor
 }
 
 const ROUTER_KINDS: readonly DeviceKind[] = ['router', 'wirelessRouter']
@@ -88,28 +105,36 @@ export class LabBuilder {
   }
 
   build(start: LabDocument, plan: BuildPlan): BuildResult {
-    const result: BuildResult = { doc: start, devices: [], linkIds: [], configuredHosts: [], configuredDevices: [], failures: [] }
+    const result: BuildResult = { doc: start, devices: [], linkIds: [], configuredHosts: [], configuredDevices: [], annotationIds: [], infoChanges: [], failures: [] }
     const refs = new Map<string, string>()
     plan.devices.forEach((step, index) => this.step(result, 'devices', index, () => this.addDevice(result, refs, step)))
     plan.links.forEach((step, index) => this.step(result, 'links', index, () => this.connect(result, refs, step)))
     plan.hosts.forEach((step, index) => this.step(result, 'hosts', index, () => this.configureHost(result, refs, step)))
+    plan.settings.forEach((step, index) => this.step(result, 'settings', index, () => this.configureDevice(result, refs, step)))
     plan.cli.forEach((step, index) => this.step(result, 'cli', index, () => this.applyCli(result, refs, step)))
+    plan.annotations.forEach((step, index) => this.step(result, 'annotations', index, () => this.annotate(result, step)))
+    const { info } = plan
+    if (info !== undefined) this.step(result, 'info', 0, () => this.updateInfo(result, info))
     return result
   }
 
   /** "Built 9 devices, 8 cables, configured 5 hosts and 1 router." */
   summary(result: BuildResult): string {
-    const kinds = result.configuredDevices.map((id) => result.doc.state.devices.find((device) => device.id === id)?.kind)
+    const kinds = [...new Set(result.configuredDevices)].map((id) => result.doc.state.devices.find((device) => device.id === id)?.kind)
     const routers = kinds.filter((kind) => kind !== undefined && ROUTER_KINDS.includes(kind)).length
     const switches = kinds.filter((kind) => kind !== undefined && SWITCH_KINDS.includes(kind)).length
-    const built = [counted(result.devices.length, 'device'), counted(result.linkIds.length, 'cable')].filter((part) => part !== null)
+    const built = [counted(result.devices.length, 'device'), counted(result.linkIds.length, 'cable'), counted(result.annotationIds.length, 'annotation')].filter((part) => part !== null)
     const configured = [
       counted(result.configuredHosts.length, 'host'),
       counted(routers, 'router'),
       counted(switches, 'switch', 'switches'),
       counted(kinds.length - routers - switches, 'other device'),
     ].filter((part) => part !== null)
-    const parts = [...(built.length === 0 ? [] : [`Built ${built[0]}`, ...built.slice(1)]), ...(configured.length === 0 ? [] : [`configured ${configured[0]}`, ...configured.slice(1)])]
+    const parts = [
+      ...(built.length === 0 ? [] : [`Built ${built[0]}`, ...built.slice(1)]),
+      ...(configured.length === 0 ? [] : [`configured ${configured[0]}`, ...configured.slice(1)]),
+      ...(result.infoChanges.length === 0 ? [] : [`set the lab's ${result.infoChanges.join(' and ')}`]),
+    ]
     if (parts.length === 0) return 'Built nothing.'
     const sentence = parts.length === 1 ? parts[0] ?? '' : `${parts.slice(0, -1).join(', ')} and ${parts.at(-1) ?? ''}`
     return `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`
@@ -157,6 +182,25 @@ export class LabBuilder {
     const configured = this.deps.hosts.configure(result.doc, hostSettingsRequestOf(device.id, step))
     result.doc = configured.doc
     result.configuredHosts.push(device.id)
+  }
+
+  private configureDevice(result: BuildResult, refs: ReadonlyMap<string, string>, step: BuildSettingsStep): void {
+    const device = this.resolve(result.doc, refs, step.deviceId)
+    const configured = this.deps.deviceSettings.configure(result.doc, { ...step, deviceId: device.id })
+    result.doc = configured.doc
+    result.configuredDevices.push(device.id)
+  }
+
+  private annotate(result: BuildResult, step: NewAnnotation): void {
+    const edited = this.deps.annotations.edit(result.doc, { add: [step], update: [], remove: [] })
+    result.doc = edited.doc
+    result.annotationIds.push(...edited.added)
+  }
+
+  private updateInfo(result: BuildResult, info: LabInfoRequest): void {
+    const updated = this.deps.labInfo.update(result.doc, info)
+    result.doc = updated.doc
+    result.infoChanges.push(...updated.changes)
   }
 
   private applyCli(result: BuildResult, refs: ReadonlyMap<string, string>, step: BuildCliStep): void {

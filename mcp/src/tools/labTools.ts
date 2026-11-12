@@ -67,7 +67,8 @@ export function registerLabTools(server: McpServer, services: OctetlabServices, 
     'get_lab',
     {
       title: 'Get lab',
-      description: 'The lab: devices (id, name, model, power, ports with IP / VLAN / cable status, gateway, DNS), cables and canvas positions.',
+      description:
+        'The lab: title, description, notes; devices (id, name, model, power, canvas position, ports with IP / VLAN / cable status, gateway, DNS, and settings: SSIDs, DHCP / DNS server, ISP service lines); cables (plugged or not); canvas annotations.',
       inputSchema: z.object({ labId: labIdSchema }),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
