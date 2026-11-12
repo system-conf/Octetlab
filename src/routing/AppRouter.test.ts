@@ -69,6 +69,8 @@ describe('AppRouteCodec', () => {
     // PU (Preferences screen)
     ['/preferences', { name: 'preferences' }],
     ['/preferences/', { name: 'preferences' }],
+    // Live labs
+    ['/live/AbCdEfGhIjKlMnOp_r-tUv', { name: 'live', labId: 'AbCdEfGhIjKlMnOp_r-tUv' }],
   ]
 
   it.each(cases)('parses %s', (path, route) => {
@@ -96,6 +98,11 @@ describe('AppRouteCodec', () => {
     '/samples/%E0%A4%A',
     // PU (Preferences screen)
     '/preferences/map',
+    // Live labs
+    '/live',
+    '/live/short',
+    '/live/AbCdEfGhIjKlMnOpQrStUv/more',
+    '/live/AbCdEfGhIjKlMnOpQrSt.v',
   ]
 
   it.each(notFound)('treats %s as not found', (path) => {

@@ -29,7 +29,8 @@ interface CanvasToolbarProps {
   cablesEnabled: boolean
   /** Shown as a lock icon with this explanation (exercise mode). */
   lockedNote?: string
-  onAddNote: () => void
+  /** Absent: no "Add note" button (read-only live lab). */
+  onAddNote?: () => void
   canDelete: boolean
   onDelete: () => void
   snapToGrid: boolean
@@ -105,9 +106,11 @@ function CanvasToolbar(props: CanvasToolbarProps) {
           <Divider />
         </>
       )}
-      <ToolButton label={t('toolbar.addNote')} onClick={props.onAddNote}>
-        <StickyNote className="h-5 w-5" aria-hidden="true" />
-      </ToolButton>
+      {props.onAddNote && (
+        <ToolButton label={t('toolbar.addNote')} onClick={props.onAddNote}>
+          <StickyNote className="h-5 w-5" aria-hidden="true" />
+        </ToolButton>
+      )}
       <ToolButton label={t('toolbar.delete')} onClick={props.onDelete} disabled={!props.canDelete}>
         <Trash2 className="h-5 w-5" aria-hidden="true" />
       </ToolButton>

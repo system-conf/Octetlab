@@ -15,6 +15,8 @@ interface WorkspaceHeaderProps {
   end?: ReactNode
   canUndo: boolean
   canRedo: boolean
+  /** false: no undo / redo buttons (a read-only live lab has nothing to undo). Default true. */
+  historyShown?: boolean
   onUndo: () => void
   onRedo: () => void
   shortcutsOpen: boolean
@@ -50,12 +52,16 @@ function WorkspaceHeader(props: WorkspaceHeaderProps) {
     <header className="flex items-center gap-1 border-b border-border bg-surface px-2 py-2 sm:gap-2 sm:px-3">
       <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">{props.start}</div>
       <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-        <HeaderButton label={t('header.undo')} onClick={props.onUndo} disabled={!props.canUndo}>
-          <Undo2 className="h-5 w-5" aria-hidden="true" />
-        </HeaderButton>
-        <HeaderButton label={t('header.redo')} onClick={props.onRedo} disabled={!props.canRedo}>
-          <Redo2 className="h-5 w-5" aria-hidden="true" />
-        </HeaderButton>
+        {(props.historyShown ?? true) && (
+          <>
+            <HeaderButton label={t('header.undo')} onClick={props.onUndo} disabled={!props.canUndo}>
+              <Undo2 className="h-5 w-5" aria-hidden="true" />
+            </HeaderButton>
+            <HeaderButton label={t('header.redo')} onClick={props.onRedo} disabled={!props.canRedo}>
+              <Redo2 className="h-5 w-5" aria-hidden="true" />
+            </HeaderButton>
+          </>
+        )}
         <span className="hidden sm:contents">
           <HeaderButton label={t('header.shortcuts')} onClick={props.onToggleShortcuts} pressed={props.shortcutsOpen}>
             <Keyboard className="h-5 w-5" aria-hidden="true" />

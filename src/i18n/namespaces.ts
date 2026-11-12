@@ -28,6 +28,8 @@ export const namespaces = [
   'hostCli',
   // PU (Preferences screen): docs/PREFERENCES.md
   'preferences',
+  // Live labs: docs/LIVE_LABS.md
+  'live',
 ] as const
 
 export type Namespace = (typeof namespaces)[number]

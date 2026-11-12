@@ -57,9 +57,12 @@ export interface NodeInput {
   cableHighlight: (deviceId: string) => CableHighlight
   /** false: devices stay where they are (exercise with a locked topology). */
   devicesDraggable: boolean
+  /** true: notes can be neither selected nor dragged (read-only live lab). Default false. */
+  annotationsLocked?: boolean
 }
 
 export function buildNodes(input: NodeInput): WorkspaceNode[] {
+  const notesLocked = input.annotationsLocked ?? false
   const { doc, selection, measured, labels } = input
   const annotationNodes: AnnotationNode[] = []
   for (const annotation of doc.annotations) {
@@ -77,6 +80,7 @@ export function buildNodes(input: NodeInput): WorkspaceNode[] {
       ariaLabel: labels.annotation(annotation),
       zIndex: isShape ? -1 : 0,
       ...(isShape ? { width: annotation.width, height: annotation.height } : {}),
+      ...(notesLocked ? { draggable: false, selectable: false } : {}),
     })
   }
   const deviceNodes: WorkspaceDeviceNode[] = doc.state.devices.map((device) => ({

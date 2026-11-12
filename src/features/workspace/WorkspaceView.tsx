@@ -67,6 +67,8 @@ export interface WorkspaceViewProps {
   priceLabelOf?: (modelId: string) => string | undefined
   /** Design (D2): a panel between the canvas and the properties panel (the brief on wide screens). */
   sidePanel?: ReactNode
+  /** Live labs: hint on an empty map instead of "drag devices here". */
+  emptyCanvasText?: string
 }
 
 /** The lab builder: header, device palette, canvas with tools, properties panel with device tabs. */
@@ -80,9 +82,14 @@ function WorkspaceView(props: WorkspaceViewProps) {
   const flow = useReactFlow<WorkspaceNode>()
   const { doc } = lab
   const editable = !policy.topologyLocked
+  // Live labs: a watched, read-only lab; map notes and lab notes cannot be selected or edited either.
+  const notesLocked = policy.annotationsLocked
   const canvasRef = useRef<HTMLDivElement>(null)
   const [rawSelection, setSelection] = useState<WorkspaceSelection>(EMPTY_SELECTION)
-  const selection = useMemo(() => SelectionModel.prune(rawSelection, doc), [doc, rawSelection])
+  const selection = useMemo(() => {
+    const pruned = SelectionModel.prune(rawSelection, doc)
+    return notesLocked && pruned.annotationIds.length > 0 ? { ...pruned, annotationIds: [] } : pruned
+  }, [doc, notesLocked, rawSelection])
   const { snapToGrid, toggle: toggleSnap } = useSnapPreference()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
@@ -125,7 +132,8 @@ function WorkspaceView(props: WorkspaceViewProps) {
   const annotationActions = useMemo<AnnotationActions>(
     () => ({
       editingId,
-      startEditing: setEditingId,
+      // A locked note is not opened for editing (live labs).
+      startEditing: notesLocked ? () => undefined : setEditingId,
       commitText: (annotationId, text) => {
         // A late blur of another note's editor must not close the one just opened.
         setEditingId((current) => (current === annotationId ? null : current))
@@ -133,7 +141,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
       },
       cancelEditing: () => setEditingId(null),
     }),
-    [actions, editingId],
+    [actions, editingId, notesLocked],
   )
 
   function addNote() {
@@ -263,7 +271,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
       onAnnotationChange={(annotation) => lab.apply((current) => labEditor.updateAnnotation(current, annotation))}
       onNoteText={actions.setNoteText}
       onDeleteSelection={actions.deleteSelection}
-      onNotes={exerciseMode ? undefined : actions.setNotes}
+      onNotes={exerciseMode || notesLocked ? undefined : actions.setNotes}
       onClose={onClose}
     />
   )
@@ -275,6 +283,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
         end={headerEnd}
         canUndo={lab.canUndo}
         canRedo={lab.canRedo}
+        historyShown={!notesLocked}
         onUndo={lab.undo}
         onRedo={lab.redo}
         shortcutsOpen={shortcutsOpen}
@@ -296,7 +305,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
                 onChooseCable={chooseCable}
                 cablesEnabled={editable}
                 lockedNote={lockedNote}
-                onAddNote={addNote}
+                onAddNote={notesLocked ? undefined : addNote}
                 canDelete={deletableCount > 0}
                 onDelete={actions.deleteSelection}
                 snapToGrid={snapToGrid}
@@ -325,6 +334,8 @@ function WorkspaceView(props: WorkspaceViewProps) {
                 cableHighlight={cable.highlightOf}
                 snapToGrid={snapToGrid}
                 devicesDraggable={editable}
+                annotationsLocked={notesLocked}
+                emptyText={props.emptyCanvasText}
                 screenToFlow={flow.screenToFlowPosition}
                 canvasRef={canvasRef}
                 // Exercise on a phone: the footer grows with the failed checks; the map is fitted again.
@@ -357,7 +368,7 @@ function WorkspaceView(props: WorkspaceViewProps) {
               <>
                 <WindowModeProperties
                   selection={windowSelection}
-                  notesAvailable={!exerciseMode}
+                  notesAvailable={!exerciseMode && !notesLocked}
                   renderProperties={properties}
                   onClearSelection={() => setSelection(EMPTY_SELECTION)}
                   onOpenDevice={openWindow}

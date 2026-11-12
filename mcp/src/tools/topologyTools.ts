@@ -1,12 +1,17 @@
-// add_device, remove_device, connect, disconnect, set_power: building the topology.
+// add_device, remove_device, connect, disconnect, set_power: small edits of the topology (build_lab
+// builds many devices and cables in one call).
 import type { McpServer } from '@modelcontextprotocol/server'
 import { z } from 'zod'
+import type { LabDocument } from '../../../src/domain'
 import type { OctetlabServices } from '../server/OctetlabServices'
-import { coordinateSchema, deviceIdSchema, labIdSchema, nameSchema, portIdSchema } from './toolSchemas'
+import { cableSchema, coordinateSchema, deviceIdSchema, labIdSchema, nameSchema, portIdSchema } from './toolSchemas'
 import type { ToolResponder } from './ToolResponder'
 
 const EDIT = { readOnlyHint: false, destructiveHint: false, openWorldHint: false } as const
-const cableSchema = z.enum(['auto', 'copperStraight', 'copperCross', 'fiber', 'serial', 'console', 'coaxial', 'wireless'])
+
+function nameOf(doc: LabDocument, deviceId: string): string {
+  return doc.state.devices.find((device) => device.id === deviceId)?.name ?? deviceId
+}
 
 export function registerTopologyTools(server: McpServer, services: OctetlabServices, responder: ToolResponder): void {
   const { topology } = services
@@ -15,7 +20,8 @@ export function registerTopologyTools(server: McpServer, services: OctetlabServi
     'add_device',
     {
       title: 'Add device',
-      description: 'Adds a device of a catalog model (list_device_models) and returns its id and ports. Without x / y it is placed on a free grid cell.',
+      description:
+        'Adds one device of a catalog model (list_device_models) and returns its id and ports. Without x / y it is placed on a free grid cell. For building a whole network use build_lab (one call); use add_device for small edits.',
       inputSchema: z.object({
         labId: labIdSchema,
         modelId: z.string().min(1).max(64).describe('Catalog model id, e.g. "router2Port", "switch24", "pc"'),
@@ -28,9 +34,14 @@ export function registerTopologyTools(server: McpServer, services: OctetlabServi
     ({ labId, modelId, name, x, y }) =>
       responder.respond('add_device', async () => {
         const position = x === undefined || y === undefined ? undefined : { x, y }
-        const { device } = await responder.withLab(labId, (doc) => topology.addDevice(doc, modelId, name, position))
+        const { device } = await responder.withLab(
+          labId,
+          'add_device',
+          (doc) => topology.addDevice(doc, modelId, name, position),
+          (added) => ({ summary: `Added ${added.device.name} (${added.device.modelId}).`, deviceIds: [added.device.id], linkIds: [] }),
+        )
         const ports = device.ports.map((port) => port.id)
-        return { text: `Added ${device.id} "${device.name}" (${device.modelId}). Ports: ${ports.join(', ')}.`, structured: { deviceId: device.id, name: device.name, ports } }
+        return { text: `Added ${device.id} "${device.name}" (${device.modelId}). Ports: ${ports.join(', ')}.`, labId, structured: { deviceId: device.id, name: device.name, ports } }
       }),
   )
 
@@ -44,8 +55,17 @@ export function registerTopologyTools(server: McpServer, services: OctetlabServi
     },
     ({ labId, deviceId }) =>
       responder.respond('remove_device', async () => {
-        const { removedLinks } = await responder.withLab(labId, (doc) => topology.removeDevice(doc, deviceId))
-        return { text: `Removed ${deviceId}${removedLinks.length === 0 ? '' : ` and cables ${removedLinks.join(', ')}`}.`, structured: { deviceId, removedLinks } }
+        const { removedLinks } = await responder.withLab(
+          labId,
+          'remove_device',
+          (doc) => ({ ...topology.removeDevice(doc, deviceId), name: nameOf(doc, deviceId) }),
+          (removed) => {
+            const count = removed.removedLinks.length
+            const cables = count === 0 ? '' : ` and its ${count === 1 ? 'cable' : `${count} cables`}`
+            return { summary: `Removed ${removed.name}${cables}.`, deviceIds: [], linkIds: [] }
+          },
+        )
+        return { text: `Removed ${deviceId}${removedLinks.length === 0 ? '' : ` and cables ${removedLinks.join(', ')}`}.`, labId, structured: { deviceId, removedLinks } }
       }),
   )
 
@@ -69,9 +89,18 @@ export function registerTopologyTools(server: McpServer, services: OctetlabServi
     ({ labId, deviceA, deviceB, portA, portB, cable, ssid }) =>
       responder.respond('connect', async () => {
         const request = { deviceA, deviceB, cable, ...(portA === undefined ? {} : { portA }), ...(portB === undefined ? {} : { portB }), ...(ssid === undefined ? {} : { ssid }) }
-        const { link } = await responder.withLab(labId, (doc) => topology.connect(doc, request))
+        const { link } = await responder.withLab(
+          labId,
+          'connect',
+          (doc) => topology.connect(doc, request),
+          (connected) => ({
+            summary: `Connected ${nameOf(connected.doc, connected.link.a.deviceId)} ${connected.link.a.portId} to ${nameOf(connected.doc, connected.link.b.deviceId)} ${connected.link.b.portId}.`,
+            deviceIds: [connected.link.a.deviceId, connected.link.b.deviceId],
+            linkIds: [connected.link.id],
+          }),
+        )
         const text = `Connected ${link.a.deviceId} ${link.a.portId} ↔ ${link.b.deviceId} ${link.b.portId} with ${link.cable} (cable ${link.id}).`
-        return { text, structured: { linkId: link.id, a: link.a, b: link.b, cable: link.cable } }
+        return { text, labId, structured: { linkId: link.id, a: link.a, b: link.b, cable: link.cable } }
       }),
   )
 
@@ -85,8 +114,17 @@ export function registerTopologyTools(server: McpServer, services: OctetlabServi
     },
     ({ labId, linkId }) =>
       responder.respond('disconnect', async () => {
-        await responder.withLab(labId, (doc) => ({ doc: topology.disconnect(doc, linkId) }))
-        return { text: `Removed cable ${linkId}.`, structured: { linkId } }
+        await responder.withLab(
+          labId,
+          'disconnect',
+          (doc) => {
+            const link = doc.state.links.find((candidate) => candidate.id === linkId)
+            const ends = link === undefined ? [] : [link.a.deviceId, link.b.deviceId]
+            return { doc: topology.disconnect(doc, linkId), ends }
+          },
+          (result) => ({ summary: `Removed the cable between ${result.ends.map((id) => nameOf(result.doc, id)).join(' and ')}.`, deviceIds: result.ends, linkIds: [] }),
+        )
+        return { text: `Removed cable ${linkId}.`, labId, structured: { linkId } }
       }),
   )
 
@@ -100,8 +138,13 @@ export function registerTopologyTools(server: McpServer, services: OctetlabServi
     },
     ({ labId, deviceId, on }) =>
       responder.respond('set_power', async () => {
-        await responder.withLab(labId, (doc) => ({ doc: topology.setPower(doc, deviceId, on) }))
-        return { text: `${deviceId} is ${on ? 'on' : 'off'}.`, structured: { deviceId, powered: on } }
+        await responder.withLab(
+          labId,
+          'set_power',
+          (doc) => ({ doc: topology.setPower(doc, deviceId, on) }),
+          (result) => ({ summary: `Turned ${nameOf(result.doc, deviceId)} ${on ? 'on' : 'off'}.`, deviceIds: [deviceId], linkIds: [] }),
+        )
+        return { text: `${deviceId} is ${on ? 'on' : 'off'}.`, labId, structured: { deviceId, powered: on } }
       }),
   )
 }

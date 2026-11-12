@@ -1,0 +1,45 @@
+{
+  "pageTitle": "Canlı lab",
+  "untitled": "Adsız lab",
+  "kicker": "Canlı lab",
+  "back": "Ana sayfa",
+  "backAria": "Ana sayfaya dön",
+  "status": {
+    "connecting": "Bağlanıyor…",
+    "live": "Canlı",
+    "reconnecting": "Yeniden bağlanıyor…",
+    "ended": "Sona erdi",
+    "notFound": "Sona erdi",
+    "error": "Kullanılamıyor"
+  },
+  "statusAria": "Bağlantı: {{status}}",
+  "copy": {
+    "action": "Kendi labım olarak kopyala",
+    "busy": "Kopyalanıyor…",
+    "failed": "Lab kopyalanamadı. Tarayıcının bu siteye veri kaydetmesine izin verdiğinden emin olup yeniden dene."
+  },
+  "waiting": "Lab bekleniyor…",
+  "emptyCanvas": "Lab henüz boş. Asistan cihaz ekledikçe burada görünecek.",
+  "readOnly": "Salt okunur: bu labı asistan kuruyor. Kendin değiştirmek için kopyala.",
+  "invalidDocument": "Bir güncelleme gösterilemedi; ekranda son sağlam sürüm kalıyor.",
+  "ended": {
+    "title": "Bu canlı lab sona erdi (lablar 7 gün saklanır)",
+    "body": "Asistandan labı yeniden kurmasını isteyebilir ya da kendi lablarını açabilirsin.",
+    "banner": "Bu canlı lab sona erdi (lablar 7 gün saklanır). Gördüğün hâliyle kopyalayabilirsin.",
+    "openLabs": "Lablarımı aç"
+  },
+  "error": {
+    "title": "Bu canlı lab burada gösterilemiyor",
+    "body": "Canlı lab sunucusu bu sayfayı kabul etmedi. Daha sonra yeniden dene ya da kendi lablarını aç."
+  },
+  "feed": {
+    "title": "Etkinlik",
+    "toggle": "Etkinlik",
+    "count_one": "{{count}} işlem",
+    "count_other": "{{count}} işlem",
+    "empty": "Henüz işlem yok. Asistan çalıştıkça değişiklikler burada görünür.",
+    "close": "Etkinliği kapat",
+    "outputOn": "{{device}} üzerinde",
+    "latest": "Son: {{summary}}"
+  }
+}

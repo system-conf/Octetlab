@@ -14,14 +14,17 @@ export function registerLabTools(server: McpServer, services: OctetlabServices, 
     'create_lab',
     {
       title: 'Create lab',
-      description: 'Creates an empty lab and returns its labId (kept 7 days after the last change). Then add devices with add_device.',
+      description:
+        'Creates an empty lab and returns its labId (kept 7 days after the last change) and its live link (give it to the user once: the lab redraws in their browser as you work). ' +
+        'To create and fill a lab in one call, use build_lab without labId instead.',
       inputSchema: z.object({ title: nameSchema.optional().describe('Lab title, e.g. "Office network"') }),
       annotations: { openWorldHint: false },
     },
     ({ title }) =>
       responder.respond('create_lab', async () => {
-        const labId = await services.labs.create(createEmptyLab(title ?? ''))
-        return { text: `Created lab ${labId}${title === undefined ? '' : ` "${title}"`}.`, structured: { labId } }
+        const summary = title === undefined ? 'Created an empty lab.' : `Created the empty lab "${title}".`
+        const labId = await services.labs.create(createEmptyLab(title ?? ''), responder.event('create_lab', { summary, deviceIds: [], linkIds: [] }))
+        return { text: `Created lab ${labId}${title === undefined ? '' : ` "${title}"`}. ${services.liveLinks.sentence(labId)}`, labId, structured: { labId } }
       }),
   )
 
@@ -29,15 +32,16 @@ export function registerLabTools(server: McpServer, services: OctetlabServices, 
     'open_sample',
     {
       title: 'Open sample lab',
-      description: 'Copies a sample lab (see list_samples) into a new lab and returns its labId.',
+      description: 'Copies a sample lab (see list_samples) into a new lab and returns its labId and live link.',
       inputSchema: z.object({ sampleId: SAMPLE_ID }),
       annotations: { openWorldHint: false },
     },
     ({ sampleId }) =>
       responder.respond('open_sample', async () => {
         const { doc, info } = services.catalog.openSample(sampleId)
-        const labId = await services.labs.create(doc)
-        return { text: `Opened sample "${info.title}" as lab ${labId}. ${info.summary}`, structured: { labId, sample: info } }
+        const event = responder.event('open_sample', { summary: `Opened the sample "${info.title}".`, deviceIds: [], linkIds: [] })
+        const labId = await services.labs.create(doc, event)
+        return { text: `Opened sample "${info.title}" as lab ${labId}. ${info.summary}\n${services.liveLinks.sentence(labId)}`, labId, structured: { labId, sample: info } }
       }),
   )
 
@@ -45,15 +49,17 @@ export function registerLabTools(server: McpServer, services: OctetlabServices, 
     'import_share_link',
     {
       title: 'Import share link',
-      description: 'Imports an Octetlab share link (https://…/lab#lab=…) as a new lab and returns its labId.',
+      description: 'Imports an Octetlab share link (https://…/lab#lab=…) as a new lab and returns its labId and live link.',
       inputSchema: z.object({ url: z.string().min(1).max(MAX_SHARE_URL_LENGTH).describe('The full share URL, or just its "#lab=…" part') }),
       annotations: { openWorldHint: false },
     },
     ({ url }) =>
       responder.respond('import_share_link', async () => {
         const doc = services.shareLinks.decode(url)
-        const labId = await services.labs.create(doc)
-        return { text: `Imported "${doc.meta.title || 'untitled lab'}" as lab ${labId} (${doc.state.devices.length} devices).`, structured: { labId } }
+        const title = doc.meta.title || 'untitled lab'
+        const event = responder.event('import_share_link', { summary: `Imported "${title}" from a share link.`, deviceIds: [], linkIds: [] })
+        const labId = await services.labs.create(doc, event)
+        return { text: `Imported "${title}" as lab ${labId} (${doc.state.devices.length} devices). ${services.liveLinks.sentence(labId)}`, labId, structured: { labId } }
       }),
   )
 
@@ -68,7 +74,7 @@ export function registerLabTools(server: McpServer, services: OctetlabServices, 
     ({ labId }) =>
       responder.respond('get_lab', async () => {
         const view = services.summary.view(await services.labs.load(labId))
-        return { text: services.summary.text(view), structured: { labId, ...view } }
+        return { text: services.summary.text(view), labId, structured: { labId, ...view } }
       }),
   )
 
@@ -76,14 +82,15 @@ export function registerLabTools(server: McpServer, services: OctetlabServices, 
     'share_link',
     {
       title: 'Share link',
-      description: 'A URL that opens this lab in the Octetlab web app (works on phones too). Fails when the lab is too large to share.',
+      description:
+        'A frozen snapshot URL that opens a copy of this lab in the Octetlab web app (works on phones too; later changes are not in it — the live link is). Fails when the lab is too large to share.',
       inputSchema: z.object({ labId: labIdSchema }),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     ({ labId }) =>
       responder.respond('share_link', async () => {
         const url = services.shareLinks.url(await services.labs.load(labId))
-        return { text: url, structured: { url } }
+        return { text: url, labId, structured: { url } }
       }),
   )
 }

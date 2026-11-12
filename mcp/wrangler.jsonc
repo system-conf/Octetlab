@@ -13,10 +13,20 @@
   "observability": { "enabled": true },
   "vars": {
     // Page of the web app that opens share links (`<APP_LAB_URL>#lab=…`).
-    "APP_LAB_URL": "https://octetlab.slovveis.workers.dev/lab"
+    "APP_LAB_URL": "https://octetlab.slovveis.workers.dev/lab",
+    // Web app origin of live links (`<APP_ORIGIN>/live/<labId>`, docs/LIVE_LABS.md).
+    "APP_ORIGIN": "https://octetlab.slovveis.workers.dev",
+    // Origins allowed to read /live/* and open its WebSocket (comma separated).
+    "APP_ORIGINS": "https://octetlab.slovveis.workers.dev,http://localhost:5300,http://localhost:4173"
   },
+  // One LabRoom per lab (docs/LIVE_LABS.md §3): SQLite-backed Durable Object, Free plan compatible.
+  "durable_objects": {
+    "bindings": [{ "name": "LAB_ROOMS", "class_name": "LabRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LabRoom"] }],
   "kv_namespaces": [
     {
+      // Labs saved before live labs: read-only fallback, removed in the contract step (≥ 2026-11-20).
       "binding": "LABS",
       // Namespace "octetlabmcp_labs" (an identifier, not a secret). `wrangler dev` uses a local
       // simulated namespace instead.

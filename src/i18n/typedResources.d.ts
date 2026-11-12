@@ -43,6 +43,8 @@ export interface AppResources {
   hostCli: typeof import('../locales/en/hostCli.json')
   // PU (Preferences screen): docs/PREFERENCES.md
   preferences: typeof import('../locales/en/preferences.json')
+  // Live labs: docs/LIVE_LABS.md
+  live: typeof import('../locales/en/live.json')
 }
 
 declare module 'i18next' {

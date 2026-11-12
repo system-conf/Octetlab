@@ -12,6 +12,8 @@ export interface CanvasElementsInput {
   labels: FlowLabels
   cableHighlight: (deviceId: string) => CableHighlight
   devicesDraggable: boolean
+  /** Read-only live lab: notes are neither selectable nor draggable. */
+  annotationsLocked?: boolean
 }
 
 export interface CanvasElements {
@@ -38,10 +40,10 @@ function useKept<Element extends { id: string }>(next: Element[], reuse: (previo
  * over the built nodes without rebuilding them).
  */
 export function useCanvasElements(input: CanvasElementsInput): CanvasElements {
-  const { doc, selection, dragPositions, measured, labels, cableHighlight, devicesDraggable } = input
+  const { doc, selection, dragPositions, measured, labels, cableHighlight, devicesDraggable, annotationsLocked } = input
   const builtNodes = useMemo(
-    () => buildNodes({ doc, selection, measured, labels, cableHighlight, devicesDraggable }),
-    [cableHighlight, devicesDraggable, doc, labels, measured, selection],
+    () => buildNodes({ doc, selection, measured, labels, cableHighlight, devicesDraggable, annotationsLocked }),
+    [annotationsLocked, cableHighlight, devicesDraggable, doc, labels, measured, selection],
   )
   const builtEdges = useMemo(() => buildEdges(doc, selection, (link) => linkLightOf(doc.state, link.id), labels), [doc, labels, selection])
   const keptNodes = useKept(builtNodes, reuseUnchanged)

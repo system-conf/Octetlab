@@ -1,10 +1,12 @@
 // Test helper: calls the real MCP HTTP handler (Agents SDK, stateless) with plain JSON-RPC requests, the
 // way a 2025-era connector such as ChatGPT does, on an in-memory lab store.
 import { createMcpHandler } from 'agents/mcp/server'
+import { MemoryLabRooms } from '../live/MemoryLabRooms'
 import { MemoryKeyValueStore } from '../store/MemoryKeyValueStore'
 import { createOctetlabServer } from './createOctetlabServer'
 
 export const TEST_APP_LAB_URL = 'https://octetlab.example.workers.dev/lab'
+export const TEST_APP_ORIGIN = 'https://octetlab.example.workers.dev'
 /** Not localhost or workers.dev: Node's Request drops the Host header, which the handler checks for those hosts. */
 const TEST_ENDPOINT = 'http://mcp.test/mcp'
 
@@ -19,8 +21,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export class McpTestClient {
-  readonly store = new MemoryKeyValueStore()
-  private readonly handler = createMcpHandler(() => createOctetlabServer({ store: this.store, appLabUrl: TEST_APP_LAB_URL }))
+  readonly rooms = new MemoryLabRooms()
+  /** Labs from before live labs (KV fallback). */
+  readonly legacyStore = new MemoryKeyValueStore()
+  private readonly handler = createMcpHandler(() =>
+    createOctetlabServer({ rooms: this.rooms, legacyStore: this.legacyStore, appLabUrl: TEST_APP_LAB_URL, appOrigin: TEST_APP_ORIGIN }),
+  )
   private nextId = 1
 
   /** The JSON-RPC `result` of one request (throws on a JSON-RPC error). */

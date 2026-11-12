@@ -5,6 +5,7 @@ import { McpTestClient, TEST_APP_LAB_URL } from './McpTestClient'
 const TOOL_NAMES = [
   'add_device',
   'apply_cli_config',
+  'build_lab',
   'configure_host',
   'connect',
   'create_lab',
@@ -77,10 +78,10 @@ describe('Octetlab MCP server over HTTP', () => {
     const url = String(share.structured.url)
     expect(url.startsWith(`${TEST_APP_LAB_URL}#lab=`)).toBe(true)
     const decoded = labShareLink.decode(url.slice(url.indexOf('#')))
-    const stored = await client.store.get(`lab:${labId}`)
+    const stored = await client.rooms.room(labId).read()
     expect(decoded?.ok).toBe(true)
     if (decoded?.ok !== true || stored === null) throw new Error('share link did not decode')
-    expect(decoded.doc).toEqual(JSON.parse(stored))
+    expect(decoded.doc).toEqual(JSON.parse(stored.docText))
 
     const imported = await client.ok('import_share_link', { url })
     expect(imported.structured.labId).not.toBe(labId)

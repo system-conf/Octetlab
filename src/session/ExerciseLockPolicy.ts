@@ -1,6 +1,6 @@
 // What an exercise lab lets the learner change (MODEL_V2 §10 `ExerciseLock`). Anything not locked is
 // editable; the strictest lock wins (hidden > readOnly > editable). A free lab uses `none`.
-import type { Device, DeviceSection, ExerciseLock, Link, LockAccess } from '../domain'
+import type { Device, DeviceSection, ExerciseLock, Link, LockAccess, NetworkState } from '../domain'
 
 export type EditAccess = 'editable' | LockAccess
 
@@ -44,7 +44,22 @@ export class ExerciseLockPolicy {
   /** A free lab: nothing locked. */
   static readonly none = new ExerciseLockPolicy([], [])
 
+  /**
+   * Live labs (docs/LIVE_LABS.md §8): a lab that is only watched. Every device is read-only, the
+   * topology and every cable are locked, and the notes on the map and the lab notes are locked too.
+   */
+  static readOnlyLab(state: NetworkState): ExerciseLockPolicy {
+    const locks: ExerciseLock[] = [
+      { scope: 'topology' },
+      ...state.devices.map((device): ExerciseLock => ({ scope: 'device', deviceId: device.id, access: 'readOnly' })),
+      ...state.links.map((link): ExerciseLock => ({ scope: 'link', linkId: link.id })),
+    ]
+    return new ExerciseLockPolicy(locks, state.links, { annotationsLocked: true })
+  }
+
   readonly locks: readonly ExerciseLock[]
+  /** Live labs: map notes and lab notes cannot be added, edited, moved or deleted either. */
+  readonly annotationsLocked: boolean
   /** Devices at either end of a locked link: deleting one would delete the link with it. */
   private readonly lockedLinkDevices: ReadonlySet<string>
 
@@ -52,8 +67,9 @@ export class ExerciseLockPolicy {
    * `links`: the links of the exercise's starting lab. Locked links can be neither deleted nor rewired,
    * so their ends stay the devices they connect there.
    */
-  constructor(locks: readonly ExerciseLock[], links: readonly Link[]) {
+  constructor(locks: readonly ExerciseLock[], links: readonly Link[], options: { annotationsLocked?: boolean } = {}) {
     this.locks = locks
+    this.annotationsLocked = options.annotationsLocked ?? false
     const locked = new Set(locks.flatMap((lock) => (lock.scope === 'link' ? [lock.linkId] : [])))
     this.lockedLinkDevices = new Set(links.filter((link) => locked.has(link.id)).flatMap((link) => [link.a.deviceId, link.b.deviceId]))
   }
@@ -125,12 +141,12 @@ export class ExerciseLockPolicy {
     })
   }
 
-  /** The part of a delete request the locks allow (annotations are never locked). */
+  /** The part of a delete request the locks allow (annotations are locked only in a read-only lab). */
   allowedDeletion(request: DeletionRequest): DeletionRequest {
     return {
       deviceIds: request.deviceIds.filter((deviceId) => this.canDeleteDevice(deviceId)),
       linkIds: request.linkIds.filter((linkId) => this.canDeleteLink(linkId)),
-      annotationIds: request.annotationIds,
+      annotationIds: this.annotationsLocked ? [] : request.annotationIds,
     }
   }
 

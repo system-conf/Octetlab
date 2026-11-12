@@ -6,6 +6,38 @@ import type { DeviceAccess } from './DeviceAccess'
 
 export type HostAddressing = { mode: 'dhcp' } | { mode: 'static'; ip: string; mask: string }
 
+/** configure_host / build_lab input: the mode plus, for static, ip and mask. */
+export interface HostAddressingInput {
+  mode: 'dhcp' | 'static'
+  ip?: string | undefined
+  mask?: string | undefined
+}
+
+/** The addressing of a tool input; a ToolError when static mode lacks ip or mask. */
+export function hostAddressingOf(input: HostAddressingInput): HostAddressing {
+  if (input.mode === 'dhcp') return { mode: 'dhcp' }
+  if (input.ip === undefined || input.mask === undefined) throw ToolError.validation('Static mode needs both ip and mask.')
+  return { mode: 'static', ip: input.ip, mask: input.mask }
+}
+
+/** configure_host / build_lab host settings as the tools receive them. */
+export interface HostSettingsInput extends HostAddressingInput {
+  portId?: string | undefined
+  gateway?: string | undefined
+  dnsServers?: string[] | undefined
+}
+
+/** The request for HostConfigurator.configure (absent fields stay absent). */
+export function hostSettingsRequestOf(deviceId: string, input: HostSettingsInput): HostSettingsRequest {
+  return {
+    deviceId,
+    addressing: hostAddressingOf(input),
+    ...(input.portId === undefined ? {} : { portId: input.portId }),
+    ...(input.gateway === undefined ? {} : { gateway: input.gateway }),
+    ...(input.dnsServers === undefined ? {} : { dnsServers: input.dnsServers }),
+  }
+}
+
 export interface HostSettingsRequest {
   deviceId: string
   /** NIC id (eth0, wlan0); default: the first NIC. */

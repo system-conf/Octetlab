@@ -45,6 +45,8 @@ export class RouteResolver {
       case 'designs':
       case 'samples':
       case 'preferences':
+      case 'live':
+        // Live labs: the screen itself reports a lab that does not exist (any more).
         return RENDER
       case 'notFound':
         return redirect({ name: 'landing' })

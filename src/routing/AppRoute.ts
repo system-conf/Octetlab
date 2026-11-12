@@ -21,11 +21,15 @@ export type AppRoute =
   | { name: 'sample'; sampleId: string }
   /** PU (Preferences screen): the user's preferences (`/preferences`). */
   | { name: 'preferences' }
+  /** Live labs: a lab an assistant builds through the MCP server, watched read-only (`/live/<labId>`). */
+  | { name: 'live'; labId: string }
   /** Any other path; the app sends the user to the landing page. */
   | { name: 'notFound'; path: string }
 
 /** Exercise and brief ids are camelCase identifiers (docs/PLAN.md §1). */
 const EXERCISE_ID = /^[A-Za-z][A-Za-z0-9]*$/
+/** Live labs: the MCP server's 22-character lab ids (mcp/src/store/LabStore.ts LAB_ID_PATTERN). */
+const LIVE_LAB_ID = /^[A-Za-z0-9_-]{22}$/
 
 /** Pure path ↔ route mapping. */
 export class AppRouteCodec {
@@ -38,6 +42,7 @@ export class AppRouteCodec {
     if (first === 'preferences') return second === undefined ? { name: 'preferences' } : { name: 'notFound', path: pathname }
     // SL1 (sample labs): `/samples` and `/samples/<id>`; anything deeper is not found.
     if (first === 'samples') return AppRouteCodec.parseSample(pathname, second, third)
+    if (first === 'live') return AppRouteCodec.parseLive(pathname, second, third)
     if ((first !== 'exercises' && first !== 'design') || rest.length > 0) return { name: 'notFound', path: pathname }
     if (second === undefined) return first === 'exercises' ? { name: 'exercises' } : { name: 'designs' }
     const id = AppRouteCodec.decode(second)
@@ -77,6 +82,8 @@ export class AppRouteCodec {
       // PU (Preferences screen)
       case 'preferences':
         return '/preferences'
+      case 'live':
+        return `/live/${encodeURIComponent(route.labId)}`
       case 'notFound':
         return route.path
     }
@@ -92,6 +99,13 @@ export class AppRouteCodec {
     const id = AppRouteCodec.decode(idSegment)
     if (deeper !== undefined || id === null || !EXERCISE_ID.test(id)) return { name: 'notFound', path: pathname }
     return { name: 'sample', sampleId: id }
+  }
+
+  /** Live labs: `/live/<22-character lab id>`; no list page, nothing deeper. */
+  private static parseLive(pathname: string, idSegment: string | undefined, deeper: string | undefined): AppRoute {
+    const id = idSegment === undefined ? null : AppRouteCodec.decode(idSegment)
+    if (deeper !== undefined || id === null || !LIVE_LAB_ID.test(id)) return { name: 'notFound', path: pathname }
+    return { name: 'live', labId: id }
   }
 
   private static decode(segment: string): string | null {
@@ -119,4 +133,6 @@ export const routes = {
   sample: (sampleId: string): AppRoute => ({ name: 'sample', sampleId }),
   // PU (Preferences screen)
   preferences: { name: 'preferences' },
+  // Live labs
+  live: (labId: string): AppRoute => ({ name: 'live', labId }),
 } as const satisfies Record<string, AppRoute | ((id: string) => AppRoute)>

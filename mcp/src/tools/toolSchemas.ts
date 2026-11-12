@@ -14,3 +14,22 @@ export const nameSchema = z.string().trim().min(1).max(LAB_LIMITS.nameLength)
 export const ipv4Schema = z.string().max(15).describe('Dotted IPv4 address, e.g. 192.168.1.10')
 
 export const coordinateSchema = z.number().min(-100_000).max(100_000)
+
+export const cableSchema = z.enum(['auto', 'copperStraight', 'copperCross', 'fiber', 'serial', 'console', 'coaxial', 'wireless'])
+
+/** IOS configuration text of one apply_cli_config call / build_lab cli step. */
+export const cliConfigSchema = z
+  .string()
+  .min(1)
+  .max(50_000)
+  .describe('Config lines separated by newlines, e.g. "interface Gi0/0\\n ip address 192.168.1.1 255.255.255.0\\n no shutdown"')
+
+/** configure_host's settings (also a build_lab hosts[] step). */
+export const hostSettingsShape = {
+  portId: portIdSchema.optional().describe('Network card, default the first one (eth0)'),
+  mode: z.enum(['dhcp', 'static']),
+  ip: ipv4Schema.optional().describe('Static mode: address'),
+  mask: ipv4Schema.optional().describe('Static mode: mask, e.g. 255.255.255.0'),
+  gateway: ipv4Schema.or(z.literal('')).optional(),
+  dnsServers: z.array(ipv4Schema).max(LAB_LIMITS.listItems).optional(),
+}

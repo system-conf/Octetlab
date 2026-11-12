@@ -1,0 +1,45 @@
+{
+  "pageTitle": "Live lab",
+  "untitled": "Untitled lab",
+  "kicker": "Live lab",
+  "back": "Home",
+  "backAria": "Back to the home page",
+  "status": {
+    "connecting": "Connecting…",
+    "live": "Live",
+    "reconnecting": "Reconnecting…",
+    "ended": "Ended",
+    "notFound": "Ended",
+    "error": "Unavailable"
+  },
+  "statusAria": "Connection: {{status}}",
+  "copy": {
+    "action": "Copy to my labs",
+    "busy": "Copying…",
+    "failed": "The lab could not be copied. Check that your browser allows saving data for this site and try again."
+  },
+  "waiting": "Waiting for the lab…",
+  "emptyCanvas": "The lab is empty. Devices appear here as the assistant adds them.",
+  "readOnly": "Read-only: the assistant is building this lab. Copy it to change it yourself.",
+  "invalidDocument": "An update could not be shown, so the last good version stays on screen.",
+  "ended": {
+    "title": "This live lab has ended (labs are kept 7 days)",
+    "body": "Ask the assistant to build it again, or open your own labs.",
+    "banner": "This live lab has ended (labs are kept 7 days). You can still copy what you see.",
+    "openLabs": "Open my labs"
+  },
+  "error": {
+    "title": "This live lab cannot be shown here",
+    "body": "The live lab server did not accept this page. Try again later or open your own labs."
+  },
+  "feed": {
+    "title": "Activity",
+    "toggle": "Activity",
+    "count_one": "{{count}} action",
+    "count_other": "{{count}} actions",
+    "empty": "No actions yet. Changes show up here while the assistant works.",
+    "close": "Close activity",
+    "outputOn": "on {{device}}",
+    "latest": "Latest: {{summary}}"
+  }
+}

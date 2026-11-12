@@ -25,6 +25,19 @@ describe('ExerciseLockPolicy', () => {
     expect(policy.allowsDeviceUpdate(pc, { ...pc, powered: false })).toBe(true)
   })
 
+  it('locks everything in a read-only live lab, notes included', () => {
+    const link = labLink('link1', ['pc', 'eth0'], ['sw', 'Fa0/1'])
+    const policy = ExerciseLockPolicy.readOnlyLab({ devices: [pc, sw], links: [link] })
+    expect(policy.topologyLocked).toBe(true)
+    expect(policy.annotationsLocked).toBe(true)
+    expect(policy.deviceAccess('pc')).toBe('readOnly')
+    expect(policy.canUseTerminal('pc')).toBe(false)
+    expect(policy.canUnplugLink('link1')).toBe(false)
+    expect(policy.allowsDeviceUpdate(pc, { ...pc, powered: !pc.powered })).toBe(false)
+    expect(policy.allowedDeletion({ deviceIds: ['pc'], linkIds: ['link1'], annotationIds: ['annotation1'] })).toEqual({ deviceIds: [], linkIds: [], annotationIds: [] })
+    expect(ExerciseLockPolicy.none.annotationsLocked).toBe(false)
+  })
+
   it('locks the topology: no deletes of devices or cables, plugging stays free', () => {
     const policy = new ExerciseLockPolicy([{ scope: 'topology' }], [])
     expect(policy.topologyLocked).toBe(true)

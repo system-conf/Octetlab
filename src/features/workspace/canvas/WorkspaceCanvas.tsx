@@ -44,6 +44,10 @@ interface WorkspaceCanvasProps {
   snapToGrid: boolean
   /** false: devices cannot be dragged (exercise with a locked topology). */
   devicesDraggable: boolean
+  /** true: notes can be neither selected nor dragged (read-only live lab). */
+  annotationsLocked?: boolean
+  /** Hint on an empty map; default: drag devices from the palette. */
+  emptyText?: string
   screenToFlow: (point: CanvasPoint) => CanvasPoint
   canvasRef: RefObject<HTMLDivElement | null>
   /** Fit the view again when the canvas changes size, unless the learner moved it (exercise screen). */
@@ -75,6 +79,8 @@ function WorkspaceCanvas({
   cableHighlight,
   snapToGrid,
   devicesDraggable,
+  annotationsLocked = false,
+  emptyText,
   screenToFlow,
   canvasRef,
   refitOnResize = false,
@@ -113,7 +119,7 @@ function WorkspaceCanvas({
   )
 
   // Unchanged nodes and cables keep their objects: only what changed re-renders.
-  const { nodes, edges } = useCanvasElements({ doc, selection, dragPositions, measured, labels, cableHighlight, devicesDraggable })
+  const { nodes, edges } = useCanvasElements({ doc, selection, dragPositions, measured, labels, cableHighlight, devicesDraggable, annotationsLocked })
   const dragActive = dragPositions !== NO_DRAG
 
   const handleNodesChange = useCallback(
@@ -229,7 +235,7 @@ function WorkspaceCanvas({
       </ReactFlow>
       {doc.state.devices.length === 0 && (
         <p className="pointer-events-none absolute inset-x-0 top-1/3 mx-auto max-w-xs px-4 text-center text-sm text-fg-subtle">
-          {t('canvas.empty')}
+          {emptyText ?? t('canvas.empty')}
         </p>
       )}
     </div>

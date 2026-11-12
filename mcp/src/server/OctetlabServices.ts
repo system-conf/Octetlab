@@ -11,14 +11,22 @@ import { LabSummary } from '../lab/LabSummary'
 import { LabTopology } from '../lab/LabTopology'
 import { LayoutPlanner } from '../lab/LayoutPlanner'
 import { ShareLinks } from '../lab/ShareLinks'
+import { LabBuilder } from '../lab/LabBuilder'
+import type { LabRooms } from '../live/LabRooms'
+import { LiveLinks } from '../live/LiveLinks'
 import type { KeyValueStore } from '../store/KeyValueStore'
 import { LabStore } from '../store/LabStore'
 import { englishMessages, type EnglishMessages } from '../text/EnglishMessages'
 
 export interface OctetlabServicesConfig {
-  store: KeyValueStore
+  /** One live room per lab (Durable Objects). */
+  rooms: LabRooms
+  /** Labs saved in KV before live labs (read-only fallback, docs/LIVE_LABS.md §4). */
+  legacyStore: KeyValueStore
   /** Web app page that opens share links. */
   appLabUrl: string
+  /** Web app origin for live links. */
+  appOrigin: string
   now?: () => Date
 }
 
@@ -33,10 +41,12 @@ export class OctetlabServices {
   readonly commands: CommandRunner
   readonly summary = new LabSummary()
   readonly shareLinks: ShareLinks
+  readonly liveLinks: LiveLinks
+  readonly builder: LabBuilder
 
   constructor(config: OctetlabServicesConfig) {
     const messages = this.messages
-    this.labs = new LabStore(config.store, messages, config.now)
+    this.labs = new LabStore({ rooms: config.rooms, legacy: config.legacyStore, messages, ...(config.now === undefined ? {} : { now: config.now }) })
     this.catalog = new CatalogBrowser(messages)
     this.devices = new DeviceAccess(messages)
     this.topology = new LabTopology({
@@ -50,5 +60,7 @@ export class OctetlabServices {
     this.cliConfig = new CliConfigApplier(this.devices, messages)
     this.commands = new CommandRunner(this.devices, new DeviceCliRunner(this.devices, messages), new HostTerminalRunner(messages))
     this.shareLinks = new ShareLinks(messages, config.appLabUrl)
+    this.liveLinks = new LiveLinks(config.appOrigin)
+    this.builder = new LabBuilder({ topology: this.topology, hosts: this.hosts, cliConfig: this.cliConfig })
   }
 }

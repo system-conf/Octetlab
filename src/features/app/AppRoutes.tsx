@@ -18,6 +18,8 @@ const DesignRoutes = lazy(() => import('../design/DesignRoutes'))
 const SampleRoutes = lazy(() => import('../samples/SampleRoutes'))
 // PU (Preferences screen): loads on demand.
 const PreferencesScreen = lazy(() => import('../preferences/PreferencesScreen'))
+// Live labs (docs/LIVE_LABS.md §8): loads on demand (workspace, WebSocket connection).
+const LiveLabScreen = lazy(() => import('../live/LiveLabScreen'))
 
 /** Picks the screen for the current route; redirects through RouteResolver. */
 function AppRoutes() {
@@ -128,6 +130,13 @@ function AppRoutes() {
       return (
         <Suspense fallback={<LoadingScreen />}>
           <PreferencesScreen />
+        </Suspense>
+      )
+    // Live labs
+    case 'live':
+      return (
+        <Suspense fallback={<LoadingScreen />}>
+          <LiveLabScreen key={route.labId} labId={route.labId} />
         </Suspense>
       )
   }
