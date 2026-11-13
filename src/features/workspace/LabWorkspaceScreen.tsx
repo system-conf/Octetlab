@@ -3,12 +3,13 @@ import { Network } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePreference } from '../../preferences'
-import { routes } from '../../routing'
 // CI (CLI integration): File menu "Export configs".
 import { useLabConfigExport } from '../cli'
 import { useDocumentMeta } from '../layout/useDocumentMeta'
-import AppLink from '../shared/AppLink'
 import { focusRing } from '../shared/focusRing'
+// Start dialog: the app opens on the workspace with it (`/`); the header's logo button reopens it.
+import StartDialog from '../start/StartDialog'
+import { useStartDialog } from '../start/useStartDialog'
 import FileMenu from './file/FileMenu'
 import RecentLabsDialog from './file/RecentLabsDialog'
 import { useLabFileActions } from './file/useLabFileActions'
@@ -20,16 +21,20 @@ import WorkspaceView from './WorkspaceView'
 
 // Design (D2): the handover pack (File menu) loads on demand.
 const HandoverOverlay = lazy(() => import('../design/handover/HandoverOverlay'))
+// Share pages (docs/SHARE_PAGES.md): File → "Share as a page" loads on demand.
+const ShareDialog = lazy(() => import('../share/dialog/ShareDialog'))
 
 export interface LabWorkspaceScreenProps {
   /** `#lab=…` the page was opened with, or null. */
   shareHash: string | null
   onShareHashUsed: () => void
+  /** Entered through `/`: the Start dialog shows over the lab. */
+  startOnEntry?: boolean
 }
 
-/** The free lab (`/lab`): autosaved, with the File menu (new, recent, import, export, share, handover pack). */
-function LabWorkspace({ shareHash, onShareHashUsed }: LabWorkspaceScreenProps) {
-  const { t } = useTranslation(['workspace', 'lab', 'common'])
+/** The free lab (`/lab`, `/`): autosaved, with the File menu (new, recent, import, export, share, handover pack). */
+function LabWorkspace({ shareHash, onShareHashUsed, startOnEntry = false }: LabWorkspaceScreenProps) {
+  const { t } = useTranslation(['workspace', 'lab', 'common', 'start'])
   // PU (Preferences → Data): autosave of the free lab can be turned off (exercises, designs and samples never autosave).
   const [autosave] = usePreference('data.autosave')
   const lab = useLabDocument(undefined, { autosave })
@@ -39,19 +44,24 @@ function LabWorkspace({ shareHash, onShareHashUsed }: LabWorkspaceScreenProps) {
   const exportConfigs = useLabConfigExport(lab.doc, toasts.show)
   const [recentOpen, setRecentOpen] = useState(false)
   const [handoverOpen, setHandoverOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  // A shared lab being opened wins over the Start dialog.
+  const start = useStartDialog(startOnEntry && shareHash === null)
   const title = lab.doc.meta.title
   useDocumentMeta(title === '' ? t('workspace:title') : title)
 
   const headerStart = (
     <>
-      <AppLink
-        to={routes.landing}
-        aria-label={t('workspace:header.home')}
-        title={t('workspace:header.home')}
+      <button
+        type="button"
+        onClick={start.show}
+        aria-label={t('start:headerButton')}
+        title={t('start:headerButton')}
+        aria-haspopup="dialog"
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-accent-text hover:bg-accent-muted ${focusRing}`}
       >
         <Network className="h-6 w-6" aria-hidden="true" />
-      </AppLink>
+      </button>
       <CommitField
         label={t('workspace:header.titleLabel')}
         value={title}
@@ -61,7 +71,9 @@ function LabWorkspace({ shareHash, onShareHashUsed }: LabWorkspaceScreenProps) {
         maxLength={LAB_LIMITS.nameLength}
         className="min-w-0 max-w-md flex-1"
       />
-      <FileMenu actions={files} onOpenRecent={() => setRecentOpen(true)} onHandover={() => setHandoverOpen(true)} onExportConfigs={exportConfigs} />
+      <FileMenu actions={files} onOpenRecent={() => setRecentOpen(true)} onHandover={() => setHandoverOpen(true)} onExportConfigs={exportConfigs}
+        onShare={() => setShareOpen(true)}
+      />
     </>
   )
 
@@ -69,10 +81,23 @@ function LabWorkspace({ shareHash, onShareHashUsed }: LabWorkspaceScreenProps) {
     <>
       <WorkspaceView lab={lab} policy={ExerciseLockPolicy.none} toasts={toasts} headerStart={headerStart} />
       {recentOpen && <RecentLabsDialog onOpen={files.openRecent} onClose={() => setRecentOpen(false)} />}
+      {start.open && <StartDialog currentTitle={title} actions={files} onClose={start.close} />}
       {/* Design (D2): handover pack of the open lab */}
       {handoverOpen && (
         <Suspense fallback={null}>
           <HandoverOverlay source={lab.doc} onClose={() => setHandoverOpen(false)} />
+        </Suspense>
+      )}
+      {shareOpen && (
+        <Suspense fallback={null}>
+          <ShareDialog
+            doc={lab.doc}
+            onClose={() => setShareOpen(false)}
+            onCopyLongLink={() => {
+              setShareOpen(false)
+              files.copyShareLink()
+            }}
+          />
         </Suspense>
       )}
     </>

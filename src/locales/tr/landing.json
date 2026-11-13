@@ -53,12 +53,6 @@
     "license": "{{license}} lisanslı açık kaynak proje · {{author}}",
     "sourceCode": "Kaynak kod (GitHub)"
   },
-  "recentLabs": {
-    "hint": "Labların bu tarayıcıda otomatik olarak kaydedilir.",
-    "loading": "Labların yükleniyor…",
-    "import": "Lab dosyası içe aktar",
-    "importFailed": "Lab içe aktarılamadı:"
-  },
   "exercisesTitle": "Arıza giderme alıştırmaları",
   "exercisesLead": "Her alıştırma küçük bir işletmeden gelen bir mesajla başlar. Cihazları incele, yanlış ayarı bul, düzelt ve “Doğrula” düğmesine bas."
 }

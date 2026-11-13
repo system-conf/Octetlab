@@ -34,6 +34,10 @@ export const namespaces = [
   'acl',
   'nat',
   'remoteAccess',
+  // Start dialog (the app opens on the lab workspace)
+  'start',
+  // Share pages: docs/SHARE_PAGES.md
+  'share',
   // Firewall pack: docs/FIREWALL_PACK.md
   'firewall',
 ] as const

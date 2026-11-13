@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",
+    "@resvg/resvg-wasm": "2.6.2",
     "@xyflow/react": "^12.12.1",
     "agents": "0.33.0",
     "i18next": "^26.7.2",

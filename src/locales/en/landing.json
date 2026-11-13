@@ -53,12 +53,6 @@
     "license": "Open-source project under the {{license}} license · {{author}}",
     "sourceCode": "Source code (GitHub)"
   },
-  "recentLabs": {
-    "hint": "Your labs are saved in this browser automatically.",
-    "loading": "Loading your labs…",
-    "import": "Import a lab file",
-    "importFailed": "The lab could not be imported:"
-  },
   "exercisesTitle": "Troubleshooting exercises",
   "exercisesLead": "Each exercise starts with a message from a small business. Inspect the devices, find the wrong setting, fix it and press Verify."
 }

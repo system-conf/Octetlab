@@ -17,6 +17,8 @@ describe('RouteResolver', () => {
     expect(RouteResolver.resolve({ name: 'exercise', exerciseId: 'wrongDns' }, context)).toEqual({ kind: 'render' })
     expect(RouteResolver.resolve({ name: 'design', briefId: 'restaurant' }, context)).toEqual({ kind: 'render' })
     expect(RouteResolver.resolve({ name: 'live', labId: 'AbCdEfGhIjKlMnOpQrStUv' }, context)).toEqual({ kind: 'render' })
+    expect(RouteResolver.resolve({ name: 'about' }, context)).toEqual({ kind: 'render' })
+    expect(RouteResolver.resolve({ name: 'share', shareId: 'Ab3dEf7hIj' }, context)).toEqual({ kind: 'render' })
   })
 
   it('sends unknown paths to the landing page', () => {

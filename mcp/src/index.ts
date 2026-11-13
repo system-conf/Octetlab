@@ -11,6 +11,8 @@ import { createOctetlabServer } from './server/createOctetlabServer'
 import { CloudflareKvStore } from './store/CloudflareKvStore'
 
 export { LabRoom } from './live/LabRoom'
+// Share pages (docs/SHARE_PAGES.md): reached only by the app Worker over a cross-script binding.
+export { ShareStore } from './share/ShareStore'
 
 const MCP_ROUTE = '/mcp'
 

@@ -1,0 +1,37 @@
+{
+  "dialog": {
+    "title": "Start",
+    "lead": "Pick up where you left off, open a ready-made lab or practise something new.",
+    "close": "Close the start screen",
+    "continue": "Continue with this lab",
+    "continueTitled": "Continue: {{title}}"
+  },
+  "headerButton": "Start screen",
+  "recent": {
+    "title": "My recent labs",
+    "hint": "Saved in this browser automatically.",
+    "loading": "Loading your labs…",
+    "newLab": "New empty lab",
+    "openFile": "Open a lab file"
+  },
+  "samples": {
+    "title": "Ready-made labs",
+    "text": "Small networks with a short lesson. Open one and explore it.",
+    "cta": "Browse ready-made labs"
+  },
+  "learn": {
+    "title": "Learn",
+    "exercises": {
+      "title": "Troubleshooting exercises",
+      "text": "A small business network is broken. Find the wrong setting and fix it."
+    },
+    "design": {
+      "title": "Design tasks",
+      "text": "Build a network from a customer's requirements and get it reviewed."
+    }
+  },
+  "about": {
+    "link": "About Octetlab",
+    "pageTitle": "About"
+  }
+}

@@ -2,9 +2,14 @@
 // path (SPA fallback), so a reload or a shared link opens the same screen again.
 
 export type AppRoute =
+  /** `/`: the lab workspace (last lab) with the Start dialog open, like a desktop lab app's start screen. */
   | { name: 'landing' }
   /** The workspace with the current (autosaved) lab; `#lab=…` opens a shared lab. */
   | { name: 'lab' }
+  /** `/about`: what Octetlab is (the former start page; first-time visitors and search engines). */
+  | { name: 'about' }
+  /** Share pages (docs/SHARE_PAGES.md): a frozen, read-only snapshot of a lab (`/p/<shareId>`). */
+  | { name: 'share'; shareId: string }
   | { name: 'exercises' }
   | { name: 'exercise'; exerciseId: string }
   /** Solution report shown after a successful verification. */
@@ -30,6 +35,8 @@ export type AppRoute =
 const EXERCISE_ID = /^[A-Za-z][A-Za-z0-9]*$/
 /** Live labs: the MCP server's 22-character lab ids (mcp/src/store/LabStore.ts LAB_ID_PATTERN). */
 const LIVE_LAB_ID = /^[A-Za-z0-9_-]{22}$/
+/** Share pages: the share store's 10-character ids (src/features/share/model/shareContract.ts SHARE_ID_PATTERN). */
+const SHARE_ID = /^[A-Za-z0-9]{10}$/
 
 /** Pure path ↔ route mapping. */
 export class AppRouteCodec {
@@ -40,6 +47,8 @@ export class AppRouteCodec {
     if (first === undefined) return { name: 'landing' }
     if (first === 'lab' && second === undefined) return { name: 'lab' }
     if (first === 'preferences') return second === undefined ? { name: 'preferences' } : { name: 'notFound', path: pathname }
+    if (first === 'about') return second === undefined ? { name: 'about' } : { name: 'notFound', path: pathname }
+    if (first === 'p') return AppRouteCodec.parseShare(pathname, second, third)
     // SL1 (sample labs): `/samples` and `/samples/<id>`; anything deeper is not found.
     if (first === 'samples') return AppRouteCodec.parseSample(pathname, second, third)
     if (first === 'live') return AppRouteCodec.parseLive(pathname, second, third)
@@ -62,6 +71,10 @@ export class AppRouteCodec {
         return '/'
       case 'lab':
         return '/lab'
+      case 'about':
+        return '/about'
+      case 'share':
+        return `/p/${encodeURIComponent(route.shareId)}`
       case 'exercises':
         return '/exercises'
       case 'exercise':
@@ -108,6 +121,13 @@ export class AppRouteCodec {
     return { name: 'live', labId: id }
   }
 
+  /** Share pages: `/p/<10-character share id>`; no list page, nothing deeper. */
+  private static parseShare(pathname: string, idSegment: string | undefined, deeper: string | undefined): AppRoute {
+    const id = idSegment === undefined ? null : AppRouteCodec.decode(idSegment)
+    if (deeper !== undefined || id === null || !SHARE_ID.test(id)) return { name: 'notFound', path: pathname }
+    return { name: 'share', shareId: id }
+  }
+
   private static decode(segment: string): string | null {
     try {
       return decodeURIComponent(segment)
@@ -122,6 +142,8 @@ export class AppRouteCodec {
 export const routes = {
   landing: { name: 'landing' },
   lab: { name: 'lab' },
+  about: { name: 'about' },
+  share: (shareId: string): AppRoute => ({ name: 'share', shareId }),
   exercises: { name: 'exercises' },
   exercise: (exerciseId: string): AppRoute => ({ name: 'exercise', exerciseId }),
   exerciseReport: (exerciseId: string): AppRoute => ({ name: 'exerciseReport', exerciseId }),

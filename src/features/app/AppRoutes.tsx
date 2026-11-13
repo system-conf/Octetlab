@@ -20,6 +20,8 @@ const SampleRoutes = lazy(() => import('../samples/SampleRoutes'))
 const PreferencesScreen = lazy(() => import('../preferences/PreferencesScreen'))
 // Live labs (docs/LIVE_LABS.md §8): loads on demand (workspace, WebSocket connection).
 const LiveLabScreen = lazy(() => import('../live/LiveLabScreen'))
+// Share pages (docs/SHARE_PAGES.md): load on demand (lab parser, tables, topology view).
+const SharePageScreen = lazy(() => import('../share/page/SharePageScreen'))
 
 /** Picks the screen for the current route; redirects through RouteResolver. */
 function AppRoutes() {
@@ -65,13 +67,26 @@ function AppRoutes() {
   if (redirect) return null
 
   switch (route.name) {
+    // `/` and `/lab` render the same element at the same place, so moving between them (closing the
+    // Start dialog replaces `/` with `/lab`) keeps the workspace, its lab and undo history.
     case 'landing':
-    case 'notFound':
-      return <LandingScreen />
     case 'lab':
       return (
         <Suspense fallback={<LoadingScreen />}>
-          <LabWorkspaceScreen shareHash={shareHash} onShareHashUsed={() => setShareHash(null)} />
+          <LabWorkspaceScreen shareHash={shareHash} onShareHashUsed={() => setShareHash(null)} startOnEntry={route.name === 'landing'} />
+        </Suspense>
+      )
+    // Always redirected by RouteResolver (to `/`).
+    case 'notFound':
+      return null
+    // The former start page: what Octetlab is.
+    case 'about':
+      return <LandingScreen />
+    // Share pages (docs/SHARE_PAGES.md)
+    case 'share':
+      return (
+        <Suspense fallback={<LoadingScreen />}>
+          <SharePageScreen key={route.shareId} shareId={route.shareId} />
         </Suspense>
       )
     case 'exercises':

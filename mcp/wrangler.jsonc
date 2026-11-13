@@ -23,7 +23,12 @@
   "durable_objects": {
     "bindings": [{ "name": "LAB_ROOMS", "class_name": "LabRoom" }]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LabRoom"] }],
+  // v2: ShareStore (docs/SHARE_PAGES.md §3), one SQLite-backed object holding every share page. The app
+  // Worker (root wrangler.jsonc) binds to it with script_name "octetlabmcp"; this Worker needs no binding.
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["LabRoom"] },
+    { "tag": "v2", "new_sqlite_classes": ["ShareStore"] }
+  ],
   "kv_namespaces": [
     {
       // Labs saved before live labs: read-only fallback, removed in the contract step (≥ 2026-11-20).

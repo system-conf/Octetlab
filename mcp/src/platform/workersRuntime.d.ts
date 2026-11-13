@@ -9,6 +9,26 @@ interface DurableObjectStorage {
   delete(keys: string[]): Promise<number>
   deleteAll(): Promise<void>
   setAlarm(scheduledTime: number | Date): Promise<void>
+  /** Share pages: the SQL API of SQLite-backed objects (developers.cloudflare.com/durable-objects/api/sqlite-storage-api/). */
+  readonly sql: SqlStorage
+  transactionSync<T>(body: () => T): T
+}
+
+type SqlStorageValue = string | number | null | ArrayBuffer
+
+interface SqlStorageCursor {
+  toArray(): Record<string, SqlStorageValue>[]
+  readonly rowsWritten: number
+}
+
+interface SqlStorage {
+  exec(query: string, ...bindings: SqlStorageValue[]): SqlStorageCursor
+}
+
+/** `.wasm` imports: wrangler compiles them into a WebAssembly.Module at upload time. */
+declare module '*.wasm' {
+  const module: WebAssembly.Module
+  export default module
 }
 
 /** ctx of a Durable Object: storage plus the WebSocket Hibernation API. */

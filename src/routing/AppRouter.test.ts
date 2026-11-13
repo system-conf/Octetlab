@@ -71,6 +71,11 @@ describe('AppRouteCodec', () => {
     ['/preferences/', { name: 'preferences' }],
     // Live labs
     ['/live/AbCdEfGhIjKlMnOp_r-tUv', { name: 'live', labId: 'AbCdEfGhIjKlMnOp_r-tUv' }],
+    // Start dialog: the former start page
+    ['/about', { name: 'about' }],
+    ['/about/', { name: 'about' }],
+    // Share pages
+    ['/p/Ab3dEf7hIj', { name: 'share', shareId: 'Ab3dEf7hIj' }],
   ]
 
   it.each(cases)('parses %s', (path, route) => {
@@ -103,6 +108,12 @@ describe('AppRouteCodec', () => {
     '/live/short',
     '/live/AbCdEfGhIjKlMnOpQrStUv/more',
     '/live/AbCdEfGhIjKlMnOpQrSt.v',
+    '/about/team',
+    // Share pages
+    '/p',
+    '/p/short',
+    '/p/Ab3dEf7hIj/og.png',
+    '/p/Ab3dEf7h-j',
   ]
 
   it.each(notFound)('treats %s as not found', (path) => {

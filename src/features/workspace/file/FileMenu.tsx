@@ -1,4 +1,4 @@
-import { ChevronDown, Download, FileCode2, FilePlus2, FileText, FolderOpen, Link2, Settings, Upload, type LucideIcon } from 'lucide-react'
+import { ChevronDown, Download, FileCode2, FilePlus2, FileText, FolderOpen, Globe, Link2, Settings, Upload, type LucideIcon } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 // PU (Preferences screen): File → Preferences opens the same dialog as the header's gear.
@@ -14,15 +14,19 @@ interface FileMenuProps {
   onHandover: () => void
   /** CI (CLI integration): downloads the running-config of every device; absent = no menu item. */
   onExportConfigs?: () => void
+  /** Share pages (docs/SHARE_PAGES.md): opens the share dialog; absent = no menu item. */
+  onShare?: () => void
 }
 
-type ItemKey = 'newLab' | 'openRecent' | 'import' | 'export' | 'share' | 'handover' | 'exportConfigs' | 'preferences'
+type ItemKey = 'newLab' | 'openRecent' | 'import' | 'export' | 'sharePage' | 'share' | 'handover' | 'exportConfigs' | 'preferences'
 
 const ITEMS: readonly { key: ItemKey; icon: LucideIcon }[] = [
   { key: 'newLab', icon: FilePlus2 },
   { key: 'openRecent', icon: FolderOpen },
   { key: 'import', icon: Upload },
   { key: 'export', icon: Download },
+  // Share pages (docs/SHARE_PAGES.md)
+  { key: 'sharePage', icon: Globe },
   { key: 'share', icon: Link2 },
   // Design (D2)
   { key: 'handover', icon: FileText },
@@ -33,10 +37,12 @@ const ITEMS: readonly { key: ItemKey; icon: LucideIcon }[] = [
 ]
 
 /** "File" menu button of the free lab (menu button pattern: arrows, Home / End, Esc, Tab closes). */
-function FileMenu({ actions, onOpenRecent, onHandover, onExportConfigs }: FileMenuProps) {
-  const { t } = useTranslation(['workspace', 'lab', 'design', 'cli', 'preferences'])
+function FileMenu({ actions, onOpenRecent, onHandover, onExportConfigs, onShare }: FileMenuProps) {
+  const { t } = useTranslation(['workspace', 'lab', 'design', 'cli', 'preferences', 'share'])
   // CI (CLI integration): "Export configs" only where the screen offers it.
-  const items = ITEMS.filter((item) => item.key !== 'exportConfigs' || onExportConfigs !== undefined)
+  const items = ITEMS.filter(
+    (item) => (item.key !== 'exportConfigs' || onExportConfigs !== undefined) && (item.key !== 'sharePage' || onShare !== undefined),
+  )
   const [open, setOpen] = useState(false)
   const menuId = useId()
   const rootRef = useRef<HTMLDivElement>(null)
@@ -69,6 +75,8 @@ function FileMenu({ actions, onOpenRecent, onHandover, onExportConfigs }: FileMe
         return actions.exportLab()
       case 'share':
         return actions.copyShareLink()
+      case 'sharePage':
+        return onShare?.()
       case 'handover':
         return onHandover()
       case 'exportConfigs':
@@ -109,6 +117,8 @@ function FileMenu({ actions, onOpenRecent, onHandover, onExportConfigs }: FileMe
         return t('lab:actions.export')
       case 'share':
         return t('lab:actions.share')
+      case 'sharePage':
+        return t('share:menuItem')
       case 'handover':
         return t('design:ui.handover.menuItem')
       case 'exportConfigs':

@@ -4,7 +4,7 @@ import { LabWorkspace } from './support/LabWorkspace'
 // PU (Preferences screen, docs/PREFERENCES.md §6): a change is saved at once and survives a reload.
 test.describe('preferences', { tag: '@mobile' }, () => {
   test('the Preferences screen saves a change that survives a reload', async ({ page }) => {
-    await page.goto('/?lang=en')
+    await page.goto('/about?lang=en')
     await page.getByRole('link', { name: 'Preferences' }).click()
     await expect(page).toHaveURL(/\/preferences(\?|$)/)
     // The screen is a lazy chunk; the first load can take a moment on a cold server.

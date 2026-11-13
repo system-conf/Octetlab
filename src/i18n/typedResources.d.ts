@@ -49,6 +49,10 @@ export interface AppResources {
   acl: typeof import('../locales/en/acl.json')
   nat: typeof import('../locales/en/nat.json')
   remoteAccess: typeof import('../locales/en/remoteAccess.json')
+  // Start dialog (the app opens on the lab workspace)
+  start: typeof import('../locales/en/start.json')
+  // Share pages: docs/SHARE_PAGES.md
+  share: typeof import('../locales/en/share.json')
   // Firewall pack: docs/FIREWALL_PACK.md
   firewall: typeof import('../locales/en/firewall.json')
 }

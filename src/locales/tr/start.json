@@ -1,0 +1,37 @@
+{
+  "dialog": {
+    "title": "Başla",
+    "lead": "Kaldığın yerden devam et, hazır bir lab aç ya da yeni bir şey çalış.",
+    "close": "Başlangıç ekranını kapat",
+    "continue": "Bu labla devam et",
+    "continueTitled": "Devam et: {{title}}"
+  },
+  "headerButton": "Başlangıç ekranı",
+  "recent": {
+    "title": "Son lablarım",
+    "hint": "Bu tarayıcıda otomatik olarak kaydedilir.",
+    "loading": "Labların yükleniyor…",
+    "newLab": "Yeni boş lab",
+    "openFile": "Lab dosyası aç"
+  },
+  "samples": {
+    "title": "Hazır lablar",
+    "text": "Kısa bir dersle gelen küçük ağlar. Birini aç ve incele.",
+    "cta": "Hazır lablara göz at"
+  },
+  "learn": {
+    "title": "Öğren",
+    "exercises": {
+      "title": "Arıza giderme alıştırmaları",
+      "text": "Küçük bir işletmenin ağı bozuk. Yanlış ayarı bul ve düzelt."
+    },
+    "design": {
+      "title": "Tasarım görevleri",
+      "text": "Bir müşterinin isteklerinden ağ kur ve değerlendirmesini al."
+    }
+  },
+  "about": {
+    "link": "Octetlab hakkında",
+    "pageTitle": "Hakkında"
+  }
+}

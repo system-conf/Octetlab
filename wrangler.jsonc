@@ -1,11 +1,34 @@
-// Cloudflare Workers static assets deployment (no Worker script; build output only).
-// Name must be lowercase: Cloudflare requirement.
+// Cloudflare Workers static assets deployment. A small Worker script runs only for share pages
+// (`/p/*`: link-preview meta tags) and the share API (`/api/*`); every other path is served straight
+// from assets as before (docs/SHARE_PAGES.md §5). Name must be lowercase: Cloudflare requirement.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "octetlab",
+  "main": "mcp/src/appWorker/index.ts",
   "compatibility_date": "2026-11-01",
+  "observability": { "enabled": true },
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/p/*", "/api/*"]
+  },
+  "vars": {
+    // Extra origins allowed to create / delete share pages (the app's own origin always is).
+    "APP_ORIGINS": "http://localhost:5300,http://localhost:4173,http://localhost:8787"
+  },
+  "durable_objects": {
+    "bindings": [
+      // The share store lives in the MCP Worker (mcp/wrangler.jsonc, migration v2). Deploy that first.
+      { "name": "SHARE_STORE", "class_name": "ShareStore", "script_name": "octetlabmcp" }
+    ]
+  },
+  "ratelimits": [
+    {
+      // Creating / deleting share pages per client IP. namespace_id: unique in the account (MCP uses 4501).
+      "name": "SHARE_WRITE_LIMITER",
+      "namespace_id": "4502",
+      "simple": { "limit": 10, "period": 60 }
+    }
+  ]
 }
