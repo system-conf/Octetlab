@@ -1,5 +1,6 @@
 // v2 port model: every device has explicit ports (docs/MODEL_V2.md §2).
 import type { AclBinding } from './AccessListTypes'
+import type { FirewallInterfaceSettings } from './FirewallTypes'
 import type { NatRole } from './NatTypes'
 // A port's `role` decides which layer-2 / layer-3 settings it carries; the union makes an invalid
 // mix (e.g. a switchport with an IP address) a compile error.
@@ -53,6 +54,8 @@ export interface L3Features {
   accessGroups?: AclBinding
   /** NAT pack 5.2: `ip nat inside|outside` (ignored on host NICs). */
   natRole?: NatRole
+  /** Firewall pack: `nameif` + `security-level` (firewall devices only; ignored elsewhere). */
+  firewall?: FirewallInterfaceSettings
   /** Routing packs 5.3: per-interface OSPF / RIP / EIGRP settings (cost, area, passive). */
   ospf?: never
   rip?: never

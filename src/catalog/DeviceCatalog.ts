@@ -4,6 +4,7 @@ import { cloudModels } from './models/cloud'
 import type { CatalogDeviceModel } from './models/defineModel'
 import { endDeviceModels } from './models/endDevices'
 import { routerModels } from './models/routers'
+import { securityModels } from './models/security'
 import { serverModels } from './models/servers'
 import { switchModels } from './models/switches'
 import { wirelessModels } from './models/wireless'
@@ -14,6 +15,7 @@ export const DEVICE_CATEGORIES: readonly DeviceCategory[] = ['routers', 'switche
 /** Every model, in palette order. Model ids are never renamed (stored in Device.modelId). */
 export const deviceCatalog: readonly CatalogDeviceModel[] = [
   ...routerModels,
+  ...securityModels,
   ...switchModels,
   ...wirelessModels,
   ...endDeviceModels,

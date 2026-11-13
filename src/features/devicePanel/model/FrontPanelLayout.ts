@@ -46,6 +46,7 @@ export class FrontPanelLayout {
     switch (device.kind) {
       case 'router':
       case 'l3Switch':
+      case 'firewall':
         return 'rack'
       case 'switch':
         return device.ports.some((port) => port.medium === 'console') ? 'rack' : 'desktop'

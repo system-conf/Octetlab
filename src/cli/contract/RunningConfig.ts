@@ -21,6 +21,8 @@ export const RUNNING_CONFIG_ORDER = {
   interfaces: 60,
   /** `router ospf …` blocks (packs 5.3). */
   routerProtocols: 70,
+  /** Firewall pack: `same-security-traffic`, `object network` blocks, `access-group … interface` (76; NAT sits at 75). */
+  firewall: 76,
   /** `ip default-gateway`, `ip classless`, `ip route …` (C2 / C3). */
   ipRoutes: 80,
   /** Access lists (pack 5.2). */
@@ -45,6 +47,8 @@ export const INTERFACE_LINE_ORDER = {
   helper: 35,
   /** Pack features: `ip access-group`, `ip nat`, `spanning-tree portfast` … */
   features: 50,
+  /** Firewall pack: `nameif`, `security-level`. */
+  firewall: 55,
   /** `duplex`, `speed`, `clock rate` (core; clock rate C3). */
   physical: 80,
   /** `shutdown` (core). */

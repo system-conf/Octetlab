@@ -62,6 +62,8 @@
     "duplicateAclSeq": "Device \"{{deviceId}}\": access list \"{{name}}\" has two entries with the same sequence number.",
     "duplicateNatPool": "Device \"{{deviceId}}\": two NAT pools are named \"{{name}}\".",
     "duplicateUser": "Device \"{{deviceId}}\": two local users are named \"{{name}}\".",
+    "duplicateNameif": "Device \"{{deviceId}}\": two interfaces have the name \"{{name}}\".",
+    "securityLevelOutOfRange": "Device \"{{deviceId}}\": interface \"{{name}}\" has a security level outside 0–100.",
     "invalidLink": {
       "unknownDevice": "Cable \"{{linkId}}\" ends on a device that does not exist.",
       "unknownPort": "Cable \"{{linkId}}\" ends on a port that does not exist.",

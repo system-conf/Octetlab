@@ -23,6 +23,7 @@ export const deviceIconRegistry: Readonly<Record<DeviceKind, DeviceIconId>> = {
   kitchenDisplay: 'kitchenDisplay',
   smartphone: 'smartphone',
   tablet: 'tablet',
+  firewall: 'firewall',
 }
 
 /**

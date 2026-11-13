@@ -21,10 +21,11 @@ const KIND_PREFIX: Readonly<Record<DeviceKind, string>> = {
   kitchenDisplay: 'KDS',
   smartphone: 'SP',
   tablet: 'TAB',
+  firewall: 'FW',
 }
 
 /** Kinds whose code carries the number of network ports and their speed. */
-const COUNTED_KINDS: ReadonlySet<DeviceKind> = new Set<DeviceKind>(['router', 'switch', 'l3Switch', 'hub', 'wirelessRouter'])
+const COUNTED_KINDS: ReadonlySet<DeviceKind> = new Set<DeviceKind>(['router', 'switch', 'l3Switch', 'hub', 'wirelessRouter', 'firewall'])
 
 export class ModelCode {
   static of(device: Device, model: DeviceModel | undefined): string {

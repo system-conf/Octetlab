@@ -270,6 +270,10 @@
     "vtyAccessDenied": "Uzaktan erişim hatları bu kaynak adresi kabul etmiyor (access-class).",
     "remoteLoginFailed": "Uzaktan giriş başarısız (kullanıcı adı ya da parola).",
     "remoteAccessDisabled": "Cihazda bu protokolle uzaktan erişim açık değil.",
+    "firewallDenied": "Güvenlik duvarı paketi düşürdü: düşük güvenlik seviyesinden yükseğe gidiyor ve buna izin veren bir erişim listesi yok.",
+    "firewallNoConnection": "Güvenlik duvarı paketi düşürdü: paket, güvenlik duvarının bildiği hiçbir bağlantıya ait değil.",
+    "firewallSameLevel": "Güvenlik duvarı paketi düşürdü: iki arayüzün güvenlik seviyesi aynı ve aralarındaki trafiğe izin verilmiyor.",
+    "firewallNoNameif": "Güvenlik duvarı paketi düşürdü: arayüzün adı (nameif) yok, bu yüzden üzerinden trafik geçmiyor.",
     "requestTimedOut": "Zamanında yanıt gelmedi.",
     "staleReply": "Artık kimsenin beklemediği bir yanıt.",
     "unsupported": "Cihaz bu PDU'yu işlemiyor."

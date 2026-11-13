@@ -49,6 +49,8 @@ export interface AppResources {
   acl: typeof import('../locales/en/acl.json')
   nat: typeof import('../locales/en/nat.json')
   remoteAccess: typeof import('../locales/en/remoteAccess.json')
+  // Firewall pack: docs/FIREWALL_PACK.md
+  firewall: typeof import('../locales/en/firewall.json')
 }
 
 declare module 'i18next' {

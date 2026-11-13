@@ -96,6 +96,16 @@ export const SIM_REASONS = [
   /** SSH asked of a device without RSA keys, or the transport input does not allow the protocol. */
   'remoteAccessDisabled',
 
+  // ---- firewall pack (docs/FIREWALL_PACK.md)
+  /** From a lower security level to a higher one without an access list permitting it. */
+  'firewallDenied',
+  /** A TCP segment other than SYN (or a reply) with no tracked connection. */
+  'firewallNoConnection',
+  /** Between two interfaces of the same security level without `same-security-traffic`. */
+  'firewallSameLevel',
+  /** In or out through an interface without a `nameif` (lab rule). */
+  'firewallNoNameif',
+
   // ---- clients
   /** A client gave up waiting for an answer (ping, tracert, DHCP, DNS, HTTP). */
   'requestTimedOut',

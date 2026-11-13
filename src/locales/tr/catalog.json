@@ -26,9 +26,20 @@
     "nvr": "Kayıt cihazı (NVR)",
     "kitchenDisplay": "Mutfak ekranı",
     "smartphone": "Akıllı telefon",
-    "tablet": "Tablet"
+    "tablet": "Tablet",
+    "firewall": "Güvenlik duvarı"
   },
   "models": {
+    "firewall2Port": {
+      "name": "Güvenlik duvarı (2 port)",
+      "description": "Durum takipli güvenlik duvarı cihazı: dış ve iç port ile konsol portu. Yüksek güvenlik seviyesinden düşüğe giden trafiğe izin verilir ve cevabı geri döner; ters yön için erişim listesi gerekir.",
+      "useCase": "Bir ofis ya da dükkân ağını internetten korumak için router ile yerel ağ arasına tek bir güvenlik duvarı."
+    },
+    "firewall3Port": {
+      "name": "Güvenlik duvarı (3 port, DMZ)",
+      "description": "Dış, iç ve DMZ portları ile konsol portu olan durum takipli güvenlik duvarı cihazı.",
+      "useCase": "Herkese açık bir sunucunun (web, e-posta) iç ağı açığa çıkarmadan internetten erişilebilir olması gerektiğinde."
+    },
     "router2Port": {
       "name": "Router (2 port)",
       "description": "İki Gigabit Ethernet portu (LAN ve WAN) ve konsol portu olan şube router’ı.",

@@ -96,7 +96,8 @@
     "nvr": "NVR",
     "kitchenDisplay": "Kitchen display",
     "smartphone": "Smartphone",
-    "tablet": "Tablet"
+    "tablet": "Tablet",
+    "firewall": "Firewall"
   },
   "toolbar": {
     "label": "Canvas tools",

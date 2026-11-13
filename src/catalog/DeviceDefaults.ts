@@ -41,6 +41,7 @@ export class DeviceDefaults {
       case 'internet':
         return { internet: { handoffs: [] } }
       case 'router':
+      case 'firewall':
         return { routing: { ipRouting: true, staticRoutes: [] } }
       case 'switch':
         return { switching: this.switching() }

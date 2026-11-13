@@ -96,7 +96,8 @@
     "nvr": "NVR",
     "kitchenDisplay": "Mutfak ekranı",
     "smartphone": "Akıllı telefon",
-    "tablet": "Tablet"
+    "tablet": "Tablet",
+    "firewall": "Güvenlik duvarı"
   },
   "toolbar": {
     "label": "Tuval araçları",

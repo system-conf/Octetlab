@@ -78,7 +78,8 @@ export class PortFactory {
         return {
           ...base,
           role: 'routed',
-          adminUp: kind !== 'router',
+          // Router and firewall interfaces start shut down (IOS / appliance factory state).
+          adminUp: kind !== 'router' && kind !== 'firewall',
           l3: { ipv4: { addressing: kind === 'wirelessRouter' ? 'dhcp' : 'static', address: '', mask: '' } },
           subInterfaces: [],
         }

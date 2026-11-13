@@ -57,6 +57,7 @@ const BUILDERS: Readonly<Partial<Record<DeviceKind, () => Port[]>>> = {
   router: () => [port('Gi0/0', 'routed', 'copper'), port('Se0/0/0', 'routed', 'serial'), port('Console', 'console', 'console')],
   accessPoint: () => [port('Gi0', 'switched', 'copper'), port('Radio0', 'radio', 'wireless')],
   hub: () => [port('Eth0', 'passive', 'copper'), port('Eth1', 'passive', 'copper')],
+  firewall: () => [port('Gi0/0', 'routed', 'copper'), port('Gi0/1', 'routed', 'copper'), port('Console', 'console', 'console')],
 }
 const KINDS = Object.keys(BUILDERS) as DeviceKind[]
 const CABLES: CableType[] = ['copperStraight', 'copperCross', 'fiber', 'serial', 'console', 'coaxial', 'wireless']
@@ -87,10 +88,24 @@ function withSecurity(device: Device): Device {
   return { ...device, ports, features: ROUTER_SECURITY }
 }
 
+/** Firewall pack data: nameif / level on both routed ports and the device-wide settings. */
+function withFirewall(device: Device): Device {
+  const names: Readonly<Record<string, { nameif: string; securityLevel: number }>> = {
+    'Gi0/0': { nameif: 'outside', securityLevel: 0 },
+    'Gi0/1': { nameif: 'inside', securityLevel: 100 },
+  }
+  const ports = device.ports.map((item): Port => {
+    const firewall = names[item.id]
+    return item.role === 'routed' && firewall !== undefined ? { ...item, l3: { ...item.l3, features: { firewall } } } : item
+  })
+  return { ...device, ports, routing: { ipRouting: true, staticRoutes: [] }, features: { firewall: { inspectIcmp: true, timeouts: { tcp: 3600 } } } }
+}
+
 function build(kind: DeviceKind, id: string): Device {
   const ports = BUILDERS[kind]?.() ?? []
   const base: Device = { id, kind, modelId: kind, name: id, powered: true, baseMac: nextMac(), ports }
   if (kind === 'router') return withSecurity(base)
+  if (kind === 'firewall') return withFirewall(base)
   return kind === 'accessPoint' ? { ...base, wireless: { ssids: [{ ssid: 'Office', vlan: 1, security: { mode: 'open' } }] } } : base
 }
 

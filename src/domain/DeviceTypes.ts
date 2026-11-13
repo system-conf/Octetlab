@@ -1,5 +1,6 @@
 // Device model (docs/MODEL_V2.md §3).
 import type { AccessListSettings } from './AccessListTypes'
+import type { FirewallSettings } from './FirewallTypes'
 import type { ManagementSettings } from './ManagementTypes'
 import type { NatSettings } from './NatTypes'
 import type { L3Settings, Port } from './PortTypes'
@@ -29,6 +30,8 @@ export type DeviceKind =
   | 'kitchenDisplay'
   | 'smartphone'
   | 'tablet'
+  /** Firewall appliance (docs/FIREWALL_PACK.md): routed, stateful, security levels. */
+  | 'firewall'
 
 /** Kinds that are end devices: they carry `host` settings and have `host` ports. */
 export const END_DEVICE_KINDS: readonly DeviceKind[] = [
@@ -167,6 +170,8 @@ export interface DeviceFeatures {
   accessLists?: AccessListSettings
   /** Pack 5.2: NAT pools, static mappings, overload. */
   nat?: NatSettings
+  /** Firewall pack: stateful inspection settings (docs/FIREWALL_PACK.md). */
+  firewall?: FirewallSettings
   /** Pack 5.1: CDP / LLDP. */
   discovery?: never
   /** Pack 5.8: SNMP, NetFlow. */

@@ -40,7 +40,8 @@ const SECTION_DATA: Readonly<Record<Exclude<DeviceSection, 'terminal'>, (device:
   internet: (device) => device.internet,
   security: (device) => {
     const management = device.features?.management
-    return [device.features?.accessLists, device.features?.nat, management?.users, management?.ssh, management?.domainName]
+    // Firewall pack: device-wide firewall settings; per-interface nameif / level stay under 'ports'.
+    return [device.features?.accessLists, device.features?.nat, device.features?.firewall, management?.users, management?.ssh, management?.domainName]
   },
 }
 

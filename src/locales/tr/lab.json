@@ -62,6 +62,8 @@
     "duplicateAclSeq": "\"{{deviceId}}\" cihazı: \"{{name}}\" erişim listesinde aynı sıra numarasına sahip iki kural var.",
     "duplicateNatPool": "\"{{deviceId}}\" cihazı: \"{{name}}\" adlı iki NAT havuzu var.",
     "duplicateUser": "\"{{deviceId}}\" cihazı: \"{{name}}\" adlı iki yerel kullanıcı var.",
+    "duplicateNameif": "\"{{deviceId}}\" cihazı: iki arayüzün adı \"{{name}}\".",
+    "securityLevelOutOfRange": "\"{{deviceId}}\" cihazı: \"{{name}}\" arayüzünün güvenlik seviyesi 0–100 aralığı dışında.",
     "invalidLink": {
       "unknownDevice": "\"{{linkId}}\" kablosu var olmayan bir cihaza bağlı.",
       "unknownPort": "\"{{linkId}}\" kablosu var olmayan bir porta bağlı.",

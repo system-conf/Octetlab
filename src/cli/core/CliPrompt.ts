@@ -15,6 +15,7 @@ const MODE_SUFFIXES: Readonly<Record<CliModeKind, string>> = {
   router: '(config-router)#',
   // Standard lists; extended lists use EXTENDED_ACL_SUFFIX (the mode carries the type).
   accessList: '(config-std-nacl)#',
+  objectNetwork: '(config-network-object)#',
 }
 
 const EXTENDED_ACL_SUFFIX = '(config-ext-nacl)#'
@@ -44,8 +45,9 @@ export class CliPrompt {
     return CliPrompt.factoryHostname(device)
   }
 
-  /** IOS factory name: 'Router' for routers and wireless routers, else 'Switch'. */
+  /** Factory name: 'Firewall' for firewalls, 'Router' for routers and wireless routers, else 'Switch'. */
   static factoryHostname(device: Device): string {
+    if (device.kind === 'firewall') return 'Firewall'
     return device.kind === 'router' || device.kind === 'wirelessRouter' ? 'Router' : 'Switch'
   }
 

@@ -20,12 +20,15 @@ export type ConfigSectionId =
   | 'accessLists'
   | 'nat'
   | 'security'
+  // Firewall pack (docs/FIREWALL_PACK.md §7): agent C owns the card
+  | 'firewall'
 
 /** Exercise lock section of each card; 'general' (name) follows the device lock only. */
 export const LOCK_SECTION_OF: Record<ConfigSectionId, DeviceSection | null> = {
   accessLists: 'security',
   nat: 'security',
   security: 'security',
+  firewall: 'security',
   general: null,
   ports: 'ports',
   host: 'host',
@@ -60,6 +63,7 @@ export class DeviceSections {
       accessLists: device.routing !== undefined,
       nat: device.routing !== undefined && device.kind !== 'l3Switch',
       security: device.routing !== undefined || vlans,
+      firewall: device.kind === 'firewall' || capabilities.has('firewall'),
     }
     return (Object.keys(shown) as ConfigSectionId[]).filter((section) => shown[section])
   }

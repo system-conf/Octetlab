@@ -32,6 +32,11 @@ export type CliMode =
    * `Router(config-ext-nacl)#`. The list itself is created by the command that enters the mode.
    */
   | { readonly kind: 'accessList'; readonly listType: 'standard' | 'extended'; readonly name: string }
+  /**
+   * Firewall pack (docs/FIREWALL_PACK.md §6): `object network <name>` → `Firewall(config-network-object)#`.
+   * Holds `host` / `subnet` and the object's `nat (in,out) …` line; created by the entering command.
+   */
+  | { readonly kind: 'objectNetwork'; readonly name: string }
 
 export type CliModeKind = CliMode['kind']
 
@@ -48,6 +53,7 @@ export const CLI_MODE_KINDS: readonly CliModeKind[] = [
   'dhcpPool',
   'router',
   'accessList',
+  'objectNetwork',
 ]
 
 /** The EXEC modes (no `(config…)` in the prompt). */
@@ -63,6 +69,7 @@ export const CONFIG_SUBMODE_KINDS: readonly CliModeKind[] = [
   'dhcpPool',
   'router',
   'accessList',
+  'objectNetwork',
 ]
 
 /** Every config mode (global config and its sub-modes): `do`, `end` and Ctrl+Z work here. */

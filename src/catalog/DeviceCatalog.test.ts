@@ -36,7 +36,7 @@ describe('deviceCatalog', () => {
     expect(new Set(DEVICE_SUBCATEGORIES).size).toBe(DEVICE_SUBCATEGORIES.length)
     expect(CATALOG_SECTIONS).toEqual(['network', 'endDevices', 'iot', 'misc'])
     expect(sectionsWithModels(deviceCatalog)).toEqual(['network', 'endDevices'])
-    expect(subcategoriesWithModels('network', deviceCatalog)).toEqual(['router', 'switch', 'hub', 'wireless', 'wanIsp'])
+    expect(subcategoriesWithModels('network', deviceCatalog)).toEqual(['router', 'switch', 'hub', 'wireless', 'security', 'wanIsp'])
     expect(subcategoriesWithModels('endDevices', deviceCatalog)).toEqual([
       'pcLaptop',
       'server',

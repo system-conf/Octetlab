@@ -8,6 +8,7 @@ import { ConfigLocks, type ConfigAccess } from './model/ConfigLocks'
 import { DeviceSections, LOCK_SECTION_OF, type ConfigSectionId } from './model/DeviceSections'
 import AccessListsSection from './sections/acl/AccessListsSection'
 import AppLinksSection from './sections/AppLinksSection'
+import FirewallSection from './sections/firewall/FirewallSection'
 import NatSection from './sections/nat/NatSection'
 import SecuritySection from './sections/security/SecuritySection'
 import GeneralSection from './sections/GeneralSection'
@@ -114,6 +115,8 @@ function DeviceConfigPanel({ device, state, onChange, problems = [], policy = Ex
         return <NatSection key={draftKey(section, device, device.features?.nat)} {...cardProps(section)} />
       case 'security':
         return <SecuritySection key={draftKey(section, device, device.features?.management)} {...cardProps(section)} />
+      case 'firewall':
+        return <FirewallSection key={draftKey(section, device, device.features?.firewall)} {...cardProps(section)} />
     }
   }
 

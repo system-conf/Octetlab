@@ -20,6 +20,7 @@ const MODE_HELP_HEADERS: Readonly<Record<CliModeKind, string>> = {
   dhcpPool: 'DHCP pool configuration commands:',
   router: 'Router configuration commands:',
   accessList: 'Access list configuration commands:',
+  objectNetwork: 'Network object configuration commands:',
 }
 
 type HelpEntry = readonly [name: string, help: string]

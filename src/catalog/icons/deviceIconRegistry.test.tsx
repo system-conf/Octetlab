@@ -28,6 +28,7 @@ const ALL_KINDS: Readonly<Record<DeviceKind, true>> = {
   kitchenDisplay: true,
   smartphone: true,
   tablet: true,
+  firewall: true,
 }
 const KINDS = Object.keys(ALL_KINDS) as DeviceKind[]
 

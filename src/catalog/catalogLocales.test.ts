@@ -59,6 +59,6 @@ describe.each([
   })
 })
 
-it('covers all 18 device kinds', () => {
-  expect(KINDS).toHaveLength(18)
+it('covers all 19 device kinds', () => {
+  expect(KINDS).toHaveLength(19)
 })

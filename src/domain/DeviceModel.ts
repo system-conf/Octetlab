@@ -52,6 +52,8 @@ export type DeviceCapability =
   | 'internetService'
   /** Repeats every frame to every port (hub). */
   | 'repeater'
+  /** Stateful firewall with interface security levels (docs/FIREWALL_PACK.md). */
+  | 'firewall'
 
 /** One physical port of a model, used to create Device.ports when the device is added. */
 export interface PortTemplate {

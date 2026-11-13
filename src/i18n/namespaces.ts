@@ -34,6 +34,8 @@ export const namespaces = [
   'acl',
   'nat',
   'remoteAccess',
+  // Firewall pack: docs/FIREWALL_PACK.md
+  'firewall',
 ] as const
 
 export type Namespace = (typeof namespaces)[number]

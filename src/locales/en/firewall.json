@@ -1,0 +1,6 @@
+{
+  "section": {
+    "title": "Firewall",
+    "placeholder": "Firewall settings (interface names, security levels, connection table) come here."
+  }
+}

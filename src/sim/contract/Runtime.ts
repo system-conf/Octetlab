@@ -2,6 +2,7 @@
 // running, kept apart from the lab configuration (NetworkState). Immutable, JSON-serializable; one slice
 // per layer so S1 / S2 / S3 never write the same object. Timers run on the virtual clock: aging is
 // lazy (`expiresAt` compared with the current time), protocol timers are queued tasks (SimTimer).
+import type { FirewallConnection, FirewallStatistics } from './FirewallRuntime'
 import type { LinkRuntime, LinkTimer } from './LinkLayerState'
 import type { NetworkRuntime, NetworkTimer } from './NetworkLayerState'
 import type { AclCounters, NatStatistics, NatTranslation } from './SecurityRuntime'
@@ -22,6 +23,9 @@ export interface RuntimeExtensions {
   natTranslations?: readonly NatTranslation[]
   natStatistics?: NatStatistics
   aclCounters?: AclCounters
+  /** Firewall pack (docs/FIREWALL_PACK.md §5): the connection table and its counters (agent A). */
+  firewallConnections?: readonly FirewallConnection[]
+  firewallStatistics?: FirewallStatistics
   /** 5.3: RIP / OSPF / EIGRP databases and neighbours, HSRP state. */
   rip?: never
   ospf?: never

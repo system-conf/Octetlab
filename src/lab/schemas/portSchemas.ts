@@ -2,6 +2,7 @@
 // strict, so unknown keys are reported instead of silently dropped. labSchemas.test.ts proves at
 // compile time that every inferred type equals its domain type.
 import { z } from 'zod'
+import { firewallInterfaceSchema } from './firewallSchemas'
 import { LAB_LIMITS, RESERVED_IDS } from './labLimits'
 
 /** A reserved extension key (`key?: never`): must be absent until its pack gives it a type. */
@@ -41,6 +42,7 @@ export const natRoleSchema = z.enum(['inside', 'outside'])
 export const l3FeaturesSchema = z.strictObject({
   accessGroups: aclBindingSchema.optional(),
   natRole: natRoleSchema.optional(),
+  firewall: firewallInterfaceSchema.optional(),
   ospf: reservedKey,
   rip: reservedKey,
   eigrp: reservedKey,

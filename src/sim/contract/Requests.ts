@@ -70,8 +70,11 @@ export interface SimHttpGetRequest {
 export interface SimClearTableRequest {
   readonly kind: 'clearTable'
   readonly deviceId: string
-  /** arp, mac: link layer (S1); dnsCache: services (S3); natTranslations, aclCounters: network layer (pack 5.2). */
-  readonly table: 'arp' | 'mac' | 'dnsCache' | 'natTranslations' | 'aclCounters'
+  /**
+   * arp, mac: link layer (S1); dnsCache: services (S3); natTranslations, aclCounters: network layer
+   * (pack 5.2); firewallConnections: network layer (firewall pack, `clear conn`).
+   */
+  readonly table: 'arp' | 'mac' | 'dnsCache' | 'natTranslations' | 'aclCounters' | 'firewallConnections'
 }
 
 /**

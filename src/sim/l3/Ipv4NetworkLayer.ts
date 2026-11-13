@@ -9,6 +9,7 @@ import type {
   Undeliverable,
 } from '../contract'
 import { AclRuntime } from '../policy/acl/AclRuntime'
+import { FirewallRuntime } from '../policy/firewall/FirewallRuntime'
 import { NatRuntime } from '../policy/nat/NatRuntime'
 import type { PacketPolicy } from '../policy/PacketPolicy'
 import { SecurityPolicies } from '../policy/SecurityPolicies'
@@ -33,7 +34,7 @@ export class Ipv4NetworkLayer implements NetworkLayer, LocalStack {
   private readonly clients: EchoClients
   private readonly receiver: PacketReceiver
 
-  /** `policy`: the pack 5.2 chain (ACL, NAT); tests may pass their own. */
+  /** `policy`: the security chain (firewall, ACL, NAT); tests may pass their own. */
   constructor(policy: PacketPolicy = SecurityPolicies.create()) {
     this.sender = new PacketSender(this)
     this.responder = new IcmpResponder(this.sender)
@@ -109,6 +110,10 @@ export class Ipv4NetworkLayer implements NetworkLayer, LocalStack {
     }
     if (request.kind === 'clearTable' && request.table === 'aclCounters') {
       ctx.report(requestId, { kind: 'cleared', entries: AclRuntime.clear(ctx) }, true)
+      return
+    }
+    if (request.kind === 'clearTable' && request.table === 'firewallConnections') {
+      ctx.report(requestId, { kind: 'cleared', entries: FirewallRuntime.clear(ctx) }, true)
       return
     }
     this.clients.start(ctx, requestId, request)

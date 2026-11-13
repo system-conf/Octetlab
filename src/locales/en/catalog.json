@@ -26,9 +26,20 @@
     "nvr": "Video recorder (NVR)",
     "kitchenDisplay": "Kitchen display",
     "smartphone": "Smartphone",
-    "tablet": "Tablet"
+    "tablet": "Tablet",
+    "firewall": "Firewall"
   },
   "models": {
+    "firewall2Port": {
+      "name": "Firewall (2 ports)",
+      "description": "Stateful firewall appliance with an outside and an inside port and a console port. Traffic from a higher security level to a lower one is allowed and its replies return; the other way needs an access list.",
+      "useCase": "To protect an office or shop network from the internet with one firewall between the router and the LAN."
+    },
+    "firewall3Port": {
+      "name": "Firewall (3 ports, DMZ)",
+      "description": "Stateful firewall appliance with outside, inside and DMZ ports and a console port.",
+      "useCase": "When a public server (web, mail) must be reachable from the internet without exposing the inside network."
+    },
     "router2Port": {
       "name": "Router (2 ports)",
       "description": "Branch router with two Gigabit Ethernet ports (LAN and WAN) and a console port.",

@@ -140,6 +140,8 @@ export class LabMessages {
       case 'duplicateAclSeq':
       case 'duplicateNatPool':
       case 'duplicateUser':
+      case 'duplicateNameif':
+      case 'securityLevelOutOfRange':
         return localizedMessage(`lab:invariant.${violation.code}`, { deviceId, name: violation.name ?? '' })
     }
   }

@@ -1,6 +1,7 @@
 // zod mirror of src/domain/DeviceTypes.ts (see portSchemas.ts for the conventions).
 import { z } from 'zod'
 import type { DeviceKind } from '../../domain'
+import { firewallSettingsSchema } from './firewallSchemas'
 import { LAB_LIMITS } from './labLimits'
 import { aclBindingSchema, idSchema, l3SettingsSchema, listOf, nameSchema, portSchema, reservedKey, textSchema, vlanIdSchema } from './portSchemas'
 import { accessListSettingsSchema, localUserSchema, natSettingsSchema, sshSettingsSchema, vtyTransportSchema } from './securitySchemas'
@@ -26,6 +27,7 @@ export const DEVICE_KINDS = [
   'kitchenDisplay',
   'smartphone',
   'tablet',
+  'firewall',
 ] as const satisfies readonly DeviceKind[]
 
 export const deviceKindSchema = z.enum(DEVICE_KINDS)
@@ -134,6 +136,7 @@ export const deviceFeaturesSchema = z.strictObject({
   management: managementSettingsSchema.optional(),
   accessLists: accessListSettingsSchema.optional(),
   nat: natSettingsSchema.optional(),
+  firewall: firewallSettingsSchema.optional(),
   discovery: reservedKey,
   monitoring: reservedKey,
 })

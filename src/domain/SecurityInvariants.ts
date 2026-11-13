@@ -2,6 +2,7 @@
 // beyond its zod schema. A binding that names a missing ACL or pool stays valid (IOS accepts it).
 import type { AccessList } from './AccessListTypes'
 import type { Device } from './DeviceTypes'
+import { SECURITY_LEVEL_MAX, SECURITY_LEVEL_MIN, type FirewallInterfaceSettings } from './FirewallTypes'
 
 export type SecurityInvariantCode =
   /** Two access lists of one device share a name. */
@@ -14,6 +15,10 @@ export type SecurityInvariantCode =
   | 'duplicateNatPool'
   /** Two local users of one device share a name. */
   | 'duplicateUser'
+  /** Firewall pack: two interfaces of one device share a `nameif`. */
+  | 'duplicateNameif'
+  /** Firewall pack: a `security-level` outside 0..100 (`name` is the nameif). */
+  | 'securityLevelOutOfRange'
 
 export interface SecurityViolation {
   code: SecurityInvariantCode
@@ -66,6 +71,29 @@ export class SecurityInvariants {
     for (const name of repeated(pools.map((pool) => pool.name))) found.push({ code: 'duplicateNatPool', deviceId, name })
     const users = device.features?.management?.users ?? []
     for (const name of repeated(users.map((user) => user.name))) found.push({ code: 'duplicateUser', deviceId, name })
+    found.push(...this.firewallViolations(device))
+    return found
+  }
+
+  /** Firewall pack: nameif unique per device, security level within 0..100. */
+  private firewallViolations(device: Device): SecurityViolation[] {
+    const deviceId = device.id
+    const interfaces: FirewallInterfaceSettings[] = []
+    for (const port of device.ports) {
+      if (port.role !== 'routed') continue
+      for (const l3 of [port.l3, ...port.subInterfaces.map((sub) => sub.l3)]) {
+        const settings = l3.features?.firewall
+        if (settings !== undefined) interfaces.push(settings)
+      }
+    }
+    const found: SecurityViolation[] = []
+    for (const name of repeated(interfaces.map((settings) => settings.nameif))) found.push({ code: 'duplicateNameif', deviceId, name })
+    for (const settings of interfaces) {
+      const level = settings.securityLevel
+      if (level !== undefined && (!Number.isInteger(level) || level < SECURITY_LEVEL_MIN || level > SECURITY_LEVEL_MAX)) {
+        found.push({ code: 'securityLevelOutOfRange', deviceId, name: settings.nameif })
+      }
+    }
     return found
   }
 }

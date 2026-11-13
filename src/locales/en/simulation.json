@@ -270,6 +270,10 @@
     "vtyAccessDenied": "The remote-access lines refuse this source address (access-class).",
     "remoteLoginFailed": "Remote login failed (user name or password).",
     "remoteAccessDisabled": "Remote access with this protocol is not enabled on the device.",
+    "firewallDenied": "The firewall dropped the packet: it goes from a lower security level to a higher one and no access list permits it.",
+    "firewallNoConnection": "The firewall dropped the packet: it belongs to no connection the firewall knows.",
+    "firewallSameLevel": "The firewall dropped the packet: both interfaces have the same security level and traffic between them is not allowed.",
+    "firewallNoNameif": "The firewall dropped the packet: the interface has no name (nameif), so no traffic passes through it.",
     "requestTimedOut": "No answer in time.",
     "staleReply": "An answer nobody waits for any more.",
     "unsupported": "The device does not process this PDU."

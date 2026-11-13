@@ -56,6 +56,8 @@ export const DEFAULT_PRICE_LIST: PriceList = {
     server: 2500,
     rackServer: 4500,
     nvr: 900,
+    firewall2Port: 1300,
+    firewall3Port: 1800,
   },
   kinds: {
     internet: 0,
@@ -76,6 +78,7 @@ export const DEFAULT_PRICE_LIST: PriceList = {
     kitchenDisplay: 350,
     smartphone: 500,
     tablet: 400,
+    firewall: 1500,
   },
   cables: {
     copperStraight: 5,

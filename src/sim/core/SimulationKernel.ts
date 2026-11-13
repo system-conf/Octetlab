@@ -306,7 +306,9 @@ export class SimulationKernel implements SimulationEngine {
       case 'tracert':
         return layers.network.onRequest(ctx, requestId, request)
       case 'clearTable':
-        if (request.table === 'natTranslations' || request.table === 'aclCounters') return layers.network.onRequest(ctx, requestId, request)
+        if (request.table === 'natTranslations' || request.table === 'aclCounters' || request.table === 'firewallConnections') {
+          return layers.network.onRequest(ctx, requestId, request)
+        }
         if (request.table !== 'dnsCache') return layers.link.onRequest(ctx, requestId, request)
         return layers.services.onRequest(ctx, requestId, request)
       default:
