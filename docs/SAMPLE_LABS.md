@@ -25,12 +25,12 @@ level and required feature; "Open" loads it as a free lab (unlocked) with the le
 | Packet view | ARP step by step; MAC learning; TTL and tracert | Phase 3 |
 | Device CLI | first switch config; router basic config; `show` commands tour | Phase 4 |
 | STP / EtherChannel / CDP-LLDP / port security | loops and blocking; LACP bundle; neighbour discovery; sticky MAC | pack 5.1 |
-| ACL / NAT / SSH-AAA | standard and extended ACL; static NAT, PAT; SSH login (`securityGuestAcl`, `securityOfficePat`, `securitySshOnly`; manual steps, promises tested on the simulator) | pack 5.2 |
+| ACL / NAT / SSH-AAA | standard and extended ACL; static NAT, PAT; SSH login (`securityGuestAcl`, `securityOfficePat`, `securitySshOnly`; manual steps, promises tested on the simulator); office behind a firewall appliance: inside / DMZ / outside levels, published DMZ server (`securityFirewallOffice`, firewall pack, same category; manual steps, promises in `firewallSamples.test.ts`) | pack 5.2 / firewall pack |
 | Dynamic routing / HSRP | RIPv2; OSPF single and multi-area; EIGRP; gateway redundancy | pack 5.3 |
 | IPv6 | addressing; SLAAC; stateless and stateful DHCPv6; OSPFv3; dual stack | pack 5.4 |
 | Servers and apps | web (HTTP/HTTPS), FTP/TFTP, e-mail, NTP, Syslog | pack 5.5 |
 | Wireless | home router; guest Wi-Fi; WPA2-PSK; WLC with lightweight APs | pack 5.6 |
-| WAN / security | serial + PPP; GRE; IPsec site-to-site; firewall zones; PPPoE | pack 5.7 |
+| WAN / security | serial + PPP; GRE; IPsec site-to-site; zone-based firewall on routers; PPPoE | pack 5.7 |
 | Operations | QoS basics; SNMP; NetFlow; SPAN; VoIP | pack 5.8 |
 | Industrial / IoT | OT network segmentation; industrial ring; IoT devices and gateway | pack 5.9 |
 

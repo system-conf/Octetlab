@@ -30,7 +30,9 @@ const natSection: RunningConfigSection = {
   id: 'natGlobal',
   order: NAT_CONFIG_ORDER,
   blocks: (device) => {
-    const nat = device.features?.nat
+    // Firewalls express NAT only as object nat (src/cli/firewall, slot 87): `ip nat` does not exist there,
+    // so these lines would not replay (CLI.md §5.3).
+    const nat = device.kind === 'firewall' ? undefined : device.features?.nat
     if (nat === undefined) return []
     return [[...nat.pools.map(poolLine), ...nat.dynamics.map(dynamicLine), ...nat.statics.map(staticLine)]]
   },
@@ -39,7 +41,8 @@ const natSection: RunningConfigSection = {
 const natRoleLines: InterfaceConfigContributor = {
   id: 'natRole',
   order: INTERFACE_LINE_ORDER.features,
-  lines: (_device, iface) => {
+  lines: (device, iface) => {
+    if (device.kind === 'firewall') return []
     const l3 = iface.kind === 'port' ? (iface.port.role === 'routed' ? iface.port.l3 : undefined) : iface.kind === 'subInterface' ? iface.sub.l3 : iface.svi.l3
     const role = l3?.features?.natRole
     return role === undefined ? [] : [`ip nat ${role}`]

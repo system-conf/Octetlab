@@ -193,5 +193,87 @@
       "muhasebePc": "Accounting PC",
       "mudurPc": "Manager PC"
     }
+  },
+  "mallShopFirewall": {
+    "title": "The shop next door can see our till",
+    "complaint": {
+      "from": "Phone shop owner in a shopping mall",
+      "message": "The shop next door told us their computer can see our till and our stock PC. Our firewall gets its line from the mall's network, where all the other shops are too. The technician who set it up last year said he 'opened it up so the card payments get their answers'. Card payments must keep working."
+    },
+    "hints": [
+      "From the neighbour's PC, ping the till (192.168.50.10) and the stock PC (192.168.50.20): both answer. Now look at the firewall: show nameif lists outside at level 0 and inside at level 100, and show running-config shows an access-group on the outside interface. What does that list let in?",
+      "A stateful firewall remembers every connection that starts on the inside (show conn) and lets its answers back in on its own. Traffic that starts on a lower level (outside) and goes to a higher one (inside) is blocked unless an access list bound to the outside interface lets it in. OUTSIDE_IN says permit ip any any: it lets every tenant in.",
+      "On the firewall: no access-group OUTSIDE_IN in interface outside (or clear the outside binding in the port settings). Then ping the payment server (10.20.0.10) from the till: it still works, and show conn lists the connection. From the neighbour's PC the shop no longer answers."
+    ],
+    "explanation": {
+      "whatHappened": "The firewall already did the right thing on its own: the till's requests to the payment server opened connections, and the answers came back through the connection table. The old technician's list permit ip any any, bound inbound on the outside interface, was never needed for that. What it did was turn the outside → inside rule around: with an inbound list in place, the firewall lets in whatever the list permits, and this one permitted everything. Removing the binding restores the default: inside may start connections, outside may not.",
+      "realLife": "A shop in a mall, an office in a business centre or a stand at a fair often gets its line from a shared network full of strangers. 'Allow any any so it works' is one of the most common mistakes on small-business firewalls: it usually comes from a time when replies did not seem to arrive, and it quietly opens the inside to every neighbour. The fix is to rely on the connection table and to write exceptions only for services that really must be reached from outside.",
+      "interviewAnswer": "I would first prove the exposure: from a host on the outside network I reach the inside hosts. On the firewall I check show nameif for the levels and the running-config for an access-group on the outside interface. A stateful firewall lets the answers to inside-initiated traffic back in through its connection table, so an inbound permit any any is never needed for that; it only opens the inside. I remove the binding (no access-group … in interface outside), then verify both sides: the till still reaches the payment server, show conn lists the connection, and the outside host can no longer reach the inside."
+    },
+    "topics": ["Stateful firewall", "Security levels", "access-group", "Connection table"],
+    "devices": {
+      "odemeSunucusu": "Mall payment server",
+      "avmRouter": "Mall router",
+      "komsuPc": "Neighbour shop PC",
+      "firewall": "Shop firewall",
+      "switch": "Shop switch",
+      "kasa": "Till",
+      "depoPc": "Stock PC"
+    }
+  },
+  "dmzWebsite": {
+    "title": "Customers cannot open our website",
+    "complaint": {
+      "from": "Architecture office partner",
+      "message": "We moved our portfolio website onto our own server in the office so we stop paying for hosting. Inside the office it opens fine, but customers say the site at 203.0.113.10 does not open at all. The provider says that address is routed to our firewall."
+    },
+    "hints": [
+      "From an office PC, ping the web server (172.16.1.10): it answers. From the customer's laptop, ping 203.0.113.10: nothing answers. Look at the firewall: show nameif shows outside 0, inside 100, dmz 50. No device in the lab owns 203.0.113.10.",
+      "Two things are missing. Nothing turns the public address into the server's real address: that is static NAT. And traffic from outside (level 0) to the DMZ (level 50) goes from a lower to a higher level, so it needs an exception: an access list bound in on the outside interface. On this firewall the list names the server's real address, not the public one.",
+      "On the firewall: object network WEB_SERVER, host 172.16.1.10, nat (dmz,outside) static 203.0.113.10. Then access-list OUTSIDE_IN extended permit tcp any host 172.16.1.10 eq www, access-list OUTSIDE_IN extended permit icmp any host 172.16.1.10, and access-group OUTSIDE_IN in interface outside. Check from the customer's laptop and with show conn."
+    ],
+    "explanation": {
+      "whatHappened": "The provider delivered every packet for 203.0.113.10 to the firewall, but the firewall had no translation for that address and no rule that let outside traffic into the DMZ, so it dropped the packets. Static NAT now maps 203.0.113.10 to the web server's real address 172.16.1.10, and the OUTSIDE_IN list lets web traffic (and ping) to that server in from the outside. The server still cannot start connections towards the office: the DMZ (50) is lower than the inside (100), and there is no list on the DMZ interface.",
+      "realLife": "This is the classic way a small business hosts its own website, mail or camera recorder: the server sits in a DMZ, reachable from the internet through one public address and only on the ports it needs, while the office network stays closed even to that server. If the server is ever broken into, the attacker is stuck in the DMZ. The same two steps (translation + exception) apply to any service you publish.",
+      "interviewAnswer": "I would trace the path: the provider routes the public address to the firewall, so the packets arrive and are dropped there. Publishing a server needs two things on the firewall: a static NAT from the public address to the server's real address, and an access list bound inbound on the outside interface that permits only the needed service to the server. On current firewall software the list names the real address, because the firewall matches it after undoing the translation. I keep the DMZ at a lower level than the inside so the server cannot start connections to the office, and I verify with a test from outside and show conn."
+    },
+    "topics": ["DMZ", "Static NAT", "Access list exception", "Security levels"],
+    "devices": {
+      "musteriLaptop": "Customer laptop at home",
+      "isp": "Provider router",
+      "firewall": "Office firewall",
+      "webSunucu": "Web server (DMZ)",
+      "switch": "Office switch",
+      "mimarPc": "Architect PC",
+      "sekreterPc": "Secretary PC"
+    },
+    "appLinks": {
+      "firmaSitesi": "Office website"
+    }
+  },
+  "clinicFirewallLevel": {
+    "title": "The clinic is offline after the firewall swap",
+    "complaint": {
+      "from": "Dental clinic receptionist",
+      "message": "Our old firewall broke on Friday and the technician installed a new one over the weekend. Since Monday morning neither the reception PC nor the doctor's PC can get online, so we cannot see appointments or send X-rays. The provider says the line is up."
+    },
+    "hints": [
+      "From the reception PC, ping the firewall's inside address (192.168.10.1): it answers. Ping 8.8.8.8: nothing. On the firewall, show nameif: compare the security level of the inside interface with the outside one.",
+      "The technician named the inside interface 'lan' instead of 'inside'. Only the name 'inside' gets level 100 automatically; any other name starts at 0. Now both interfaces have level 0, and a firewall passes nothing between two interfaces of the same level. An interface without any nameif passes nothing at all.",
+      "On the firewall: interface Gi0/1, security-level 100 (or nameif inside, which brings level 100 with it). The firewall-wide settings are locked: same-security-traffic permit inter-interface would also make it work, but it lets any equal-level interfaces talk freely. Check with show nameif and a ping to 8.8.8.8."
+    ],
+    "explanation": {
+      "whatHappened": "The new firewall had the right addresses and the right route, but its inside interface was named 'lan' without a security level. A name other than 'inside' starts at level 0, the same as the outside, and traffic between two interfaces of the same level is blocked by default. Giving the inside interface level 100 restores the normal order: inside (100) may start connections to outside (0), and the answers come back through the connection table.",
+      "realLife": "Replacing a firewall by retyping its configuration is a typical weekend job, and a different interface name or a missing security-level line is an easy slip. The symptom is always the same: the PCs reach the firewall but nothing behind it. show nameif (or the interface table in the firewall card) shows names and levels at a glance. The same-security switch exists for real designs with several equal zones, not as a quick fix.",
+      "interviewAnswer": "I would check from a PC: the gateway answers, the internet does not, so the problem is on or past the firewall. On the firewall I run show nameif: the inside interface was named 'lan' and has level 0, like outside. Equal levels do not pass traffic by default, and only the name 'inside' gets 100 automatically. I set security-level 100 on that interface rather than enabling same-security-traffic, then verify with a ping and show conn."
+    },
+    "topics": ["Security levels", "nameif", "Same-security traffic", "Firewall replacement"],
+    "devices": {
+      "internet": "Internet",
+      "firewall": "Clinic firewall",
+      "switch": "Clinic switch",
+      "resepsiyonPc": "Reception PC",
+      "doktorPc": "Doctor PC"
+    }
   }
 }

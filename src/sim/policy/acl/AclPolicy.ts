@@ -26,7 +26,10 @@ export class AclPolicy implements PacketPolicy {
   }
 
   private static filter(ctx: DeviceContext, interfaceId: string, direction: Direction, packet: Ipv4Packet, event: EventBuilder): PolicyVerdict {
-    const name = AclBindings.of(ctx.device, interfaceId)?.[direction]
+    // A firewall evaluates its access-groups itself, after the connection lookup and on real addresses
+    // (FirewallPolicy, docs/FIREWALL_PACK.md §5.1): replies of tracked connections never meet an interface ACL.
+    if (ctx.device.kind === 'firewall') return PASS(packet)
+    const name =AclBindings.of(ctx.device, interfaceId)?.[direction]
     if (name === undefined) return PASS(packet)
     const layer = 3
     const noteDirection = direction === 'in' ? 'in' : 'out'

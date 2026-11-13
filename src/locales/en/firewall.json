@@ -1,6 +1,94 @@
 {
   "section": {
     "title": "Firewall",
-    "placeholder": "Firewall settings (interface names, security levels, connection table) come here."
+    "intro": "Traffic from a higher security level to a lower one is allowed, and its replies come back on their own. Traffic from a lower level to a higher one needs an access list bound to the interface with access-group (Access lists card or the CLI)."
+  },
+  "interfaces": {
+    "title": "Interfaces",
+    "hint": "Give every interface you use a name (nameif) and a level from 0 (least trusted, e.g. outside) to 100 (most trusted). Leave the level empty for the default: 100 for \"inside\", 0 for any other name.",
+    "port": "Interface",
+    "nameif": "Name (nameif)",
+    "level": "Level",
+    "effective": "In effect: {{value}}",
+    "nameifOf": "Name of {{port}}",
+    "levelOf": "Security level of {{port}}",
+    "noName": "No name: no traffic",
+    "defaultLevel": "{{level}} (default)",
+    "empty": "This firewall has no routed interfaces."
+  },
+  "rules": {
+    "title": "Equal levels",
+    "interInterface": "Allow traffic between two interfaces with the same level",
+    "interInterfaceHint": "Same as same-security-traffic permit inter-interface. Off: equal levels cannot talk to each other.",
+    "intraInterface": "Allow traffic that leaves by the interface it came in on",
+    "intraInterfaceHint": "Same as same-security-traffic permit intra-interface (hairpin)."
+  },
+  "icmp": {
+    "title": "Ping (ICMP)",
+    "inspect": "Track ping like a connection",
+    "hint": "Lab rule: on by default here, so a ping sent towards a lower level gets its reply back. Real firewalls do not track ping until ICMP inspection is turned on. Off: replies count as new traffic from the lower level and are dropped unless an access list allows them."
+  },
+  "timeouts": {
+    "title": "Idle timeouts (seconds)",
+    "hint": "A connection that sees no packet for this long is removed from the table.",
+    "tcp": "TCP",
+    "tcpHint": "Default 3600 (1 hour).",
+    "halfClosed": "TCP while closing",
+    "halfClosedHint": "After a FIN. Default 600 (10 minutes).",
+    "udp": "UDP",
+    "udpHint": "Default 120 (2 minutes).",
+    "icmp": "ICMP",
+    "icmpHint": "Default 2."
+  },
+  "connections": {
+    "title": "Open connections",
+    "noRuntime": "The live connection table is in the console: open the CLI tab and type show conn (clear conn empties it).",
+    "empty": "No open connections.",
+    "protocol": "Protocol",
+    "from": "From",
+    "to": "To",
+    "state": "State",
+    "idle": "Idle",
+    "bytes": "Bytes",
+    "idleValue": "{{seconds}} s",
+    "protocols": {
+      "tcp": "TCP",
+      "udp": "UDP",
+      "icmp": "ICMP"
+    },
+    "states": {
+      "synSent": "Opening",
+      "established": "Established",
+      "halfClosed": "Closing",
+      "open": "Open"
+    }
+  },
+  "port": {
+    "nameif": "Firewall name (nameif)",
+    "nameifHint": "e.g. inside, outside, dmz. Empty: the interface passes no traffic.",
+    "level": "Security level",
+    "levelHint": "0–100. Empty: the default (100 for inside, 0 for other names)."
+  },
+  "errors": {
+    "nameifInvalid": "A name is one word without spaces.",
+    "duplicateNameif": "Another interface is already named \"{{name}}\".",
+    "securityLevelOutOfRange": "Enter a whole number from 0 to 100, or leave it empty for the default.",
+    "levelNeedsNameif": "Give the interface a name first: a level without a name has no effect.",
+    "timeoutRange": "Enter whole seconds from 0 to {{max}}."
+  },
+  "notes": {
+    "noNameif": "Firewall: {{iface}} has no name (nameif), so no traffic passes through it. The packet is dropped.",
+    "connectionMatched": "Firewall: the packet belongs to connection {{id}} ({{protocol}} {{initiator}} → {{responder}}), so it passes without a level check.",
+    "errorMatched": "Firewall: this ICMP error is about connection {{id}} ({{protocol}} {{initiator}} → {{responder}}), so it passes.",
+    "connectionCreated": "Firewall: new {{protocol}} connection {{id}} from {{initiator}} ({{from}}) to {{responder}} ({{to}}). Its replies will pass.",
+    "connectionEstablished": "Firewall: SYN+ACK came back, connection {{id}} is established.",
+    "connectionHalfClosed": "Firewall: FIN seen, connection {{id}} is closing.",
+    "connectionReset": "Firewall: RST seen, connection {{id}} is removed.",
+    "higherToLower": "Firewall: {{from}} (level {{fromLevel}}) → {{to}} (level {{toLevel}}): from a higher to a lower security level, allowed.",
+    "aclException": "Firewall: {{from}} (level {{fromLevel}}) → {{to}} (level {{toLevel}}): from a lower to a higher level, allowed because access list {{acl}} is bound inbound on {{from}} and permitted it.",
+    "lowerToHigher": "Firewall: {{from}} (level {{fromLevel}}) → {{to}} (level {{toLevel}}): from a lower to a higher level, and no access list is bound inbound on {{from}}. The packet is dropped.",
+    "sameLevel": "Firewall: {{from}} and {{to}} both have level {{level}}, and same-security-traffic does not allow it. The packet is dropped.",
+    "sameLevelPermitted": "Firewall: {{from}} and {{to}} both have level {{level}}; same-security-traffic allows it.",
+    "noConnection": "Firewall: a TCP segment ({{flags}}) without SYN that belongs to no connection. The packet is dropped."
   }
 }

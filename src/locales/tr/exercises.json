@@ -225,5 +225,87 @@
       "muhasebePc": "Muhasebe PC",
       "mudurPc": "Müdür PC"
     }
+  },
+  "mallShopFirewall": {
+    "title": "Yan dükkân kasamızı görüyor",
+    "complaint": {
+      "from": "AVM'deki telefon mağazası sahibi",
+      "message": "Yan dükkân, kendi bilgisayarlarından kasamızı ve depo bilgisayarımızı görebildiklerini söyledi. Güvenlik duvarımız hattını AVM'nin ağından alıyor, diğer bütün dükkânlar da o ağda. Geçen yıl kuran teknisyen 'kart ödemelerinin cevabı gelsin diye her şeyi açtım' demişti. Kart ödemeleri çalışmaya devam etmeli."
+    },
+    "hints": [
+      "Komşu dükkânın PC'sinden kasaya (192.168.50.10) ve depo PC'sine (192.168.50.20) ping at: ikisi de cevap veriyor. Şimdi güvenlik duvarına bak: show nameif, outside'ı 0, inside'ı 100 seviyesinde gösteriyor; show running-config ise outside arayüzüne bağlı bir access-group gösteriyor. O liste içeri neyi alıyor?",
+      "Durum takipli (stateful) bir güvenlik duvarı içeriden başlayan her bağlantıyı hatırlar (show conn) ve cevaplarını kendiliğinden içeri alır. Düşük seviyeden (outside) başlayıp yüksek seviyeye (inside) giden trafik ise, outside arayüzüne bağlı bir erişim listesi izin vermedikçe engellenir. OUTSIDE_IN 'permit ip any any' diyor: bütün kiracıları içeri alıyor.",
+      "Güvenlik duvarında: no access-group OUTSIDE_IN in interface outside (ya da port ayarlarında outside bağlamasını temizle). Sonra kasadan ödeme sunucusuna (10.20.0.10) ping at: hâlâ çalışıyor ve show conn bağlantıyı listeliyor. Komşu PC'den ise dükkân artık cevap vermiyor."
+    ],
+    "explanation": {
+      "whatHappened": "Güvenlik duvarı doğru olanı zaten kendiliğinden yapıyordu: kasanın ödeme sunucusuna istekleri bağlantı açtı, cevaplar da bağlantı tablosu üzerinden geri geldi. Eski teknisyenin outside arayüzüne içeri yönde bağladığı 'permit ip any any' listesine bunun için hiç gerek yoktu. Yaptığı tek şey outside → inside kuralını tersine çevirmekti: içeri yönde bir liste bağlıysa güvenlik duvarı listenin izin verdiği her şeyi içeri alır, bu liste de her şeye izin veriyordu. Bağlamayı kaldırınca varsayılan geri geldi: içerisi bağlantı başlatabilir, dışarısı başlatamaz.",
+      "realLife": "AVM'deki bir dükkân, iş merkezindeki bir ofis ya da fuardaki bir stant hattını çoğu zaman yabancılarla dolu ortak bir ağdan alır. 'Çalışsın diye any any izin ver' küçük işletme güvenlik duvarlarındaki en yaygın hatalardan biridir: genellikle cevapların gelmediği sanılan bir andan kalır ve içerideki ağı sessizce bütün komşulara açar. Doğrusu bağlantı tablosuna güvenmek ve yalnızca dışarıdan gerçekten erişilmesi gereken hizmetler için istisna yazmaktır.",
+      "interviewAnswer": "Önce açığı kanıtlarım: dış ağdaki bir cihazdan iç cihazlara ulaşıyorum. Güvenlik duvarında seviyeler için show nameif'e, outside arayüzündeki access-group için running-config'e bakarım. Durum takipli bir güvenlik duvarı içeriden başlayan trafiğin cevaplarını bağlantı tablosuyla zaten içeri alır; bu yüzden içeri yönde permit any any'ye hiç gerek yoktur, sadece içeriyi açar. Bağlamayı kaldırırım (no access-group … in interface outside) ve iki tarafı da doğrularım: kasa ödeme sunucusuna hâlâ ulaşıyor, show conn bağlantıyı listeliyor, dıştaki cihaz ise artık içeriye ulaşamıyor."
+    },
+    "topics": ["Durum takipli güvenlik duvarı", "Güvenlik seviyeleri", "access-group", "Bağlantı tablosu"],
+    "devices": {
+      "odemeSunucusu": "AVM ödeme sunucusu",
+      "avmRouter": "AVM router'ı",
+      "komsuPc": "Komşu dükkân PC'si",
+      "firewall": "Dükkân güvenlik duvarı",
+      "switch": "Dükkân switch'i",
+      "kasa": "Kasa",
+      "depoPc": "Depo PC"
+    }
+  },
+  "dmzWebsite": {
+    "title": "Müşteriler web sitemizi açamıyor",
+    "complaint": {
+      "from": "Mimarlık ofisi ortağı",
+      "message": "Barındırma ücreti ödemeyelim diye portföy sitemizi ofisteki kendi sunucumuza taşıdık. Ofisin içinden sorunsuz açılıyor ama müşteriler 203.0.113.10'daki sitenin hiç açılmadığını söylüyor. Sağlayıcı o adresin güvenlik duvarımıza yönlendirildiğini söylüyor."
+    },
+    "hints": [
+      "Bir ofis PC'sinden web sunucusuna (172.16.1.10) ping at: cevap veriyor. Müşterinin dizüstünden 203.0.113.10'a ping at: cevap yok. Güvenlik duvarına bak: show nameif outside 0, inside 100, dmz 50 gösteriyor. Laboratuvarda 203.0.113.10 adresine sahip hiçbir cihaz yok.",
+      "İki şey eksik. Genel adresi sunucunun gerçek adresine çeviren bir şey yok: bu statik NAT'tır. Ayrıca dışarıdan (seviye 0) DMZ'ye (seviye 50) giden trafik düşükten yükseğe gidiyor, bu yüzden bir istisna gerekir: outside arayüzüne içeri yönde bağlanmış bir erişim listesi. Bu güvenlik duvarında liste genel adresi değil, sunucunun gerçek adresini yazar.",
+      "Güvenlik duvarında: object network WEB_SERVER, host 172.16.1.10, nat (dmz,outside) static 203.0.113.10. Sonra access-list OUTSIDE_IN extended permit tcp any host 172.16.1.10 eq www, access-list OUTSIDE_IN extended permit icmp any host 172.16.1.10 ve access-group OUTSIDE_IN in interface outside. Müşterinin dizüstünden ve show conn ile kontrol et."
+    ],
+    "explanation": {
+      "whatHappened": "Sağlayıcı 203.0.113.10'a giden her paketi güvenlik duvarına teslim ediyordu, ama güvenlik duvarında o adres için bir çeviri ve dış trafiği DMZ'ye alan bir kural yoktu, bu yüzden paketleri atıyordu. Statik NAT artık 203.0.113.10'u web sunucusunun gerçek adresi 172.16.1.10'a eşliyor, OUTSIDE_IN listesi de dışarıdan o sunucuya web trafiğini (ve ping'i) içeri alıyor. Sunucu ise ofise doğru hâlâ bağlantı başlatamıyor: DMZ (50) içeriden (100) düşük ve DMZ arayüzünde bir liste yok.",
+      "realLife": "Küçük bir işletmenin kendi web sitesini, e-postasını ya da kamera kayıt cihazını yayınlamasının klasik yolu budur: sunucu bir DMZ'de durur, internetten tek bir genel adresle ve yalnızca gereken portlarda erişilir; ofis ağı ise o sunucuya bile kapalı kalır. Sunucu bir gün ele geçirilirse saldırgan DMZ'de kalır. Yayınladığın her hizmet için aynı iki adım (çeviri + istisna) geçerlidir.",
+      "interviewAnswer": "Yolu takip ederim: sağlayıcı genel adresi güvenlik duvarına yönlendiriyor, yani paketler oraya varıyor ve orada atılıyor. Bir sunucuyu yayınlamak için güvenlik duvarında iki şey gerekir: genel adresten sunucunun gerçek adresine statik NAT ve outside arayüzüne içeri yönde bağlanmış, sunucuya yalnızca gereken hizmete izin veren bir erişim listesi. Güncel güvenlik duvarı yazılımlarında liste gerçek adresi yazar, çünkü cihaz çeviriyi geri aldıktan sonra eşleştirir. Sunucu ofise bağlantı başlatamasın diye DMZ'yi içeriden düşük seviyede tutarım ve dışarıdan bir test ile show conn kullanarak doğrularım."
+    },
+    "topics": ["DMZ", "Statik NAT", "Erişim listesi istisnası", "Güvenlik seviyeleri"],
+    "devices": {
+      "musteriLaptop": "Müşterinin evdeki dizüstü",
+      "isp": "Sağlayıcı router'ı",
+      "firewall": "Ofis güvenlik duvarı",
+      "webSunucu": "Web sunucusu (DMZ)",
+      "switch": "Ofis switch'i",
+      "mimarPc": "Mimar PC",
+      "sekreterPc": "Sekreter PC"
+    },
+    "appLinks": {
+      "firmaSitesi": "Ofisin web sitesi"
+    }
+  },
+  "clinicFirewallLevel": {
+    "title": "Güvenlik duvarı değişince klinik internetsiz kaldı",
+    "complaint": {
+      "from": "Diş kliniği resepsiyonisti",
+      "message": "Eski güvenlik duvarımız cuma günü bozuldu, teknisyen hafta sonu yenisini taktı. Pazartesi sabahından beri ne resepsiyon PC'si ne de doktorun PC'si internete çıkabiliyor; randevuları göremiyor, röntgen gönderemiyoruz. Sağlayıcı hattın açık olduğunu söylüyor."
+    },
+    "hints": [
+      "Resepsiyon PC'sinden güvenlik duvarının iç adresine (192.168.10.1) ping at: cevap veriyor. 8.8.8.8'e ping at: cevap yok. Güvenlik duvarında show nameif: iç arayüzün güvenlik seviyesini dış arayüzünkiyle karşılaştır.",
+      "Teknisyen iç arayüze 'inside' yerine 'lan' adını vermiş. Yalnızca 'inside' adı otomatik olarak 100 seviyesini alır; başka her ad 0'dan başlar. Şimdi iki arayüzün de seviyesi 0 ve güvenlik duvarı aynı seviyedeki iki arayüz arasında hiçbir şey geçirmez. Hiç nameif'i olmayan bir arayüz ise hiç trafik taşımaz.",
+      "Güvenlik duvarında: interface Gi0/1, security-level 100 (ya da 100 seviyesini kendiyle getiren nameif inside). Cihaz geneli ayarlar kilitli: same-security-traffic permit inter-interface de işi çözerdi ama aynı seviyedeki bütün arayüzlerin serbestçe konuşmasına izin verir. show nameif ve 8.8.8.8'e bir ping ile kontrol et."
+    ],
+    "explanation": {
+      "whatHappened": "Yeni güvenlik duvarının adresleri ve rotası doğruydu ama iç arayüzü güvenlik seviyesi olmadan 'lan' adını almıştı. 'inside' dışındaki bir ad 0 seviyesinden başlar, yani dış arayüzle aynı seviyeden; aynı seviyedeki iki arayüz arasındaki trafik de varsayılan olarak engellenir. İç arayüze 100 seviyesi verilince normal düzen geri geldi: içerisi (100) dışarıya (0) bağlantı başlatabilir, cevaplar da bağlantı tablosu üzerinden geri gelir.",
+      "realLife": "Bir güvenlik duvarını yapılandırmasını yeniden yazarak değiştirmek tipik bir hafta sonu işidir; farklı bir arayüz adı ya da unutulmuş bir security-level satırı kolayca gözden kaçar. Belirti hep aynıdır: bilgisayarlar güvenlik duvarına ulaşır ama arkasındaki hiçbir şeye ulaşamaz. show nameif (ya da güvenlik duvarı kartındaki arayüz tablosu) adları ve seviyeleri bir bakışta gösterir. Aynı seviye anahtarı birden fazla eşit bölgesi olan gerçek tasarımlar içindir, hızlı bir yama için değil.",
+      "interviewAnswer": "Bir PC'den kontrol ederim: ağ geçidi cevap veriyor, internet vermiyor; demek ki sorun güvenlik duvarında ya da arkasında. Güvenlik duvarında show nameif çalıştırırım: iç arayüz 'lan' adını almış ve outside gibi 0 seviyesinde. Eşit seviyeler varsayılan olarak trafik geçirmez ve yalnızca 'inside' adı otomatik 100 alır. same-security-traffic açmak yerine o arayüze security-level 100 veririm, sonra bir ping ve show conn ile doğrularım."
+    },
+    "topics": ["Güvenlik seviyeleri", "nameif", "Aynı seviye trafiği", "Güvenlik duvarı değişimi"],
+    "devices": {
+      "internet": "İnternet",
+      "firewall": "Klinik güvenlik duvarı",
+      "switch": "Klinik switch'i",
+      "resepsiyonPc": "Resepsiyon PC",
+      "doktorPc": "Doktor PC"
+    }
   }
 }

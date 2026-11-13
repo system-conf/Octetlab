@@ -5,11 +5,14 @@ import { describe, expect, it } from 'vitest'
 import {
   CableRules,
   StateInvariants,
+  type AccessList,
   type Annotation,
   type CableType,
   type DeviceKind,
   type Device,
   type DeviceFeatures,
+  type FirewallSettings,
+  type L3Features,
   type L3Settings,
   type LabDocument,
   type Link,
@@ -88,17 +91,32 @@ function withSecurity(device: Device): Device {
   return { ...device, ports, features: ROUTER_SECURITY }
 }
 
-/** Firewall pack data: nameif / level on both routed ports and the device-wide settings. */
+/** Firewall pack data: nameif / level, NAT roles and an access-group on the routed ports; settings, objects, ACL and NAT. */
 function withFirewall(device: Device): Device {
-  const names: Readonly<Record<string, { nameif: string; securityLevel: number }>> = {
-    'Gi0/0': { nameif: 'outside', securityLevel: 0 },
-    'Gi0/1': { nameif: 'inside', securityLevel: 100 },
+  const names: Readonly<Record<string, L3Features>> = {
+    'Gi0/0': { firewall: { nameif: 'outside', securityLevel: 0 }, natRole: 'outside', accessGroups: { in: 'OUTSIDE_IN' } },
+    'Gi0/1': { firewall: { nameif: 'inside', securityLevel: 100 }, natRole: 'inside' },
   }
   const ports = device.ports.map((item): Port => {
-    const firewall = names[item.id]
-    return item.role === 'routed' && firewall !== undefined ? { ...item, l3: { ...item.l3, features: { firewall } } } : item
+    const features = names[item.id]
+    return item.role === 'routed' && features !== undefined ? { ...item, l3: { ...item.l3, features } } : item
   })
-  return { ...device, ports, routing: { ipRouting: true, staticRoutes: [] }, features: { firewall: { inspectIcmp: true, timeouts: { tcp: 3600 } } } }
+  const firewall: FirewallSettings = {
+    inspectIcmp: true,
+    sameSecurityInterInterface: true,
+    timeouts: { tcp: 3600, udp: 120 },
+    objects: [
+      { name: 'WEB', address: { kind: 'host', address: '192.168.1.10' }, nat: { realInterface: 'inside', mappedInterface: 'outside', type: 'static', mapped: { kind: 'address', address: '203.0.113.10' } } },
+      { name: 'LAN', address: { kind: 'subnet', address: '192.168.1.0', mask: '255.255.255.0' } },
+    ],
+  }
+  const outsideIn: AccessList = {
+    name: 'OUTSIDE_IN',
+    type: 'extended',
+    entries: [{ seq: 10, kind: 'extended', action: 'permit', protocol: 'tcp', source: { address: '0.0.0.0', wildcard: '255.255.255.255' }, destination: { address: '192.168.1.10', wildcard: '0.0.0.0' }, destinationPort: { op: 'eq', port: 80 } }],
+  }
+  const nat = { pools: [], statics: [{ kind: 'static' as const, insideLocal: '192.168.1.10', insideGlobal: '203.0.113.10' }], dynamics: [] }
+  return { ...device, ports, routing: { ipRouting: true, staticRoutes: [] }, features: { firewall, accessLists: { lists: [outsideIn] }, nat } }
 }
 
 function build(kind: DeviceKind, id: string): Device {

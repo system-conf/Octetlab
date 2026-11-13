@@ -1,10 +1,11 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import type { AccessList, AclBinding, AclEntry, Device, NetworkState } from '../../../domain'
-import type { EchoResult, SimRequest } from '../../contract'
+import type { DeviceContext, EchoResult, EventBuilder, Ipv4Packet, SimRequest } from '../../contract'
 import type { SimulationKernel } from '../../core'
 import { l3Engine } from '../../l3/l3TestLayers'
 import { ping, twoRouterLab } from '../../l3/l3TestLabs'
+import { AclPolicy } from './AclPolicy'
 
 const ANY = { address: '0.0.0.0', wildcard: '255.255.255.255' }
 const host = (address: string) => ({ address, wildcard: '0.0.0.0' })
@@ -99,5 +100,23 @@ describe('AclPolicy: ip access-group in the packet pipeline', () => {
       }),
       { numRuns: 12 },
     )
+  })
+
+  it('steps aside on a firewall (FirewallPolicy evaluates its ACLs); a router with the same binding still denies', () => {
+    const state = withAcl([{ name: '101', type: 'extended', entries: [denyEcho, permitAll] }], { 'Gi0/0': { in: '101' }, 'Gi0/1': { out: '101' } })
+    const r1 = state.devices.find((device) => device.id === 'r1')
+    if (r1 === undefined) throw new Error('no r1')
+    const packet: Ipv4Packet = { kind: 'ipv4', src: '10.0.1.10', dst: '10.0.2.10', ttl: 64, identification: 1, payload: { kind: 'icmp', type: 'echoRequest', identifier: 1, sequence: 1, dataBytes: 32 } }
+    const event = { note: () => undefined } as unknown as EventBuilder
+    const contextOf = (device: Device) => ({ device, runtime: {}, updateRuntime: () => undefined }) as unknown as DeviceContext
+    const policy = new AclPolicy()
+    const firewall = contextOf({ ...r1, kind: 'firewall' })
+    const passedIn = policy.ingress(firewall, { interfaceId: 'Gi0/0', packet, linkBroadcast: false, event })
+    const passedOut = policy.egress(firewall, { ingressInterfaceId: 'Gi0/0', exitInterfaceId: 'Gi0/1', packet, event })
+    expect(passedIn.kind === 'pass' && passedIn.packet === packet).toBe(true)
+    expect(passedOut.kind === 'pass' && passedOut.packet === packet).toBe(true)
+    const router = contextOf(r1)
+    expect(policy.ingress(router, { interfaceId: 'Gi0/0', packet, linkBroadcast: false, event })).toEqual({ kind: 'drop', reason: 'aclDenied', icmp: 'adminProhibited' })
+    expect(policy.egress(router, { ingressInterfaceId: 'Gi0/0', exitInterfaceId: 'Gi0/1', packet, event })).toEqual({ kind: 'drop', reason: 'aclDenied', icmp: 'adminProhibited' })
   })
 })

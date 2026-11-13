@@ -21,7 +21,12 @@ const SHAPE_KEYS = ['ok', 'reason', 'kind', 'aborted', 'reach', 'outcome', 'echo
 export class OracleRunner {
   /** Every mismatch of the chosen kinds on `state` (fresh simulator per request). */
   static check(state: NetworkState, tally: OracleTally, kinds: readonly CheckKind[] = CHECK_KINDS): Mismatch[] {
-    // The rule engine knows no ACL / NAT: such a lab is skipped as a whole, never compared (§10.3.7).
+    // The rule engine knows no firewall appliance (§10.3.8) and no ACL / NAT (§10.3.7): such a lab is
+    // skipped as a whole, never compared.
+    if (Divergences.firewall(state)) {
+      tally.skip('firewall')
+      return []
+    }
     if (Divergences.securityPolicies(state)) {
       tally.skip('securityPolicies')
       return []

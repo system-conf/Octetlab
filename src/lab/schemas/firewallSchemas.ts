@@ -23,9 +23,28 @@ export const firewallTimeoutsSchema = z.strictObject({
   icmp: timeoutSchema.optional(),
 })
 
+export const firewallObjectNatSchema = z.strictObject({
+  realInterface: nameSchema.min(1),
+  mappedInterface: nameSchema.min(1),
+  type: z.enum(['static', 'dynamic']),
+  mapped: z.discriminatedUnion('kind', [z.strictObject({ kind: z.literal('interface') }), z.strictObject({ kind: z.literal('address'), address: nameSchema.min(1) })]),
+})
+
+export const firewallNetworkObjectSchema = z.strictObject({
+  name: nameSchema.min(1),
+  address: z
+    .discriminatedUnion('kind', [
+      z.strictObject({ kind: z.literal('host'), address: nameSchema.min(1) }),
+      z.strictObject({ kind: z.literal('subnet'), address: nameSchema.min(1), mask: nameSchema.min(1) }),
+    ])
+    .optional(),
+  nat: firewallObjectNatSchema.optional(),
+})
+
 export const firewallSettingsSchema = z.strictObject({
   sameSecurityInterInterface: z.boolean().optional(),
   sameSecurityIntraInterface: z.boolean().optional(),
   inspectIcmp: z.boolean().optional(),
   timeouts: firewallTimeoutsSchema.optional(),
+  objects: z.array(firewallNetworkObjectSchema).max(LAB_LIMITS.listItems).optional(),
 })

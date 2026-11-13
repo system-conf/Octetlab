@@ -440,6 +440,7 @@ fromDeviceId, toDeviceId, fraction, protocol, flowId, dropped }`.
 |---|---|---|---|
 | 5.1 STP, EtherChannel, CDP/LLDP, port security | `StpBpdu`, `LacpPdu`, `PagpPdu`, `CdpAdvertisement`, `LldpAdvertisement` | `stp`, `etherChannel`, `neighbors`, `portSecurity` | STP replaces the `l2Loop` guard; port states block forwarding |
 | 5.2 ACL, NAT, SSH / Telnet (in progress, docs/SECURITY_PACK.md) | — (TCP 22 / 23 carry an opaque `RawData` payload; `SimProtocol` `ssh` / `telnet`) | `aclCounters`, `natTranslations`, `natStatistics` (`SecurityRuntime`) | `PacketPolicyChain([AclPolicy, NatPolicy])` on ingress (`PacketReceiver`, before the own-address check) and egress (`PacketForwarder`, after routing; router-originated packets skip it); reason codes `aclDenied`, `natPoolExhausted`, `natNoTranslation`, `vtyAccessDenied`, `remoteLoginFailed`, `remoteAccessDisabled`; ICMP `adminProhibited`; request `remoteConnect` |
+| Firewall pack (docs/FIREWALL_PACK.md) | — | `firewallConnections`, `firewallStatistics` (`FirewallRuntime`, lazy expiry on the virtual clock) | `SecurityPolicies.create()` = `[FirewallPolicy, AclPolicy, NatPolicy]`: ingress firewall → ACL → un-NAT, egress NAT → ACL → firewall. On a `firewall` device: no nameif → drop `firewallNoNameif`; a packet of a live connection passes; equal levels need the same-security switch (`firewallSameLevel`); higher → lower passes (an interface ACL may still deny); lower → higher needs an inbound ACL on the ingress interface (`firewallDenied`); a non-SYN TCP segment without a connection drops (`firewallNoConnection`); allowed flows open a connection on egress (real addresses). Drops are silent. Outside ACLs match real addresses (D6). Request `clearTable` `firewallConnections` (`clear conn`) |
 | 5.3 RIP, OSPF, EIGRP, HSRP | `RipMessage`, `OspfPacket`, `EigrpPacket`, `HsrpMessage` | `rip`, `ospf`, `eigrp`, `hsrp` | `RouteCode` members |
 | 5.4 IPv6 / NDP | `Ipv6Packet` | `ipv6` | `Pdu` gains `Ipv6Packet` |
 | 5.5 servers | `ServerAppPayload` | — | listeners in S3 |
@@ -512,6 +513,17 @@ On every generated topology (fresh engine, `settle`), for every host pair / publ
    whole when any device has an access list, NAT rules, an `ip access-group` binding or a NAT role
    (`Divergences.securityPolicies`, counted as `securityPolicies`); vty `access-class` and SSH settings do
    not count because no ping or lookup crosses them.
+8. **The firewall appliance (firewall pack, docs/FIREWALL_PACK.md) exists in the simulator only.** The
+   engine routes through a `firewall` device like a router: it knows no nameif, security level or
+   connection table, so the same places as in item 7 ignore the firewall policy. Exercises with a firewall
+   are graded by `SimSolveChecker`; the firewall sample uses manual steps and keeps its promises in
+   `firewallSamples.test.ts`. The oracle skips any lab with a device of kind `firewall` as a whole, even
+   without ACL / NAT data (`Divergences.firewall`, counted as `firewall`).
+9. **ICMP echo through a firewall (lab rule D2).** The simulator tracks an echo request like a connection
+   by default (`FirewallSettings.inspectIcmp` absent = true), so the reply from a lower-level zone comes
+   back and ping-based checks work. Real appliances do not inspect ICMP by default: the reply is dropped
+   unless ICMP inspection or an access list permits it. With `inspectIcmp: false` the simulator behaves
+   like the real default. The firewall card's help text says so.
 
 ## 11. Ownership and fixed APIs
 

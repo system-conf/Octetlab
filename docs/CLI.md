@@ -33,6 +33,7 @@ come from the `cli` namespace (tr + en, informal "sen" in Turkish).
 | `dhcpPool` | `R1(dhcp-config)#` | `ip dhcp pool LAN` (C3) | global config |
 | `router` | `R1(config-router)#` | reserved for the routing packs 5.3 | global config |
 | `accessList` | `R1(config-std-nacl)#` / `R1(config-ext-nacl)#` | `ip access-list standard\|extended NAME` (pack 5.2, `src/cli/acl`); help header "Access list configuration commands:" | global config |
+| `objectNetwork` | `Firewall(config-network-object)#` | `object network NAME` on a firewall (firewall pack, `src/cli/firewall`); help header "Network object configuration commands:" | global config |
 
 - `end` and **Ctrl+Z** (`CliShell.control(…, 'ctrlZ')`) from any config mode → `R1#` and
   `%SYS-5-CONFIG_I: Configured from console by console`. Ctrl+C also cancels a question or paging.
@@ -241,7 +242,29 @@ job (the UI creates the engine).
 | Pack 5.2 B (NAT) | `src/cli/nat/**` | `natCommandSet` — `ip nat pool`, `ip nat inside source static\|list …`, `ip nat inside\|outside`, `show ip nat translations\|statistics`, `clear ip nat translation *` |
 | Pack 5.2 C (remote access) | `src/cli/remote/**` (+ core line commands) | `remoteAccessCommandSet` — `ip domain-name`, `username`, `crypto key generate\|zeroize rsa`, `ip ssh …`, vty `transport input` / `login local` / `access-class`, `show ip ssh` / `ssh` / `users` / `crypto key mypubkey rsa`, `telnet`, `ssh` |
 
-`CLI_COMMAND_SETS` order since pack 5.2: switch, router, ACL, NAT, remote access (docs/SECURITY_PACK.md §6).
+| Firewall pack B | `src/cli/firewall/**` | `firewallCommandSet` (set id `firewall`) — see "Firewall flavour" below |
+
+`CLI_COMMAND_SETS` order since pack 5.2: switch, router, ACL, NAT, remote access (docs/SECURITY_PACK.md §6);
+the firewall pack adds the `firewall` set.
+
+### Firewall flavour (firewall pack, docs/FIREWALL_PACK.md §6)
+
+A device of kind `firewall` speaks the well-known firewall-appliance syntax (no vendor name in the UI). Every
+firewall command is registered with `when: device.kind === 'firewall'`; router commands are not hidden.
+- Prompt and hostname: `Firewall` by default (`CliPrompt.factoryHostname`), modes as on a router plus
+  `objectNetwork`.
+- Interface: `nameif <name>` (the name `inside` brings level 100 when no level is set), `security-level
+  <0-100>`, both with `no`; `ip address` is the router command.
+- Global: `same-security-traffic permit inter-interface|intra-interface`, `access-list <name> extended …`
+  (masks instead of wildcards), `access-group <acl> in|out interface <nameif>`, `object network <name>` →
+  `host` / `subnet` / `nat (<real>,<mapped>) static <ip>|dynamic interface` (mapped onto the pack 5.2 NAT
+  rows; a dynamic object gets a generated list `OBJ_NAT_<object>`), `timeout conn|half-closed|udp|icmp
+  <h:mm:ss>`, `inspect icmp` (simplified, no policy map), `route <nameif> <net> <mask> <gateway>`.
+- EXEC: `show conn [count|detail|all]`, `show nameif`, `show xlate`, `show route`, `show interface ip brief`,
+  `clear conn`, `clear xlate`, and a configuration explainer that prints the checked phases (route lookup,
+  access list, NAT, level check) with ALLOW / DROP; it sends no packet (D5).
+- Running-config: interface slot 55 (`nameif`, then `security-level`), global slot 76
+  (`same-security-traffic`, `object network` blocks, `access-group`, `timeout`).
 
 Fixed for wave 4.1 (change only through the coordinator): everything exported from
 `src/cli/contract`, `CliShell`'s public methods, `keyword` / `param` / `CliWhens`, `DeviceEdits`,

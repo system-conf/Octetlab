@@ -25,11 +25,12 @@ describe('security exercises: data', () => {
     }
   })
 
-  it('leave only the router editable', () => {
+  it('leave only the router (pack 5.2) or the firewall (firewall pack) editable', () => {
     for (const exercise of securityExercises) {
       const locked = exercise.locks.flatMap((lock) => (lock.scope === 'device' ? [lock.deviceId] : []))
+      const editable = exercise.lab.state.devices.some((device) => device.kind === 'firewall') ? 'firewall' : 'router'
       expect(exercise.locks).toContainEqual({ scope: 'topology' })
-      expect(exercise.lab.state.devices.map((device) => device.id).filter((id) => !locked.includes(id))).toEqual(['router'])
+      expect(exercise.lab.state.devices.map((device) => device.id).filter((id) => !locked.includes(id)), exercise.id).toEqual([editable])
     }
   })
 })

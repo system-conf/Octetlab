@@ -17,13 +17,35 @@ interface PortSecurityFieldsProps {
   onChange: (security: PortSecurityDraft) => void
 }
 
-/** Pack 5.2: `ip access-group` in / out and `ip nat inside|outside` of a routed port. */
+/** Pack 5.2: `ip access-group` in / out and `ip nat inside|outside` of a routed port; firewall pack: `nameif` and `security-level`. */
 function PortSecurityFields({ device, role, draft, errors, show, onChange }: PortSecurityFieldsProps) {
-  const { t } = useTranslation(['acl', 'nat'])
+  const { t } = useTranslation(['acl', 'nat', 'firewall'])
   if (!PortSecurityModel.showsAcl(device, role)) return null
   const change = (patch: Partial<PortSecurityDraft>) => onChange({ ...draft, ...patch })
   return (
     <div className={fieldGrid}>
+      {PortSecurityModel.showsFirewall(device, role) && (
+        <>
+          <InputField
+            label={t('firewall:port.nameif')}
+            type="code"
+            value={draft.nameif}
+            onChange={(nameif) => change({ nameif })}
+            hint={t('firewall:port.nameifHint')}
+            error={show(errors.fields.nameif)}
+            maxLength={200}
+          />
+          <InputField
+            label={t('firewall:port.level')}
+            type="number"
+            value={draft.securityLevel}
+            onChange={(securityLevel) => change({ securityLevel })}
+            hint={t('firewall:port.levelHint')}
+            error={show(errors.fields.securityLevel)}
+            maxLength={3}
+          />
+        </>
+      )}
       <InputField label={t('acl:port.inbound')} value={draft.aclIn} onChange={(aclIn) => change({ aclIn })} hint={t('acl:port.hint')} error={show(errors.fields.aclIn)} maxLength={200} />
       <InputField label={t('acl:port.outbound')} value={draft.aclOut} onChange={(aclOut) => change({ aclOut })} error={show(errors.fields.aclOut)} maxLength={200} />
       {PortSecurityModel.showsNat(device, role) && (

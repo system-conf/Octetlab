@@ -43,7 +43,7 @@ function PortEditor({ device, port, model, access, onSave, onClose }: PortEditor
   const errors = useShownErrors()
   const titleId = useId()
   const options = PortEditorModel.options(device, model, port)
-  const validation = PortEditorModel.validate(draft, port)
+  const validation = PortEditorModel.validate(draft, port, device)
   const change = (patch: Partial<PortDraft>) => setDraft((current) => ({ ...current, ...patch }))
 
   function submit() {

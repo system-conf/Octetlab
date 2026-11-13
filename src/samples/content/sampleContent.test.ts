@@ -33,7 +33,7 @@ describe('sample content', () => {
     expect(catalog.byCategory().map((group) => group.category.id)).toEqual(shipped)
     expect(catalog.available().map((sample) => sample.id).sort()).toEqual(contentSamples.map((sample) => sample.id).sort())
     const counts = Object.fromEntries(catalog.byCategory().map((group) => [group.category.id, group.samples.length]))
-    expect(counts).toEqual({ basics: 5, dhcp: 5, dns: 3, switching: 6, routing: 3, packetView: 3, security: 3 })
+    expect(counts).toEqual({ basics: 5, dhcp: 5, dns: 3, switching: 6, routing: 3, packetView: 3, security: 4 })
   })
 
   it.each(contentSamples.map((sample) => [sample.id, sample] as const))('%s opens as a valid lab with final hostnames', (_, sample) => {

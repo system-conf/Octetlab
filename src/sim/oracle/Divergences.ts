@@ -21,6 +21,8 @@ export const DIVERGENCES = {
   sourceOff: 'HostCommandShell: device powered off',
   /** §10.3 item 6: ACL and NAT (pack 5.2) exist in the simulator only; a lab that uses them is not compared. */
   securityPolicies: 'SIMULATION.md §10.3.7',
+  /** §10.3 item 8: a firewall appliance (firewall pack) filters statefully in the simulator only; the lab is not compared. */
+  firewall: 'SIMULATION.md §10.3.8',
 } as const
 
 export type Divergence = keyof typeof DIVERGENCES
@@ -123,6 +125,14 @@ export class Divergences {
       if (nat && nat.pools.length + nat.statics.length + nat.dynamics.length > 0) return true
       return Divergences.networkSideL3(device).some(({ features: port }) => port?.natRole !== undefined || port?.accessGroups?.in !== undefined || port?.accessGroups?.out !== undefined)
     })
+  }
+
+  /**
+   * §10.3.8: the lab has a firewall appliance (firewall pack). The rule engine routes through it like a
+   * router and knows no security levels or connection table, so the whole lab is outside the oracle.
+   */
+  static firewall(state: NetworkState): boolean {
+    return state.devices.some((device) => device.kind === 'firewall')
   }
 
   /** Layer-3 settings of every routed port, sub-interface and SVI (host NICs ignore ACL / NAT keys). */

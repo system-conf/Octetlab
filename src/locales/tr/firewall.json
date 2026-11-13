@@ -1,6 +1,94 @@
 {
   "section": {
     "title": "Güvenlik duvarı",
-    "placeholder": "Güvenlik duvarı ayarları (arayüz adları, güvenlik seviyeleri, bağlantı tablosu) burada olacak."
+    "intro": "Yüksek güvenlik seviyesinden düşüğe giden trafiğe izin verilir, yanıtları da kendiliğinden geri döner. Düşük seviyeden yükseğe giden trafik için arayüze access-group ile bağlanmış bir erişim listesi gerekir (Erişim listeleri kartı ya da CLI)."
+  },
+  "interfaces": {
+    "title": "Arayüzler",
+    "hint": "Kullandığın her arayüze bir ad (nameif) ve 0 (en az güvenilen, ör. outside) ile 100 (en çok güvenilen) arasında bir seviye ver. Seviyeyi boş bırakırsan varsayılan geçerli olur: \"inside\" için 100, diğer adlar için 0.",
+    "port": "Arayüz",
+    "nameif": "Ad (nameif)",
+    "level": "Seviye",
+    "effective": "Geçerli seviye: {{value}}",
+    "nameifOf": "{{port}} adı",
+    "levelOf": "{{port}} güvenlik seviyesi",
+    "noName": "Ad yok: trafik geçmez",
+    "defaultLevel": "{{level}} (varsayılan)",
+    "empty": "Bu güvenlik duvarında yönlendirmeli arayüz yok."
+  },
+  "rules": {
+    "title": "Eşit seviyeler",
+    "interInterface": "Aynı seviyedeki iki arayüz arasında trafiğe izin ver",
+    "interInterfaceHint": "same-security-traffic permit inter-interface ile aynı. Kapalıyken eşit seviyeler birbiriyle konuşamaz.",
+    "intraInterface": "Geldiği arayüzden geri çıkan trafiğe izin ver",
+    "intraInterfaceHint": "same-security-traffic permit intra-interface ile aynı (hairpin)."
+  },
+  "icmp": {
+    "title": "Ping (ICMP)",
+    "inspect": "Ping'i bağlantı gibi takip et",
+    "hint": "Laboratuvar kuralı: burada varsayılan olarak açık, böylece daha düşük seviyeye gönderilen ping'in yanıtı geri gelir. Gerçek güvenlik duvarları ICMP denetimi açılmadan ping'i takip etmez. Kapalıyken yanıtlar düşük seviyeden gelen yeni trafik sayılır ve bir erişim listesi izin vermedikçe düşürülür."
+  },
+  "timeouts": {
+    "title": "Boşta kalma süreleri (saniye)",
+    "hint": "Bu süre boyunca hiç paket görmeyen bağlantı tablodan silinir.",
+    "tcp": "TCP",
+    "tcpHint": "Varsayılan 3600 (1 saat).",
+    "halfClosed": "Kapanmakta olan TCP",
+    "halfClosedHint": "FIN'den sonra. Varsayılan 600 (10 dakika).",
+    "udp": "UDP",
+    "udpHint": "Varsayılan 120 (2 dakika).",
+    "icmp": "ICMP",
+    "icmpHint": "Varsayılan 2."
+  },
+  "connections": {
+    "title": "Açık bağlantılar",
+    "noRuntime": "Canlı bağlantı tablosu konsolda: CLI sekmesini açıp show conn yaz (clear conn tabloyu boşaltır).",
+    "empty": "Açık bağlantı yok.",
+    "protocol": "Protokol",
+    "from": "Kaynak",
+    "to": "Hedef",
+    "state": "Durum",
+    "idle": "Boşta",
+    "bytes": "Bayt",
+    "idleValue": "{{seconds}} sn",
+    "protocols": {
+      "tcp": "TCP",
+      "udp": "UDP",
+      "icmp": "ICMP"
+    },
+    "states": {
+      "synSent": "Açılıyor",
+      "established": "Kurulu",
+      "halfClosed": "Kapanıyor",
+      "open": "Açık"
+    }
+  },
+  "port": {
+    "nameif": "Güvenlik duvarı adı (nameif)",
+    "nameifHint": "ör. inside, outside, dmz. Boş: arayüzden trafik geçmez.",
+    "level": "Güvenlik seviyesi",
+    "levelHint": "0–100. Boş: varsayılan (inside için 100, diğer adlar için 0)."
+  },
+  "errors": {
+    "nameifInvalid": "Ad, boşluk içermeyen tek bir sözcük olmalı.",
+    "duplicateNameif": "\"{{name}}\" adı başka bir arayüzde kullanılıyor.",
+    "securityLevelOutOfRange": "0 ile 100 arasında bir tam sayı gir ya da varsayılan için boş bırak.",
+    "levelNeedsNameif": "Önce arayüze bir ad ver: adı olmayan arayüzün seviyesi işe yaramaz.",
+    "timeoutRange": "0 ile {{max}} arasında tam saniye gir."
+  },
+  "notes": {
+    "noNameif": "Güvenlik duvarı: {{iface}} arayüzünün adı (nameif) yok, bu yüzden üzerinden trafik geçmez. Paket atıldı.",
+    "connectionMatched": "Güvenlik duvarı: paket {{id}} numaralı bağlantıya ait ({{protocol}} {{initiator}} → {{responder}}), seviye denetimi olmadan geçer.",
+    "errorMatched": "Güvenlik duvarı: bu ICMP hatası {{id}} numaralı bağlantıyla ilgili ({{protocol}} {{initiator}} → {{responder}}), geçer.",
+    "connectionCreated": "Güvenlik duvarı: {{initiator}} ({{from}}) → {{responder}} ({{to}}) için yeni {{protocol}} bağlantısı {{id}}. Yanıtları geçebilecek.",
+    "connectionEstablished": "Güvenlik duvarı: SYN+ACK geri geldi, {{id}} numaralı bağlantı kuruldu.",
+    "connectionHalfClosed": "Güvenlik duvarı: FIN görüldü, {{id}} numaralı bağlantı kapanıyor.",
+    "connectionReset": "Güvenlik duvarı: RST görüldü, {{id}} numaralı bağlantı silindi.",
+    "higherToLower": "Güvenlik duvarı: {{from}} (seviye {{fromLevel}}) → {{to}} (seviye {{toLevel}}): yüksek güvenlik seviyesinden düşüğe, izin verildi.",
+    "aclException": "Güvenlik duvarı: {{from}} (seviye {{fromLevel}}) → {{to}} (seviye {{toLevel}}): düşük seviyeden yükseğe; {{from}} girişine bağlı {{acl}} erişim listesi izin verdiği için geçer.",
+    "lowerToHigher": "Güvenlik duvarı: {{from}} (seviye {{fromLevel}}) → {{to}} (seviye {{toLevel}}): düşük seviyeden yükseğe ve {{from}} girişine bağlı erişim listesi yok. Paket atıldı.",
+    "sameLevel": "Güvenlik duvarı: {{from}} ve {{to}} aynı seviyede ({{level}}) ve same-security-traffic buna izin vermiyor. Paket atıldı.",
+    "sameLevelPermitted": "Güvenlik duvarı: {{from}} ve {{to}} aynı seviyede ({{level}}); same-security-traffic izin veriyor.",
+    "noConnection": "Güvenlik duvarı: hiçbir bağlantıya ait olmayan, SYN içermeyen bir TCP parçası ({{flags}}). Paket atıldı."
   }
 }

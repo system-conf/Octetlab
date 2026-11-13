@@ -65,7 +65,8 @@ Status: ✅ done · 🟡 partial · ⬜ not started · Phase = PLAN_V2 phase/pac
 | SSH / Telnet, AAA, enable secret, line config | 🟡 enable secret and line config done (4); SSH / Telnet with local users in progress (5.2: connect + login, no remote prompt yet); server AAA in 5.5 | 4 / 5.2 / 5.5 |
 | IPv6 (SLAAC, DHCPv6, OSPFv3) | ⬜ | 5.4 |
 | WAN: serial, PPP / CHAP, GRE, IPsec VPN | ⬜ | 5.7 |
-| Firewall device, zone-based firewall | ⬜ | 5.7 |
+| Firewall device (stateful appliance) | ✅ firewall pack: 2- and 3-port models, nameif + security levels, connection table (TCP / UDP / ICMP echo, lab rule: ICMP tracked by default), same-security switches, `access-group` exceptions, object NAT on the pack 5.2 engine, `show conn` / `show nameif` / `clear conn`, GUI card, 3 exercises + 1 sample (the rule engine ignores the firewall: oracle skips such labs) | firewall pack |
+| Zone-based firewall on routers | ⬜ deferred (FIREWALL_PACK.md §1) | 5.7 |
 | QoS, SNMP, NetFlow, VoIP | ⬜ | 5.8 |
 
 ## Wireless
@@ -86,7 +87,7 @@ Status: ✅ done · 🟡 partial · ⬜ not started · Phase = PLAN_V2 phase/pac
 ## Education
 | Feature | Status | Phase |
 |---|---|---|
-| Activities with goals and automatic grading | 🟡 7 fixed exercises (2 of them pack 5.2: ACL, NAT), 5 design briefs, sample labs | 5.9 |
+| Activities with goals and automatic grading | 🟡 10 fixed exercises (2 of them pack 5.2: ACL, NAT; 3 firewall pack), 5 design briefs, sample labs | 5.9 |
 | Activity editor for instructors | ⬜ | 5.9 |
 | Locked fields / hidden settings in activities | ✅ topology / device / section / port locks (+ `security` section, 5.2) | 2 |
 | Multiple languages | ✅ tr + en, i18n | 1 |

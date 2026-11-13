@@ -28,9 +28,16 @@ const allCases: GoldenCase[] = exerciseDefinitions.flatMap((exercise) => {
   ]
 })
 
-/** Cases the oracle compares; the others use ACL / NAT. */
-const cases = allCases.filter((golden) => !Divergences.securityPolicies(golden.state))
-const skipped = allCases.filter((golden) => Divergences.securityPolicies(golden.state))
+/** Labs the rule engine cannot follow: a firewall appliance (§10.3.8) or ACL / NAT (§10.3.7). */
+function outsideOracle(state: NetworkState): boolean {
+  return Divergences.firewall(state) || Divergences.securityPolicies(state)
+}
+
+/** Cases the oracle compares; the others use a firewall, ACL or NAT. */
+const cases = allCases.filter((golden) => !outsideOracle(golden.state))
+const skipped = allCases.filter((golden) => outsideOracle(golden.state))
+/** Exercises built around a firewall appliance: skipped at the start and after the fix. */
+const firewallExercises = exerciseDefinitions.filter((exercise) => Divergences.firewall(exercise.lab.state)).map((exercise) => exercise.id)
 
 function conditionsOf(id: string) {
   const exercise = exerciseDefinitions.find((candidate) => candidate.id === id)
@@ -39,10 +46,13 @@ function conditionsOf(id: string) {
 }
 
 describe('exercises: simulator vs rule engine (golden)', () => {
-  it('covers every exercise at the start, and skips exactly the fixed ACL / NAT labs', () => {
-    expect(new Set(cases.map((golden) => golden.id)).size).toBe(exerciseDefinitions.length)
-    expect(cases.filter((golden) => golden.stage === 'start')).toHaveLength(exerciseDefinitions.length)
-    expect(skipped.map((golden) => `${golden.id} ${golden.stage}`).sort()).toEqual(['cafeGuestWifi fixed', 'officeSharedIp fixed'])
+  it('covers every exercise without a firewall at the start, and skips exactly the fixed ACL / NAT labs and the firewall labs', () => {
+    expect(firewallExercises.sort()).toEqual(['clinicFirewallLevel', 'dmzWebsite', 'mallShopFirewall'])
+    const compared = exerciseDefinitions.length - firewallExercises.length
+    expect(new Set(cases.map((golden) => golden.id)).size).toBe(compared)
+    expect(cases.filter((golden) => golden.stage === 'start')).toHaveLength(compared)
+    const firewallSkips = firewallExercises.flatMap((id) => [`${id} fixed`, `${id} start`])
+    expect(skipped.map((golden) => `${golden.id} ${golden.stage}`).sort()).toEqual(['cafeGuestWifi fixed', ...firewallSkips, 'officeSharedIp fixed'].sort())
   })
 
   it.each(cases.map((golden): [string, string, GoldenCase] => [golden.id, golden.stage, golden]))('%s (%s): SimSolveChecker = SolveChecker', (_id, stage, golden) => {

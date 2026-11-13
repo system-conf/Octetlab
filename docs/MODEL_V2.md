@@ -80,9 +80,10 @@ classes), `src/lab/migrations/**` (v1 → v2). The v1 model and engine were dele
 
 `Device { id, kind, modelId, name, powered, baseMac, ports, host?, switching?, routing?, wireless?, services?, internet?, features? }`
 
-- `kind`: `internet, router, wirelessRouter, switch, l3Switch, hub, accessPoint, pc, laptop, server,
-  printer, ipPhone, pos, camera, nvr, kitchenDisplay, smartphone, tablet`. `END_DEVICE_KINDS` /
-  `isEndDeviceKind` name the end devices (they carry `host` and `host` ports).
+- `kind`: `internet, router, wirelessRouter, switch, l3Switch, hub, accessPoint, firewall, pc, laptop,
+  server, printer, ipPhone, pos, camera, nvr, kitchenDisplay, smartphone, tablet`. `END_DEVICE_KINDS` /
+  `isEndDeviceKind` name the end devices (they carry `host` and `host` ports). `firewall` (firewall
+  pack, docs/FIREWALL_PACK.md) is a network device with routed ports, not an end device.
 - `name`: user content in labs; placeholder (= id) in exercises, localized from `exercises:<id>.devices`.
 - `baseMac`: burned-in identity (bridge id, SVI MAC). For end devices = MAC of the primary NIC.
 
@@ -196,11 +197,12 @@ newer optional data (zod), and the PWA update flow fixes that.
 | 5.1 port security, CDP/LLDP | `SwitchportSettings.features.portSecurity`, `DeviceFeatures.discovery` |
 | 5.2 ACL / NAT (typed, in progress: docs/SECURITY_PACK.md) | `DeviceFeatures.accessLists: AccessListSettings` (`AccessListTypes.ts`), `DeviceFeatures.nat: NatSettings` (`NatTypes.ts`); bindings `L3Features.accessGroups: AclBinding`, `L3Features.natRole: NatRole` (hosts ignore both) |
 | 5.2 SSH/Telnet, local AAA · Phase 4 CLI | `DeviceFeatures.management` (hostname, secrets, lines, startup-config; 5.2 adds `domainName`, `users`, `ssh`, vty `transportInput` / `loginLocal` / `accessClass`). `DeviceServices.aaa` stays `never`: local AAA lives in `management.users`, server AAA (RADIUS / TACACS+) waits for the server pack 5.5 |
+| Firewall pack (docs/FIREWALL_PACK.md) | kind `firewall`; `DeviceFeatures.firewall: FirewallSettings` (`FirewallTypes.ts`: same-security switches, `inspectIcmp`, `timeouts`, network `objects` with their object NAT line); `L3Features.firewall: FirewallInterfaceSettings` (`nameif`, `securityLevel`). Exceptions reuse `accessLists` + `accessGroups`, translation reuses `nat` + `natRole`. Exercise lock: the firewall card belongs to the `security` section, nameif / level to `ports` |
 | 5.3 RIP/OSPF/EIGRP, HSRP | `RoutingSettings.features.{rip,ospf,eigrp}`, `L3Features.{rip,ospf,eigrp,hsrp}` |
 | 5.4 IPv6 | `L3Settings.ipv6` (+ IPv6 static routes as a sibling list, `HostSettings` IPv6 gateway/DNS) |
 | 5.5 servers | `DeviceServices.{http,ftp,tftp,email,syslog,ntp}`, more `DnsRecord` types; real apps replace `appLinks` |
 | 5.6 wireless security, snooping/DAI | `WirelessSecurity` union (`wpa2Personal`…), client key on the host NIC, `WirelessSettings.radio`, `SwitchingSettings.features.{dhcpSnooping,arpInspection}`, `SwitchportSettings.features.{dhcpSnoopingTrusted,arpInspectionTrusted}` |
-| 5.7 WAN | `SerialSettings.encapsulation`, `IspHandoff.customerAddressing`, `RoutingSettings.features.bgp`, kinds `firewall`, `modem` |
+| 5.7 WAN | `SerialSettings.encapsulation`, `IspHandoff.customerAddressing`, `RoutingSettings.features.bgp`, kind `modem` (`firewall` shipped with the firewall pack) |
 | 5.8 VTP/DTP, VoIP, SNMP | `SwitchingSettings.features.vtp`, `SwitchportMode` += `dynamicAuto` / `dynamicDesirable`, `SwitchportSettings.features.voiceVlan`, `DeviceFeatures.monitoring` |
 | 5.9 physical view, modules | `LabDocument` gets a `physical` layout; modules append ports (allowed: `ports` is authoritative) |
 
@@ -225,8 +227,9 @@ namespace keyed by id (I18N.md §5). `SolveCondition` = v1 conditions (`internet
 reached). `ExerciseLock`: `{ scope: 'topology' }`, `{ scope: 'link', linkId }`,
 `{ scope: 'device' | 'section' | 'port', …, access: 'readOnly' | 'hidden' }`, `{ scope: 'placement',
 deviceId }`; sections `power, ports, host, switching, routing, wireless, services, internet, terminal,
-security` (5.2: access lists, NAT, users, SSH, domain name). Anything not locked is editable. The
-pack 5.2 exercises (`src/scenarios/security`) are written as v2 data, not migrated.
+security` (5.2: access lists, NAT, users, SSH, domain name; firewall pack: `features.firewall`). Anything
+not locked is editable. The pack 5.2 and firewall pack exercises (`src/scenarios/security`) are written as
+v2 data, not migrated.
 `Exercise` = definition + `texts` (title, complaint, guide ×3, explanation, topics) for the UI.
 Note: setting ids are now English; I2 renames `landing:settings.{restoran,ofis,magaza}` accordingly.
 

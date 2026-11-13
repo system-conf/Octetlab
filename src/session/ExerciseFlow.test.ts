@@ -10,6 +10,7 @@ import enExercises from '../locales/en/exercises.json'
 import trExercises from '../locales/tr/exercises.json'
 import { exerciseDefinitions } from '../scenarios/exerciseDefinitions'
 import { ExerciseLocalizer } from '../scenarios/ExerciseLocalizer'
+import { publishWebServer, raiseInsideLevel, removeOpenBinding } from '../scenarios/security/firewallFixes'
 import { blockGuests, overloadOffice } from '../scenarios/security/securityFixes'
 import { ExerciseAttempt } from './ExerciseAttempt'
 import { ExerciseLabs } from './ExerciseLabs'
@@ -54,6 +55,10 @@ const FIXES: Readonly<Record<string, { devices: string[]; fix: (state: NetworkSt
   // Pack 5.2: solved only on the simulator (ExerciseAttempt uses SimSolveChecker), once the ACL / NAT policies are merged.
   cafeGuestWifi: { devices: ['router'], fix: blockGuests },
   officeSharedIp: { devices: ['router'], fix: overloadOffice },
+  // Firewall pack.
+  mallShopFirewall: { devices: ['firewall'], fix: (state) => removeOpenBinding(state) },
+  dmzWebsite: { devices: ['firewall'], fix: (state) => publishWebServer(state) },
+  clinicFirewallLevel: { devices: ['firewall'], fix: (state) => raiseInsideLevel(state) },
 }
 
 function openExercise(id: string): { exercise: Exercise; doc: LabDocument } {

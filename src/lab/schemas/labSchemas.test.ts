@@ -5,6 +5,7 @@ import type { z } from 'zod'
 import type {
   AccessListSettings,
   FirewallInterfaceSettings,
+  FirewallNetworkObject,
   FirewallSettings,
   LocalUser,
   NatSettings,
@@ -46,7 +47,7 @@ import {
   linkSchema,
   networkStateSchema,
 } from './labDocumentSchema'
-import { firewallInterfaceSchema, firewallSettingsSchema } from './firewallSchemas'
+import { firewallInterfaceSchema, firewallNetworkObjectSchema, firewallSettingsSchema } from './firewallSchemas'
 import { l3SettingsSchema, portSchema, switchportSettingsSchema } from './portSchemas'
 import { accessListSettingsSchema, localUserSchema, natSettingsSchema, sshSettingsSchema } from './securitySchemas'
 import { deviceServicesSchema, internetSettingsSchema } from './serviceSchemas'
@@ -90,6 +91,7 @@ const proofs = [
   assertTrue<Mirrors<typeof sshSettingsSchema, SshSettings>>(true),
   assertTrue<Mirrors<typeof firewallSettingsSchema, FirewallSettings>>(true),
   assertTrue<Mirrors<typeof firewallInterfaceSchema, FirewallInterfaceSettings>>(true),
+  assertTrue<Mirrors<typeof firewallNetworkObjectSchema, FirewallNetworkObject>>(true),
   assertTrue<Mirrors<typeof v1NetworkStateSchema, V1NetworkState>>(true),
   assertTrue<Mirrors<typeof v1ScenarioDefinitionSchema, V1ScenarioDefinition>>(true),
 ]

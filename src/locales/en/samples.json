@@ -1308,6 +1308,58 @@
         "RSA keys",
         "vty lines"
       ]
+    },
+    "securityFirewallOffice": {
+      "title": "Office behind a firewall",
+      "summary": "A firewall with three zones: the office starts connections, the DMZ web server is published, and nothing lower starts a connection inwards on its own.",
+      "intro": {
+        "what": "FW1 is a firewall appliance with three interfaces. Each has a name (nameif) and a security level from 0 to 100: inside (the office, 192.168.1.0/24) at 100, dmz (the web server WEB1, 172.16.1.10) at 50 and outside (towards the provider) at 0. The office PCs go out through PAT on the outside address, and WEB1 is published at 203.0.113.10 with static NAT and one access list on the outside interface.",
+        "why": "A firewall is stateful: it keeps a connection table. Traffic from a higher to a lower level is allowed and opens a connection; the answers come back through that table. Traffic from a lower to a higher level is dropped unless an access list bound to the interface where it arrives lets it in. Two interfaces at the same level do not talk unless you allow it explicitly.",
+        "realWorld": "This is the typical small-business layout: office PCs inside, a public-facing server (website, mail, camera recorder) in a DMZ, the internet outside. If the server is broken into, the attacker is still kept out of the office. In this lab ICMP echo is tracked like a connection so ping works through the firewall; real appliances do not do that by default and need ICMP inspection or an access list for the replies."
+      },
+      "steps": {
+        "readLevels": {
+          "title": "Read the zones",
+          "detail": "On FW1, show nameif: each interface with its name and security level (inside 100, dmz 50, outside 0). The firewall card shows the same table."
+        },
+        "insideOut": {
+          "title": "Inside goes out",
+          "detail": "From PC1, ping WEB1 (172.16.1.10) and HOME1 (198.51.100.20). Both answer: inside is the highest level, so it may start connections to every other zone, and the replies come back."
+        },
+        "dmzCannotStart": {
+          "title": "The DMZ cannot start inwards",
+          "detail": "In Simulation mode, ping PC1 (192.168.1.10) from WEB1. The request stops at FW1: dmz (50) is lower than inside (100) and no access list on the dmz interface lets it in. The inspector names the reason."
+        },
+        "publishedSite": {
+          "title": "The published server",
+          "detail": "From HOME1, ping 203.0.113.10. FW1 translates the public address to WEB1's real address 172.16.1.10 (static NAT), and the list OUTSIDE_IN, bound in on the outside interface, permits web traffic and ping to that real address."
+        },
+        "readConnections": {
+          "title": "Read the connection table",
+          "detail": "Right after the pings, show conn on FW1: every allowed connection with its protocol, both interfaces, both addresses and its idle time. clear conn empties the table; new traffic builds it again."
+        }
+      },
+      "breakIt": {
+        "unbindException": {
+          "change": "On FW1, no access-group OUTSIDE_IN in interface outside.",
+          "result": "HOME1 can no longer reach 203.0.113.10: outside (0) → dmz (50) has no exception any more. The office still gets out, because its replies come back through the connection table, not through the list."
+        },
+        "noNameifDmz": {
+          "change": "On FW1, interface Gi0/2, no nameif.",
+          "result": "An interface without a name carries no traffic at all in this lab: WEB1 is cut off from the office and from the internet, while the office still reaches HOME1."
+        },
+        "dmzLevel100": {
+          "change": "On FW1, interface Gi0/2, security-level 100.",
+          "result": "dmz and inside now have the same level, and equal levels block each other by default: PC1 no longer reaches WEB1. same-security-traffic permit inter-interface would open it again."
+        }
+      },
+      "topics": [
+        "Firewall",
+        "Security levels",
+        "DMZ",
+        "Stateful inspection",
+        "Static NAT"
+      ]
     }
   }
 }

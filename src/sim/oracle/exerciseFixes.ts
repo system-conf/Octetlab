@@ -2,6 +2,7 @@
 // and src/scenarios/security/securityFixes.ts), applied to the lab of its ExerciseDefinition.
 import type { NetworkState } from '../../domain'
 import { editAddress, editHost, editSwitchport } from '../../engine/testLabs'
+import { FIREWALL_EXERCISE_FIXES } from '../../scenarios/security/firewallFixes'
 import { SECURITY_EXERCISE_FIXES } from '../../scenarios/security/securityFixes'
 
 const MASK = '255.255.255.0'
@@ -18,4 +19,5 @@ export const EXERCISE_FIXES: Readonly<Record<string, (state: NetworkState) => Ne
   kitchenVlan: (state) => editSwitchport(state, 'switch', 'Fa0/3', { mode: 'access', accessVlan: 10 }),
   wrongDns: (state) => editHost(state, 'muhasebe', { dnsServers: ['192.168.1.1'] }),
   ...SECURITY_EXERCISE_FIXES,
+  ...FIREWALL_EXERCISE_FIXES,
 }

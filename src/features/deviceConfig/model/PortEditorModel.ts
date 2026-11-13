@@ -42,7 +42,7 @@ export interface PortDraft {
   security: PortSecurityDraft
 }
 
-export type PortField = 'accessVlan' | 'nativeVlan' | 'allowedList' | 'address' | 'mask' | 'clockRate' | 'aclIn' | 'aclOut'
+export type PortField = 'accessVlan' | 'nativeVlan' | 'allowedList' | 'address' | 'mask' | 'clockRate' | 'aclIn' | 'aclOut' | 'nameif' | 'securityLevel'
 
 export interface PortErrors {
   fields: FieldErrors<PortField>
@@ -123,8 +123,8 @@ export class PortEditorModel {
     }
   }
 
-  /** Checks only what the current role and mode show. */
-  static validate(draft: PortDraft, port: Port): PortErrors {
+  /** Checks only what the current role and mode show; `device` enables the firewall nameif / level checks. */
+  static validate(draft: PortDraft, port: Port, device?: Device): PortErrors {
     const fields: FieldErrors<PortField> = {}
     if (draft.role === 'switched') {
       if (draft.mode === 'access') fields.accessVlan = VlanListParser.idError(draft.accessVlan)
@@ -143,6 +143,7 @@ export class PortEditorModel {
     if (draft.role === 'routed') {
       fields.aclIn = PortSecurityModel.nameError(draft.security.aclIn)
       fields.aclOut = PortSecurityModel.nameError(draft.security.aclOut)
+      if (device !== undefined) Object.assign(fields, PortSecurityModel.firewallErrors(device, port.id, draft.role, draft.security))
     }
     if (PortEditorModel.hasClockRate(draft, port) && draft.clockRate.trim() !== '' && parseWholeNumber(draft.clockRate, 1, MAX_CLOCK_RATE) === null) {
       fields.clockRate = localizedMessage('deviceConfig:errors.clockRate')

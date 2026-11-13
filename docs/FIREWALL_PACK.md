@@ -134,10 +134,9 @@ with the same packet object). Order of checks for a forwarded packet:
    - between two interfaces: allowed only with `sameSecurityInterInterface`;
    - in and out of the same interface: allowed only with `sameSecurityIntraInterface`;
    - otherwise drop `firewallSameLevel`.
-4. Higher → lower level: allowed unless an ACL bound to the interface denies the packet. That denial
-   comes from AclPolicy, after the firewall in the chain.
-5. Lower → higher level: allowed only when an inbound ACL is bound on the ingress interface. AclPolicy
-   then decides permit or deny. Without such an ACL → drop `firewallDenied`.
+4. Higher → lower level: allowed unless an ACL bound to the interface denies the packet (`aclDenied`).
+5. Lower → higher level: allowed only when an inbound ACL is bound on the ingress interface and permits
+   the packet (`aclDenied` otherwise). Without such an ACL → drop `firewallDenied`.
 6. A TCP segment that is not a SYN, and matches no connection → drop `firewallNoConnection`.
 7. When the packet is allowed and opens a flow (TCP SYN, UDP, ICMP echo request), agent A creates the
    connection on egress. Egress runs after NAT has reversed, so the entry stores the real addresses.
@@ -147,6 +146,13 @@ interface, and SSH / Telnet to the device: the management access rules of pack 5
 
 Drops conclude with the reason. No ICMP error is sent: firewalls drop silently. If agent A finds a
 source that says otherwise, it reports this; it is not a contract change.
+
+ACLs on a firewall (coordinator-approved change): `AclPolicy` returns `pass` with the same packet object
+on a device whose `kind === 'firewall'`. FirewallPolicy evaluates the bound `access-group` lists itself
+at egress, after the connection lookup and on the real (post-un-NAT) addresses: the inbound list of the
+ingress interface, then the level rule, then the outbound list of the exit interface. A deny drops
+silently with `aclDenied`, matches count in `aclCounters` and leave `acl:notes.*`. So the replies of a
+tracked connection never meet an interface ACL, as on stateful appliances, and D6 holds.
 
 ### 5.2 Runtime slots
 
@@ -239,7 +245,9 @@ final result:
 4. CONN-SETTINGS / level check
 
 It is computed from the configuration with the same pure functions as FirewallPolicy. Agent A exports
-them for agent B: `FirewallRules.decide(device, ingressPort, packetView)`. No packet is sent. The exact
+them for agent B: `FirewallRules.decide(device, ingressInterfaceId, packetView, exitInterfaceId)`, where
+`packetView` is an `AclPacketView` (no `tcpFlags` = a SYN) and `exitInterfaceId` comes from the route
+lookup (`null` = addressed to the firewall). No packet is sent. The exact
 real-device wording is **UNVERIFIED**, so the output stays generic.
 
 ### 6.5 Running-config slots

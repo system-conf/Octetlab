@@ -1308,6 +1308,58 @@
         "RSA anahtarları",
         "vty hatları"
       ]
+    },
+    "securityFirewallOffice": {
+      "title": "Ofis güvenlik duvarının arkasında",
+      "summary": "Üç bölgeli bir güvenlik duvarı: ofis bağlantı başlatır, DMZ'deki web sunucusu yayınlanır, düşük seviyedeki hiçbir şey kendiliğinden içeriye bağlantı başlatamaz.",
+      "intro": {
+        "what": "FW1 üç arayüzlü bir güvenlik duvarı cihazıdır. Her arayüzün bir adı (nameif) ve 0 ile 100 arasında bir güvenlik seviyesi vardır: inside (ofis, 192.168.1.0/24) 100, dmz (web sunucusu WEB1, 172.16.1.10) 50 ve outside (sağlayıcıya doğru) 0. Ofis bilgisayarları dış adres üzerinden PAT ile dışarı çıkar; WEB1 ise statik NAT ve outside arayüzündeki tek bir erişim listesiyle 203.0.113.10 adresinde yayınlanır.",
+        "why": "Güvenlik duvarı durum takiplidir: bir bağlantı tablosu tutar. Yüksek seviyeden düşük seviyeye giden trafiğe izin verilir ve bir bağlantı açar; cevaplar bu tablo üzerinden geri gelir. Düşük seviyeden yüksek seviyeye giden trafik ise, geldiği arayüze bağlı bir erişim listesi izin vermedikçe atılır. Aynı seviyedeki iki arayüz, sen açıkça izin vermedikçe konuşmaz.",
+        "realWorld": "Küçük işletmelerin tipik düzeni budur: ofis bilgisayarları içeride, dışarıya açık bir sunucu (web sitesi, e-posta, kamera kayıt cihazı) DMZ'de, internet dışarıda. Sunucu ele geçirilse bile saldırgan ofise giremez. Bu laboratuvarda ICMP echo bir bağlantı gibi takip edilir, böylece ping güvenlik duvarından geçer; gerçek cihazlar bunu varsayılan olarak yapmaz, cevaplar için ICMP denetimi ya da bir erişim listesi gerekir."
+      },
+      "steps": {
+        "readLevels": {
+          "title": "Bölgeleri oku",
+          "detail": "FW1'de show nameif: her arayüz adı ve güvenlik seviyesiyle (inside 100, dmz 50, outside 0). Güvenlik duvarı kartı aynı tabloyu gösterir."
+        },
+        "insideOut": {
+          "title": "İçerisi dışarı çıkar",
+          "detail": "PC1'den WEB1'e (172.16.1.10) ve HOME1'e (198.51.100.20) ping at. İkisi de cevap verir: inside en yüksek seviyedir, diğer her bölgeye bağlantı başlatabilir ve cevaplar geri gelir."
+        },
+        "dmzCannotStart": {
+          "title": "DMZ içeriye bağlantı başlatamaz",
+          "detail": "Simülasyon modunda WEB1'den PC1'e (192.168.1.10) ping at. İstek FW1'de durur: dmz (50) inside'dan (100) düşüktür ve dmz arayüzünde onu içeri alan bir erişim listesi yoktur. İnceleyici nedenini yazar."
+        },
+        "publishedSite": {
+          "title": "Yayınlanan sunucu",
+          "detail": "HOME1'den 203.0.113.10'a ping at. FW1 genel adresi WEB1'in gerçek adresi 172.16.1.10'a çevirir (statik NAT); outside arayüzüne içeri yönde bağlı OUTSIDE_IN listesi de o gerçek adrese web trafiğine ve ping'e izin verir."
+        },
+        "readConnections": {
+          "title": "Bağlantı tablosunu oku",
+          "detail": "Ping'lerin hemen ardından FW1'de show conn: izin verilen her bağlantı protokolü, iki arayüzü, iki adresi ve boşta kalma süresiyle. clear conn tabloyu boşaltır; yeni trafik onu yeniden doldurur."
+        }
+      },
+      "breakIt": {
+        "unbindException": {
+          "change": "FW1'de no access-group OUTSIDE_IN in interface outside.",
+          "result": "HOME1 artık 203.0.113.10'a ulaşamaz: outside (0) → dmz (50) için istisna kalmadı. Ofis yine de dışarı çıkar, çünkü cevapları listeden değil bağlantı tablosundan geçer."
+        },
+        "noNameifDmz": {
+          "change": "FW1'de interface Gi0/2, no nameif.",
+          "result": "Bu laboratuvarda adı olmayan bir arayüz hiç trafik taşımaz: WEB1 ofisten de internetten de kopar, ofis ise HOME1'e ulaşmaya devam eder."
+        },
+        "dmzLevel100": {
+          "change": "FW1'de interface Gi0/2, security-level 100.",
+          "result": "dmz ile inside artık aynı seviyede ve eşit seviyeler varsayılan olarak birbirini engeller: PC1 artık WEB1'e ulaşamaz. same-security-traffic permit inter-interface bunu yeniden açar."
+        }
+      },
+      "topics": [
+        "Güvenlik duvarı",
+        "Güvenlik seviyeleri",
+        "DMZ",
+        "Durum takipli denetim",
+        "Statik NAT"
+      ]
     }
   }
 }
