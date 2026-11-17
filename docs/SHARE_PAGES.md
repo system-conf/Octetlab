@@ -80,8 +80,13 @@ translated sentence per code; the technical detail goes to the console / Worker 
 ## 7. Open Graph picture
 
 `OgImageSvg` draws the topology (`ShareTopology.fit`): cables, coloured circles per device group, the
-logo and a colour legend. **It contains no text**: the resvg WebAssembly build has no fonts and
-loading one would add ~100 KB+ per font to the store Worker; the title is shown by the preview itself.
+the share's title (one or two lines, `OgTextLayout` wraps by an estimated glyph width and adds an
+ellipsis), the logo with "Octetlab", and the author's name on the right (the colour legend when there
+is no author). resvg in a Worker has no system fonts, so Inter Bold and Medium (SIL OFL,
+`mcp/src/share/fonts/OFL.txt`) are bundled as `.ttf` Data modules (`rules` in `mcp/wrangler.jsonc`),
+subset to Latin / Latin-1 / Latin Extended-A (Turkish included): ~39 KB each, ~40 KB gzip in total.
+All user text is XML-escaped at the SVG boundary. Pictures are made once when a share is created, so
+shares made before the fonts keep their text-free picture.
 A failed render is logged and the share keeps working with the default `/ogImage.png`.
 
 ## 8. Dedup and delete tokens

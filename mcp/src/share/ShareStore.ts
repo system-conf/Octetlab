@@ -5,6 +5,7 @@
 import { DurableObject } from 'cloudflare:workers'
 import type { ShareRecord } from '../../../src/features/share/model/shareContract'
 import type { WorkerEnv } from '../platform/WorkerBindings'
+import { OgFonts } from './OgFonts'
 import { ResvgPngRenderer } from './ResvgPngRenderer'
 import type { DeleteOutcome } from './ShareRepository'
 import { ShareService, type CreateOutcome, type ShareMeta } from './ShareService'
@@ -24,7 +25,7 @@ export class ShareStore extends DurableObject<WorkerEnv> {
       },
       transaction: (body) => storage.transactionSync(body),
     }
-    this.service = new ShareService(new SqlShareRepository(sql), new ResvgPngRenderer())
+    this.service = new ShareService(new SqlShareRepository(sql), new ResvgPngRenderer(OgFonts.buffers()))
   }
 
   create(bodyText: string): Promise<CreateOutcome> {

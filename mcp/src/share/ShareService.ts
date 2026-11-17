@@ -5,7 +5,7 @@
 import type { LabDocument } from '../../../src/domain'
 import { labSerializer } from '../../../src/lab/LabSerializer'
 import { SHARE_ID_PATTERN, SHARE_LIMITS, shareDraftSchema, type ShareErrorCode, type ShareRecord } from '../../../src/features/share/model/shareContract'
-import { OgImageSvg } from './OgImageSvg'
+import { OgImageSvg, type OgImageText } from './OgImageSvg'
 import { ShareCrypto } from './ShareCrypto'
 import type { DeleteOutcome, ShareRepository } from './ShareRepository'
 
@@ -68,7 +68,7 @@ export class ShareService {
       const outcome = this.repository.insert({ id: ShareCrypto.newId(), contentHash, deleteTokenHash, title, author, linkedinUrl, description, docText, createdAt })
       if (outcome.kind === 'idTaken') continue
       if (outcome.kind === 'existing') return { ok: true, id: outcome.id, created: false, deleteToken: null }
-      await this.renderImage(outcome.id, lab.doc)
+      await this.renderImage(outcome.id, lab.doc, { title, author })
       return { ok: true, id: outcome.id, created: true, deleteToken }
     }
     throw new Error(`ShareStore: no free share id after ${ID_ATTEMPTS} attempts`)
@@ -106,9 +106,9 @@ export class ShareService {
   }
 
   /** A failed render leaves the share without its own image (the page then uses the app's default one). */
-  private async renderImage(id: string, doc: LabDocument): Promise<void> {
+  private async renderImage(id: string, doc: LabDocument, text: OgImageText): Promise<void> {
     try {
-      this.repository.setImage(id, await this.renderer.render(OgImageSvg.build(doc)))
+      this.repository.setImage(id, await this.renderer.render(OgImageSvg.build(doc, text)))
     } catch (error) {
       console.error(`ShareStore: the Open Graph image of share ${id} could not be rendered; the default image is used.`, error)
     }

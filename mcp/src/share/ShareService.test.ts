@@ -98,12 +98,13 @@ describe('ShareService', () => {
 })
 
 describe('OgImageSvg', () => {
-  it('draws a 1200×630 picture with one circle pair per device and no user text', () => {
+  it('draws a 1200×630 picture with one circle pair per device and only the share text (escaped)', () => {
     const doc = shareTestLab('<script>alert(1)</script>')
-    const svg = OgImageSvg.build(doc)
+    const svg = OgImageSvg.build(doc, { title: '<script>alert(2)</script>', author: '' })
     expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"')).toBe(true)
     expect(svg.match(/<circle /g)?.length).toBe(doc.state.devices.length * 2 + 3)
-    expect(svg).not.toContain('script')
-    expect(svg).not.toContain('<text')
+    expect(svg).not.toContain('<script')
+    expect(svg).not.toContain('alert(1)')
+    expect(svg.match(/<text /g)?.length).toBe(2)
   })
 })

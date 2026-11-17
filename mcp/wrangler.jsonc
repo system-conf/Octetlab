@@ -11,6 +11,8 @@
   "workers_dev": true,
   "preview_urls": false,
   "observability": { "enabled": true },
+  // Fonts of the share pages' Open Graph picture (mcp/src/share/OgFonts.ts) as ArrayBuffer modules.
+  "rules": [{ "type": "Data", "globs": ["**/*.ttf"], "fallthrough": true }],
   "vars": {
     // Page of the web app that opens share links (`<APP_LAB_URL>#lab=…`).
     "APP_LAB_URL": "https://octetlab.slovveis.workers.dev/lab",

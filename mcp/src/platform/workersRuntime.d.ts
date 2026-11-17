@@ -31,6 +31,12 @@ declare module '*.wasm' {
   export default module
 }
 
+/** `.ttf` imports: bundled as Data modules (mcp/wrangler.jsonc "rules"), i.e. the raw bytes. */
+declare module '*.ttf' {
+  const data: ArrayBuffer
+  export default data
+}
+
 /** ctx of a Durable Object: storage plus the WebSocket Hibernation API. */
 interface DurableObjectState {
   readonly storage: DurableObjectStorage
