@@ -11,7 +11,7 @@
   <img alt="English | Türkçe" src="https://img.shields.io/badge/i18n-English%20%7C%20T%C3%BCrk%C3%A7e-7c3aed">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2000%2B-0f766e">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-2600%2B-0f766e">
   <a href="#chatgpt-veya-claude-ile-kullan-mcp"><img alt="ChatGPT ve Claude için MCP sunucusu" src="https://img.shields.io/badge/MCP-ChatGPT%20%7C%20Claude-0369a1"></a>
 </p>
 
@@ -45,48 +45,64 @@ paketin nereye gittiğini adım adım izlersin. Kurulum ve üyelik gerekmez; bil
     <td width="50%"><img src="docs/images/darkMode.png" alt="Koyu temada çalışma alanı"><br><sub><b>Koyu tema</b> — açık, koyu ya da sistemle aynı</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/images/samples.png" alt="Örnek lab kütüphanesi"><br><sub><b>Örnek lab kütüphanesi</b> — adreslemeden VLAN'lar arası routing'e 24 ders</sub></td>
+    <td width="50%"><img src="docs/images/samples.png" alt="Örnek lab kütüphanesi"><br><sub><b>Örnek lab kütüphanesi</b> — adreslemeden ACL, NAT ve güvenlik duvarına 29 ders</sub></td>
     <td width="50%"><img src="docs/images/designTasks.png" alt="Tasarım görevleri"><br><sub><b>Tasarım görevleri</b> — müşteri talebi, bütçe ve canlı kontrol listesi</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/firewall.png" alt="Güvenlik duvarında packet-tracer, dışarıdan gelen web isteğinin DMZ sunucusuna neden ulaştığını açıklıyor"><br><sub><b>Güvenlik duvarı</b> — güvenlik seviyeleri, nesne NAT'ı ve her kararı açıklayan packet tracer</sub></td>
+    <td width="50%"><img src="docs/images/sharePreview.png" alt="Paylaşılan bir labın önizleme resmi: başlık, topoloji, Octetlab ve yazarın adı"><br><sub><b>Sayfa olarak paylaş</b> — paylaşılan lab için LinkedIn'in gösterdiği önizleme resmi</sub></td>
   </tr>
 </table>
 
 ## Neler yapabilirsin
 
-- **Ağ kur:** Router, switch (L2 / L3, PoE), hub, erişim noktası, kablosuz router, modem, sunucu,
-  PC, dizüstü, telefon, yazıcı, kamera, NVR ve daha fazlasını (37 cihaz modeli) haritaya sürükle,
-  doğru kabloyla bağla, port ışıklarının yandığını gör.
+- **Ağ kur:** Router, güvenlik duvarı, switch (L2 / L3, PoE), hub, erişim noktası, kablosuz router,
+  modem, sunucu, PC, dizüstü, telefon, yazıcı, kamera, NVR ve daha fazlasını (39 cihaz modeli)
+  haritaya sürükle, doğru kabloyla bağla, port ışıklarının yandığını gör.
 - **Yapılandır:** Port, VLAN, trunk, SVI, router-on-a-stick, statik ve yedek (floating) rota,
   DHCP (havuz, hariç tutma, relay), DNS, Wi-Fi SSID'leri. Ayar panelinden ya da **cihaz CLI'ından**
   (`enable`, `conf t`, `interface`, `switchport`, `ip address`, `show vlan brief`,
   `show ip route`, `show running-config`, `?` yardımı, Tab tamamlama, `--More--` sayfalama).
+- **Güvenlik:** Arayüzlerde ve VTY hatlarında standart ve genişletilmiş erişim listeleri (numaralı
+  ve isimli), `show ip nat translations` ile NAT / PAT (statik, havuz, overload), yerel
+  kullanıcılarla SSH ve Telnet girişi.
+- **Güvenlik duvarı:** Durum takipli bir firewall cihazı: arayüz adları ve güvenlik seviyeleri,
+  bağlantı tablosu (cevaplar geçer, dışarıdan başlayan trafik erişim listesi izin vermedikçe
+  atılır), DMZ'deki sunucuyu yayınlamak için nesne NAT'ı, `show conn`, `show xlate` ve kararı adım
+  adım açıklayan `packet-tracer`.
 - **Test et:** Uç cihazlarda Windows tarzı terminal (`ping`, `ipconfig`, `nslookup`, `tracert`,
   `arp -a`).
 - **Simülasyon modu:** Belirlenimci, paket düzeyinde simülatör. ARP, DHCP, DNS, ICMP ve VLAN
   etiketlemeyi olay olay izle, her paketi katman katman incele, protokole göre filtrele ve kaydı
   Wireshark için `.pcap` olarak dışa aktar.
-- **Örnek lablar:** 24 kısa ders (temeller, DHCP, DNS, switching, routing, paket görünümü). Her biri
-  hazır bir lab, otomatik kontrol edilen "bunu dene" adımları ve "boz bakalım" fikirleriyle gelir.
-- **Arıza alıştırmaları:** Küçük işletme ağlarında (restoran, ofis, mağaza) gerçek hayattan arızalar.
-  Yanlış ayarı bul, düzelt, doğrula; rapor ne olduğunu anlatır.
+- **Örnek lablar:** 29 kısa ders (temeller, DHCP, DNS, switching, routing, paket görünümü, ACL /
+  NAT / SSH, güvenlik duvarı). Her biri hazır bir lab, otomatik kontrol edilen "bunu dene" adımları
+  ve "boz bakalım" fikirleriyle gelir.
+- **Arıza alıştırmaları:** Küçük işletme ağlarında (restoran, ofis, mağaza, klinik) gerçek hayattan
+  10 arıza. Yanlış ayarı bul, düzelt, doğrula; rapor ne olduğunu ve iş görüşmesinde nasıl
+  anlatacağını açıklar.
 - **Tasarım görevleri:** Bir müşteri talebi (küçük ofis, restoran, okul, fabrika, otel), gereksinimler,
   bütçe ve canlı kontrol listesi. Teslim et, değerlendirmeni al, teslim dosyasını
   (topoloji, IP planı, VLAN tablosu, port listesi) indir.
 - **Dosyaların:** Lablar tarayıcında otomatik kaydedilir; `.agl.json` olarak dışa / içe aktarılır,
   bağlantıyla paylaşılır, tüm cihazların config'leri metin olarak indirilir.
+- **Sayfa olarak paylaş:** Labı herkese açık bir sayfa (`/p/…`) olarak yayınla: topoloji, cihaz / IP /
+  VLAN tabloları, adın ve LinkedIn profilin, LinkedIn için hazırlanmış önizleme resmiyle. Ziyaretçi
+  tek tıkla kendi kopyasını açar; sayfayı yalnızca senin tarayıcın silebilir.
 - **Tercihler:** Açık / koyu / sistem teması, harita etiketleri, ızgara ve yapıştırma, animasyon hızı,
   terminal ve CLI seçenekleri.
 
 Octetlab bir oyun değil, öğrenme laboratuvarı: puan yok, can yok; gerçek ağlar gibi davranan ağlar
-var. Yol haritası (dinamik routing, STP, ACL / NAT, IPv6, kablosuz güvenlik, WAN, sunucular ve
-fazlası) [docs/PLAN_V2.md](docs/PLAN_V2.md) ve [docs/PARITY.md](docs/PARITY.md) dosyalarında.
+var. Yol haritası (dinamik routing, STP, bölge tabanlı güvenlik duvarı, IPv6, kablosuz güvenlik,
+WAN, sunucular ve fazlası) [docs/PLAN_V2.md](docs/PLAN_V2.md) ve [docs/PARITY.md](docs/PARITY.md) dosyalarında.
 
 ## ChatGPT veya Claude ile kullan (MCP)
 
 Octetlab bir MCP sunucusu olarak da çalışıyor; yani bir sohbet asistanı lab işlerini senin yerine
 yapabilir, bilgisayardan da telefondan da. Ne istediğini düz cümlelerle yazarsın: asistan sıfırdan
 ya da bir örnekten lab kurar, cihaz ekleyip kablolar, bilgisayarların, router'ların ve switch'lerin
-ayarlarını yapar, `ping`, `tracert` ve `show` komutlarını çalıştırır, sonunda da labı Octetlab'de
-açan bir bağlantı verir.
+ayarlarını yapar, `ping`, `tracert` ve `show` komutlarını çalıştırır ve canlı bir bağlantı verir:
+Octetlab'de açarsın, asistan çalıştıkça lab gözünün önünde değişir.
 
 **Sunucu adresi:** `https://octetlabmcp.slovveis.workers.dev/mcp` (giriş yapmak gerekmez)
 

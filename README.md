@@ -11,7 +11,7 @@
   <img alt="English | Türkçe" src="https://img.shields.io/badge/i18n-English%20%7C%20T%C3%BCrk%C3%A7e-7c3aed">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-2000%2B-0f766e">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-2600%2B-0f766e">
   <a href="#use-with-chatgpt-or-claude-mcp"><img alt="MCP server for ChatGPT and Claude" src="https://img.shields.io/badge/MCP-ChatGPT%20%7C%20Claude-0369a1"></a>
 </p>
 
@@ -40,39 +40,56 @@ simulation mode. No installation, no account, works on desktop and tablet. Avail
     <td width="50%"><img src="docs/images/darkMode.png" alt="The workspace in dark mode"><br><sub><b>Dark mode</b> — light, dark or follow the system</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/images/samples.png" alt="The sample lab library"><br><sub><b>Sample library</b> — 24 lessons from addressing to inter-VLAN routing</sub></td>
+    <td width="50%"><img src="docs/images/samples.png" alt="The sample lab library"><br><sub><b>Sample library</b> — 29 lessons, from addressing to ACLs, NAT and firewalls</sub></td>
     <td width="50%"><img src="docs/images/designTasks.png" alt="Design tasks"><br><sub><b>Design tasks</b> — a customer brief, a budget and a live checklist</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/firewall.png" alt="packet-tracer on a firewall explains why a web request from outside reaches the DMZ server"><br><sub><b>Firewall</b> — security levels, object NAT and a packet tracer that explains each verdict</sub></td>
+    <td width="50%"><img src="docs/images/sharePreview.png" alt="The link preview picture of a shared lab: title, topology, Octetlab and the author's name"><br><sub><b>Share as a page</b> — the preview picture LinkedIn shows for a shared lab</sub></td>
   </tr>
 </table>
 
 ## What you can do
 
-- **Build networks** — drag routers, switches (L2 / L3, PoE), hubs, access points, wireless
-  routers, modems, servers, PCs, laptops, phones, printers, cameras, NVRs and more onto the map
-  (37 device models), connect them with the right cable and see link lights come up.
+- **Build networks** — drag routers, firewalls, switches (L2 / L3, PoE), hubs, access points,
+  wireless routers, modems, servers, PCs, laptops, phones, printers, cameras, NVRs and more onto
+  the map (39 device models), connect them with the right cable and see link lights come up.
 - **Configure** — ports, VLANs, trunks, SVIs, router-on-a-stick, static and floating routes, DHCP
   (pools, exclusions, relay), DNS, Wi-Fi SSIDs; from the settings panel or from the **device CLI**
   (`enable`, `conf t`, `interface`, `switchport`, `ip address`, `show vlan brief`,
   `show ip route`, `show running-config`, `?` help, Tab completion, `--More--` paging).
+- **Secure** — standard and extended access lists (numbered and named) on interfaces and VTY
+  lines, NAT / PAT (static, pool, overload) with `show ip nat translations`, SSH and Telnet logins
+  with local users.
+- **Firewall** — a stateful firewall appliance: interface names and security levels, a connection
+  table (replies pass, outside-started traffic is dropped unless an access list allows it), object
+  NAT to publish a DMZ server, `show conn`, `show xlate` and a `packet-tracer` that explains the
+  verdict step by step.
 - **Test** — a Windows-style terminal on end devices (`ping`, `ipconfig`, `nslookup`,
   `tracert`, `arp -a`).
 - **Simulation mode** — a deterministic packet-level simulator: step through ARP, DHCP, DNS, ICMP
   and VLAN tagging event by event, inspect each PDU layer by layer, filter by protocol, and export
   the capture as a `.pcap` file for Wireshark.
-- **Sample labs** — 24 short lessons (basics, DHCP, DNS, switching, routing, packet view), each a
-  ready lab with "try this" steps that are checked automatically and "break it" ideas.
-- **Troubleshooting exercises** — real-world faults in small business networks (a restaurant, an
-  office, a shop): find the wrong setting, fix it, verify; a report explains what happened.
+- **Sample labs** — 29 short lessons (basics, DHCP, DNS, switching, routing, packet view, ACL /
+  NAT / SSH, firewall), each a ready lab with "try this" steps that are checked automatically and
+  "break it" ideas.
+- **Troubleshooting exercises** — 10 real-world faults in small business networks (a restaurant,
+  an office, a shop, a clinic): find the wrong setting, fix it, verify; a report explains what
+  happened and how to answer it in a job interview.
 - **Design tasks** — a customer brief (small office, restaurant, school, factory, hotel) with
   requirements, a budget and a live checklist; submit for a review and get a handover pack
   (topology, IP plan, VLAN table, port list).
 - **Your files** — labs autosave in the browser, export / import as `.agl.json`, share as a link,
   export every device's configuration as text.
+- **Share as a page** — publish a lab as a public page (`/p/…`) with its topology, device / IP /
+  VLAN tables, your name and LinkedIn profile, and a link preview picture made for LinkedIn;
+  visitors open their own copy in one click, and only your browser can delete the page.
 - **Preferences** — light / dark / system theme, map labels, grid and snap, animation speed,
   terminal and CLI options.
 
 Octetlab is a learning lab, not a game: no points, no lives, just networks that behave like real
-ones. The roadmap (dynamic routing, STP, ACL / NAT, IPv6, wireless security, WAN, servers and more)
+ones. The roadmap (dynamic routing, STP, zone-based firewall, IPv6, wireless security, WAN, servers
+and more)
 is in [docs/PLAN_V2.md](docs/PLAN_V2.md) and [docs/PARITY.md](docs/PARITY.md).
 
 ## Use with ChatGPT or Claude (MCP)
@@ -80,7 +97,8 @@ is in [docs/PLAN_V2.md](docs/PLAN_V2.md) and [docs/PARITY.md](docs/PARITY.md).
 Octetlab also runs as an MCP server, so a chat assistant can work in the lab for you — on the
 desktop or on your phone. Ask in plain words and it builds a lab (from scratch or from a sample),
 adds and cables devices, configures hosts, routers and switches, runs `ping`, `tracert` and `show`
-commands, and replies with a link that opens the finished lab in Octetlab.
+commands, and replies with a live link: open it in Octetlab and watch the lab change while the
+assistant works.
 
 **Server URL:** `https://octetlabmcp.slovveis.workers.dev/mcp` (no sign-in needed)
 
@@ -159,6 +177,10 @@ Screenshots are generated from the live site with `node scripts/readmeScreenshot
 | [docs/PREFERENCES.md](docs/PREFERENCES.md) | Preferences and theme tokens |
 | [docs/I18N.md](docs/I18N.md) | Translations |
 | [docs/MCP_SERVER.md](docs/MCP_SERVER.md) | MCP server for ChatGPT and Claude |
+| [docs/LIVE_LABS.md](docs/LIVE_LABS.md) | Live labs the assistant and the browser share |
+| [docs/SECURITY_PACK.md](docs/SECURITY_PACK.md) | ACL, NAT, SSH / Telnet |
+| [docs/FIREWALL_PACK.md](docs/FIREWALL_PACK.md) | Stateful firewall appliance |
+| [docs/SHARE_PAGES.md](docs/SHARE_PAGES.md) | Public share pages and link previews |
 
 ## Trademarks
 
