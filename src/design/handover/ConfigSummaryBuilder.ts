@@ -1,5 +1,7 @@
+import { AclSyntax } from '../../cli/acl/AclSyntax'
 import type { Device, DhcpServerSettings, DnsServerSettings, StaticRoute, WirelessSecurity } from '../../domain'
 import type { LocalizedMessage } from '../../domain/Messages'
+import { AclBindings } from '../../sim/policy/acl/AclBindings'
 import { L3Interfaces, type L3Interface } from '../../engine'
 import { localizedMessage } from '../../i18n/messageKeys'
 import { Cidr } from '../Cidr'
@@ -16,8 +18,9 @@ function list(values: readonly string[]): string {
 }
 
 /**
- * Per-device configuration summary: addresses, gateway / DNS, VLANs, routes, DHCP pools, DNS service,
- * SSIDs and application links. Devices with nothing configured are left out; ordered by kind
+ * Per-device configuration summary: addresses and the access lists bound to them, gateway / DNS,
+ * VLANs, routes, access lists, DHCP pools, DNS service, SSIDs and application links. Devices with
+ * nothing configured are left out; ordered by kind
  * (routers, switches, …, end devices), lab order within a kind.
  */
 export class ConfigSummaryBuilder {
@@ -32,10 +35,11 @@ export class ConfigSummaryBuilder {
 
   private items(index: LabIndex, device: Device): ConfigItem[] {
     return [
-      ...L3Interfaces.of(device).flatMap((iface) => this.interfaceItems(index, iface)),
+      ...L3Interfaces.of(device).flatMap((iface) => [...this.interfaceItems(index, device, iface), ...this.accessGroupItems(device, iface)]),
       ...this.hostItems(device),
       ...this.switchingItems(device),
       ...this.routingItems(device),
+      ...this.accessListItems(device),
       ...this.dhcpItems(device.services?.dhcp),
       ...this.dnsItems(device.services?.dns),
       ...(device.wireless?.ssids ?? []).map((entry) => ({
@@ -48,10 +52,14 @@ export class ConfigSummaryBuilder {
     ]
   }
 
-  /** Addressed or DHCP interfaces (unconfigured ports are left out). */
-  private interfaceItems(index: LabIndex, iface: L3Interface): ConfigItem[] {
+  /**
+   * Addressed or DHCP interfaces. Left out: unconfigured ports, and network cards on DHCP without an
+   * address and without a cable (e.g. the unused wired port of a laptop on Wi-Fi).
+   */
+  private interfaceItems(index: LabIndex, device: Device, iface: L3Interface): ConfigItem[] {
     const addressed = L3Interfaces.isAddressed(iface)
     if (!addressed && iface.addressing !== 'dhcp') return []
+    if (!addressed && iface.kind === 'nic' && iface.portId !== undefined && !index.cabledPorts(device).includes(iface.portId)) return []
     const label =
       iface.vlan === undefined
         ? localizedMessage('design:handover.config.interface', { interface: iface.id })
@@ -64,6 +72,26 @@ export class ConfigSummaryBuilder {
     }
     if (!iface.adminUp) value = localizedMessage('design:handover.values.adminDown', { address: address === '' ? 'DHCP' : address })
     return [{ label, value }]
+  }
+
+  /** `ip access-group` bindings of a routed port, sub-interface or SVI. */
+  private accessGroupItems(device: Device, iface: L3Interface): ConfigItem[] {
+    if (iface.kind === 'nic') return []
+    const binding = AclBindings.of(device, iface.id)
+    if (binding === undefined) return []
+    const label = localizedMessage('design:handover.config.accessGroup', { interface: iface.id })
+    return [
+      ...(binding.in === undefined ? [] : [{ label, value: localizedMessage('design:handover.values.aclIn', { name: binding.in }) }]),
+      ...(binding.out === undefined ? [] : [{ label, value: localizedMessage('design:handover.values.aclOut', { name: binding.out }) }]),
+    ]
+  }
+
+  /** Each access list with its entries in order, as the configuration writes them. */
+  private accessListItems(device: Device): ConfigItem[] {
+    return (device.features?.accessLists?.lists ?? []).map((accessList) => ({
+      label: localizedMessage('design:handover.config.accessList', { name: accessList.name }),
+      value: accessList.entries.length === 0 ? NONE : accessList.entries.map((entry) => AclSyntax.entryText(entry)).join(' · '),
+    }))
   }
 
   private hostItems(device: Device): ConfigItem[] {

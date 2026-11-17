@@ -170,6 +170,8 @@
       "adminDown": "{{address}}, shut down",
       "dhcpPool": "{{network}}: {{start}} – {{end}}, gateway {{gateway}}, DNS {{dns}}",
       "ssidOpen": "VLAN {{vlan}}, open (no password)",
+      "aclIn": "{{name}}, incoming traffic",
+      "aclOut": "{{name}}, outgoing traffic",
       "outage": "Provider outage"
     },
     "portMode": {
@@ -190,6 +192,8 @@
       "dhcp": "DHCP server",
       "dhcpPool": "DHCP pool {{pool}}",
       "dhcpExcluded": "DHCP excluded addresses",
+      "accessGroup": "Access list on {{interface}}",
+      "accessList": "Access list {{name}}",
       "dnsForwarders": "DNS server, forwarders",
       "dnsRecord": "DNS record {{name}}",
       "ssid": "Wi-Fi “{{ssid}}”",

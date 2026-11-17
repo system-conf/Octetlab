@@ -170,6 +170,8 @@
       "adminDown": "{{address}}, kapatılmış (shutdown)",
       "dhcpPool": "{{network}}: {{start}} – {{end}}, ağ geçidi {{gateway}}, DNS {{dns}}",
       "ssidOpen": "VLAN {{vlan}}, açık (şifresiz)",
+      "aclIn": "{{name}}, gelen trafik",
+      "aclOut": "{{name}}, giden trafik",
       "outage": "Servis sağlayıcı kesintisi"
     },
     "portMode": {
@@ -190,6 +192,8 @@
       "dhcp": "DHCP sunucusu",
       "dhcpPool": "DHCP havuzu {{pool}}",
       "dhcpExcluded": "DHCP dışı bırakılan adresler",
+      "accessGroup": "{{interface}} üzerindeki erişim listesi",
+      "accessList": "Erişim listesi {{name}}",
       "dnsForwarders": "DNS sunucusu, iletilen sunucular",
       "dnsRecord": "DNS kaydı {{name}}",
       "ssid": "Wi-Fi “{{ssid}}”",
