@@ -30,6 +30,7 @@ describe('PortSecurityModel', () => {
     const l3Switch = { ...router, kind: 'l3Switch' as const }
     expect(PortSecurityModel.showsNat(router, 'routed')).toBe(true)
     expect(PortSecurityModel.showsNat(l3Switch, 'routed')).toBe(false)
+    expect(PortSecurityModel.showsNat(firewall(), 'routed')).toBe(false)
     expect(PortSecurityModel.showsAcl(router, 'switched')).toBe(false)
   })
 

@@ -9,6 +9,7 @@ export const PORT_GROUPS = [
   'lan',
   'wan',
   'ethernet',
+  'dmz',
   'serial',
   'access',
   'uplink',

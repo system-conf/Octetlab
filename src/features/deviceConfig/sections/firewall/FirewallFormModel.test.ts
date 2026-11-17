@@ -86,6 +86,7 @@ describe('Firewall card placement', () => {
   it('shows only for firewall devices and follows the security lock', () => {
     const fw = firewall()
     expect(DeviceSections.of(fw, findDeviceModel('firewall2Port'))).toContain('firewall')
+    expect(DeviceSections.of(fw, findDeviceModel('firewall2Port'))).not.toContain('nat')
     const router = { ...makeDevice('r1', 'router', [routedPort('Gi0/0')]), routing: { ipRouting: true, staticRoutes: [] } }
     expect(DeviceSections.of(router, findDeviceModel('router2Port'))).not.toContain('firewall')
     expect(LOCK_SECTION_OF.firewall).toBe('security')

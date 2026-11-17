@@ -255,6 +255,10 @@
       "name": "Ethernet",
       "description": "Gigabit Ethernet interface; use it for LAN or WAN."
     },
+    "dmz": {
+      "name": "DMZ",
+      "description": "Toward servers the internet may reach (web, mail), kept apart from the inside network."
+    },
     "serial": {
       "name": "Serial",
       "description": "Serial WAN line to another router; one end provides the clock (DCE)."

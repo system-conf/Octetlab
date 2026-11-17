@@ -255,6 +255,10 @@
       "name": "Ethernet",
       "description": "Gigabit Ethernet arayüzü; LAN veya WAN için kullanılır."
     },
+    "dmz": {
+      "name": "DMZ",
+      "description": "İnternetten erişilebilen sunuculara (web, e-posta) doğru; iç ağdan ayrı tutulur."
+    },
     "serial": {
       "name": "Seri",
       "description": "Başka bir router’a seri WAN hattı; bir uç saati verir (DCE)."

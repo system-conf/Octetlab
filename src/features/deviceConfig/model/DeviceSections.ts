@@ -61,7 +61,8 @@ export class DeviceSections {
       internet: device.internet !== undefined || device.kind === 'internet',
       // ACLs on routers and L3 switches (routed ports, SVIs); NAT on routers; SSH on every IOS device.
       accessLists: device.routing !== undefined,
-      nat: device.routing !== undefined && device.kind !== 'l3Switch',
+      // Firewalls configure NAT through network objects only; their generated rows are not edited here.
+      nat: device.routing !== undefined && device.kind !== 'l3Switch' && device.kind !== 'firewall',
       security: device.routing !== undefined || vlans,
       firewall: device.kind === 'firewall' || capabilities.has('firewall'),
     }

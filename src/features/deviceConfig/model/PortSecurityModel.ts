@@ -40,9 +40,12 @@ export class PortSecurityModel {
     return role === 'routed' && device.routing !== undefined
   }
 
-  /** NAT role: routed ports of routers (IOS L3 switches have no NAT). */
+  /**
+   * NAT role: routed ports of routers. IOS L3 switches have no NAT; firewalls set the role through
+   * object NAT (`nat (inside,outside) …`), so the stored role is kept but not offered for editing.
+   */
   static showsNat(device: Device, role: string): boolean {
-    return PortSecurityModel.showsAcl(device, role) && device.kind !== 'l3Switch'
+    return PortSecurityModel.showsAcl(device, role) && device.kind !== 'l3Switch' && device.kind !== 'firewall'
   }
 
   /** nameif and security level: routed ports of a firewall. */
