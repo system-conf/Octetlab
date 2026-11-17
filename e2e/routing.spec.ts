@@ -1,10 +1,11 @@
 import { expect, test } from './support/fixtures'
 
 test.describe('routing', { tag: '@mobile' }, () => {
-  test('an unknown path redirects to the landing page', async ({ page }) => {
+  // `/` opens the lab with the Start dialog (the former landing text lives at /about).
+  test('an unknown path redirects to the start of the app', async ({ page }) => {
     await page.goto('/no/such/page?lang=en')
     await expect(page).toHaveURL(/^[^?#]+\/(\?|$)/)
-    await expect(page.getByRole('heading', { level: 1, name: 'A network lab in your browser' })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Start' })).toBeVisible({ timeout: 15_000 })
   })
 
   test('an unknown exercise redirects to the exercise list', async ({ page }) => {
